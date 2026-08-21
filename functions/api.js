@@ -30,7 +30,12 @@ export async function onRequest(context) {
   }
 
   const token = env.GH_TOKEN;
-  if (!token) return respond(500, { error: 'GH_TOKEN 未配置：请在 Cloudflare 环境变量中添加 GH_TOKEN' });
+  if (!token) return respond(500, {
+    error: 'GH_TOKEN 未配置',
+    envKeys: Object.keys(env),
+    ctxKeys: Object.keys(context),
+    hasPwd: !!env.CONSOLE_PASSWORD,
+  });
 
   let payload;
   try { payload = await request.json(); } catch (e) { return respond(400, { error: 'invalid json' }); }
