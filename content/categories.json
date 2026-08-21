@@ -1,11 +1,32 @@
 {
   "categories": [
-    { "id": "handmade", "label": "手工发饰" },
-    { "id": "papercut", "label": "剪纸" },
-    { "id": "drawing", "label": "绘画" },
-    { "id": "photo", "label": "摄影" },
-    { "id": "landscape", "label": "风景" },
-    { "id": "people", "label": "人物" },
-    { "id": "pet", "label": "宠物" }
+    {
+      "id": "handmade",
+      "label": "手工发饰"
+    },
+    {
+      "id": "papercut",
+      "label": "剪纸"
+    },
+    {
+      "id": "drawing",
+      "label": "绘画"
+    },
+    {
+      "id": "photo",
+      "label": "摄影"
+    },
+    {
+      "id": "landscape",
+      "label": "风景"
+    },
+    {
+      "id": "people",
+      "label": "人物"
+    },
+    {
+      "id": "pet",
+      "label": "宠物"
+    }
   ]
 }
