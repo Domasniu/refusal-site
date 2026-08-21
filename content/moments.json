@@ -4,7 +4,7 @@
       "id": "M-001",
       "type": "text",
       "date": "2026-08-22",
-      "text": "新作品完成啦！今天做了个蝴蝶结发箍，粉粉的很喜欢～",
+      "text": "",
       "images": [],
       "video": ""
     },
@@ -26,6 +26,14 @@
       "images": [
         "assets/moments/img-001.jpg"
       ],
+      "video": ""
+    },
+    {
+      "id": "M-004",
+      "type": "text",
+      "date": "2026-08-22",
+      "text": "",
+      "images": [],
       "video": ""
     }
   ]
