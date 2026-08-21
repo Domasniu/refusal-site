@@ -37,13 +37,16 @@ button.small{padding:4px 10px;font-size:12px}
 .swatch .dots{display:flex;gap:3px;justify-content:center;margin-bottom:6px}
 .swatch .dot{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,.2)}
 .swatch .nm{font-size:11px}
-/* 作品行 */
-.work-row{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:#070b16;flex-wrap:wrap}
-.work-row img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
-.work-row .f1{flex:2;min-width:140px}
-.work-row .f2{flex:1;min-width:120px}
-.work-row input{margin-top:3px}
-.work-row select{width:100%;background:#070b16;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:6px;margin-top:3px}
+/* 作品网格 */
+.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.work-card{background:#070b16;border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.work-card:hover{border-color:var(--cyan)}
+.wc-thumb{height:120px;background:#0a0f1e;overflow:hidden;border-bottom:1px solid var(--line)}
+.wc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.wc-body{padding:9px;display:flex;flex-direction:column;gap:7px}
+.wc-body input,.wc-body select{width:100%;background:#0a0f1e;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px;box-sizing:border-box}
+.wc-actions{display:flex;gap:6px}
+.wc-actions button{flex:1}
 .avatar-prev{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);display:block;margin-bottom:8px}
 .cat-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:8px;background:#070b16}
 .cat-row .nm{flex:1}
@@ -218,8 +221,13 @@ async function loadContent(){
   }
 }
 
+function imgSrc(p){
+  if (!p) return '';
+  if (/^(https?:)?\/\//i.test(p) || p.charAt(0) === '/') return p;
+  return '../' + p;
+}
 function fillForm(){
-  $('avatar-prev').src = config.avatar || 'assets/avatar.jpg';
+  $('avatar-prev').src = imgSrc(config.avatar || 'assets/avatar.jpg');
   $('f-tags').value = (config.hero && config.hero.tags) || '';
   $('f-slogan').value = (config.hero && config.hero.slogan) || '';
   $('f-desc').value = (config.hero && config.hero.desc) || '';
@@ -283,21 +291,28 @@ $('inp-work').addEventListener('change', function(){
 function renderWorks(){
   var box = $('work-list');
   box.innerHTML = '';
+  var grid = document.createElement('div');
+  grid.className = 'work-grid';
   config.works.forEach(function(w, idx){
-    var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : w.img;
+    var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
     var catOpts = config.categories.map(function(c){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
-    var row = document.createElement('div');
-    row.className = 'work-row';
-    row.innerHTML =
-      '<img src="' + preview + '">' +
-      '<div class="f1"><label style="margin:0">标题</label><input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title"></div>' +
-      '<div class="f2"><label style="margin:0">分类</label><select data-i="' + idx + '" data-k="cat">' + catOpts + '</select></div>' +
-      '<button class="small" data-replace="' + idx + '">换图</button>' +
-      '<button class="small" data-del="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>';
-    box.appendChild(row);
+    var card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML =
+      '<div class="wc-thumb"><img src="' + preview + '" alt=""></div>' +
+      '<div class="wc-body">' +
+        '<input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title" placeholder="标题">' +
+        '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>' +
+        '<div class="wc-actions">' +
+          '<button class="small" data-replace="' + idx + '">换图</button>' +
+          '<button class="small" data-del="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
+        '</div>' +
+      '</div>';
+    grid.appendChild(card);
   });
+  box.appendChild(grid);
   box.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){ config.works[+this.dataset.i].title = this.value; });
   });
@@ -318,7 +333,7 @@ function renderWorks(){
       inp.type = 'file'; inp.accept = 'image/*';
       inp.onchange = function(){
         var f = inp.files[0]; if (!f) return;
-        var w = config.works[+this.dataset.i];
+        var w = config.works[+this.dataset.replace];
         newImages[w.img] = f;
         renderWorks();
       }.bind(this);
