@@ -50,6 +50,15 @@
         "assets/works/drawing-1-house.jpg"
       ],
       "desc": "乡间木屋钢笔线稿，记录旅途中的静谧风景。"
+    },
+    {
+      "id": "W-006",
+      "cat": "pet",
+      "title": "lucky",
+      "img": "assets/works/work-001.jpg",
+      "images": [
+        "assets/works/work-001.jpg"
+      ]
     }
   ]
 }
