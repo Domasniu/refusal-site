@@ -1,13 +1,13 @@
 {
-  "avatar": "assets/works/微信图片_20260821152752_3_38.jpg",
-  "theme": "neon-magenta",
+  "avatar": "assets/avatar.jpg",
+  "theme": "cyber-cyan",
   "hero": {
-    "tags": "refusal·",
-    "slogan": "refusal·",
-    "desc": "refusal·"
+    "tags": "",
+    "slogan": "",
+    "desc": ""
   },
-  "about": "refusal·",
-  "contact": "1261995825",
+  "about": "",
+  "contact": "",
   "video": {
     "douyin": "",
     "bilibili": "",
