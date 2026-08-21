@@ -105,6 +105,27 @@
         </div>
       </div>
       <div class="home-stats" id="home-stats"></div>
+      <div class="home-music">
+        <h3 class="home-latest-title"><span class="tick">▸</span> 正在播放 / NOW PLAYING</h3>
+        <div class="home-music-player">
+          <div class="player-cover mini-cover" id="hm-cover"><span class="p-cover-fallback">🎵</span></div>
+          <div class="player-body">
+            <div class="p-title" id="hm-title">—</div>
+            <div class="p-artist" id="hm-artist">—</div>
+            <div class="p-progress">
+              <span class="p-time" id="hm-cur">00:00</span>
+              <div class="p-bar" id="hm-bar"><div class="p-fill" id="hm-fill"></div></div>
+              <span class="p-time" id="hm-dur">00:00</span>
+            </div>
+            <div class="p-controls">
+              <button class="p-btn" id="hm-prev" title="上一首">⏮</button>
+              <button class="p-btn p-play" id="hm-play" title="播放/暂停">▶</button>
+              <button class="p-btn" id="hm-next" title="下一首">⏭</button>
+              <span class="hm-more"><a href="#music" data-sec="music" class="hm-more-link">完整播放器 →</a></span>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="home-latest">
         <h3 class="home-latest-title"><span class="tick">▸</span> 最新作品 / LATEST WORKS</h3>
         <div class="home-latest-grid" id="home-latest-grid"></div>
@@ -127,7 +148,36 @@
     <!-- ====== MUSIC ====== -->
     <section id="music" class="panel">
       <h2 class="sec-title"><span class="tick">▸</span> MUSIC / 音乐播放</h2>
-      <div id="music-box" class="music-box"></div>
+      <div class="music-layout">
+        <div class="player-wrap" id="player-panel">
+          <div class="player-cover" id="p-cover"><span class="p-cover-fallback">🎵</span></div>
+          <div class="player-body">
+            <div class="p-title" id="p-title">—</div>
+            <div class="p-artist" id="p-artist">—</div>
+            <div class="p-progress" id="p-progress">
+              <span class="p-time" id="p-cur">00:00</span>
+              <div class="p-bar" id="p-bar"><div class="p-fill" id="p-fill"></div></div>
+              <span class="p-time" id="p-dur">00:00</span>
+            </div>
+            <div class="p-controls">
+              <button class="p-btn" id="p-mode" title="播放模式">🔁</button>
+              <button class="p-btn" id="p-prev" title="上一首">⏮</button>
+              <button class="p-btn p-play" id="p-play" title="播放/暂停">▶</button>
+              <button class="p-btn" id="p-next" title="下一首">⏭</button>
+              <span class="p-vol-group">
+                <button class="p-btn" id="p-mute" title="静音">🔊</button>
+                <div class="p-vol" id="p-vol"><div class="p-vol-fill" id="p-vol-fill"></div></div>
+              </span>
+            </div>
+            <div class="p-status" id="p-status"></div>
+            <div class="p-lrc hidden" id="p-lrc"></div>
+          </div>
+        </div>
+        <div class="player-list-wrap">
+          <h3 class="p-list-title"><span class="tick">▸</span> 播放列表 / PLAYLIST</h3>
+          <ul class="p-list" id="p-list"></ul>
+        </div>
+      </div>
     </section>
 
     <!-- ====== ABOUT ====== -->
@@ -162,8 +212,24 @@
 <!-- ============ 返回顶部 ============ -->
 <button id="to-top" class="to-top hidden" title="返回顶部">▲</button>
 
+<!-- ============ 全局悬浮迷你播放器 ============ -->
+<div id="mini-player" class="mini-player hidden">
+  <div class="mp-cover" id="mp-cover"><span class="p-cover-fallback">🎵</span></div>
+  <div class="mp-info">
+    <div class="mp-title" id="mp-title">—</div>
+    <div class="mp-artist" id="mp-artist">—</div>
+  </div>
+  <div class="mp-bar"><div class="mp-fill" id="mp-fill"></div></div>
+  <div class="mp-controls">
+    <button class="p-btn" id="mp-prev" title="上一首">⏮</button>
+    <button class="p-btn p-play" id="mp-play" title="播放/暂停">▶</button>
+    <button class="p-btn" id="mp-next" title="下一首">⏭</button>
+  </div>
+</div>
+
 <script src="js/palettes.js"></script>
 <script src="js/site-config.js"></script>
+<script src="js/player.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

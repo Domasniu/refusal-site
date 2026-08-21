@@ -30,10 +30,16 @@ window.SITE_CONFIG = {
     youtube: ''
   },
 
-  /* -------- 音乐（粘贴网易云外链播放器代码） -------- */
+  /* -------- 音乐（歌单：netease=网易云外链 / file=自传 mp3） -------- */
   music: {
     netease: ''
   },
+
+  /* -------- 内置歌单（本地双击预览时使用，线上以 content/music.json 为准） -------- */
+  playlist: [
+    { type: 'netease', id: '3023862', title: 'Oceanside', artist: 'Lainey Lou', cover: '', lrc: '' },
+    { type: 'netease', id: '347230', title: '海阔天空', artist: 'Beyond', cover: '', lrc: '' }
+  ],
 
   /* -------- 作品分类 -------- */
   categories: [

@@ -50,6 +50,14 @@ button.small{padding:4px 10px;font-size:12px}
 .avatar-prev{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);display:block;margin-bottom:8px}
 .cat-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:8px;background:#070b16}
 .cat-row .nm{flex:1}
+/* 音乐管理 */
+.music-row{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#070b16}
+.mr-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.mr-tag{font-size:10px;color:var(--cyan);border:1px solid var(--line);padding:2px 7px;border-radius:3px;letter-spacing:.08em}
+.mr-title{flex:1;font-size:13px;color:var(--text)}
+.mr-artist{font-size:12px;color:var(--dim)}
+.mr-fields{display:flex;gap:8px;margin-bottom:8px}
+.mr-fields input{flex:1}
 #status{display:none;margin-top:14px;padding:10px 14px;border-radius:6px;font-size:13px;line-height:1.7}
 #status.ok{display:block;background:rgba(61,255,143,.1);border:1px solid var(--ok);color:var(--ok)}
 #status.err{display:block;background:rgba(255,92,92,.1);border:1px solid #ff5c5c;color:#ff8a8a}
@@ -109,9 +117,18 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑤ 音乐（网易云）</h2>
-    <p class="hint">网易云音乐网页版 → 点「生成外链播放器」→ 复制代码粘贴到下面</p>
-    <textarea id="f-music" placeholder="<iframe frameborder=&quot;no&quot; ..."></textarea>
+    <h2>⑤ 音乐（歌单）</h2>
+    <p class="hint">两种添加方式：<br>
+      <b>网易云歌曲</b>：填歌曲 ID（网易云网页版歌曲页 URL 里 /song?id= 后面的数字，如 3023862），标题歌手可自动留空后手动补。<br>
+      <b>自传音乐</b>：点「上传音乐文件」直接传 mp3 到网站（推荐，稳定不失效）。<br>
+      歌词（可选）：粘贴 LRC 格式歌词文本。</p>
+    <div id="music-list"></div>
+    <div class="toolbar">
+      <input type="text" id="f-new-music-id" placeholder="网易云歌曲 ID，如 3023862" style="flex:1;min-width:180px">
+      <button id="btn-add-music" class="small">＋ 添加网易云歌</button>
+      <button id="btn-upload-music" class="small">⬆️ 上传音乐文件</button>
+      <input type="file" id="inp-music" accept="audio/*" style="display:none">
+    </div>
   </div>
 
   <div class="card">
@@ -154,6 +171,8 @@ var API_URL = '/api';
 var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg' };
 var newImages = {};                     // 待上传图片 { path: File }
 var newAvatar = null;
+var musicList = [];                     // 歌单
+var newMusicFiles = {};                 // 待上传音乐文件 { path: File }
 
 var PALETTES = [
   { id:'cyber-cyan', name:'赛博青', c:['#05070d','#00f0ff','#ff2d95','#a855f7'] },
@@ -222,9 +241,17 @@ async function loadContent(){
     var site = await contentGet('content/site.json');
     var works = await contentGet('content/works.json');
     var cats = await contentGet('content/categories.json');
+    var music = await contentGet('content/music.json');
     if (site) config = Object.assign(config, JSON.parse(site.text));
     if (works) config.works = JSON.parse(works.text).works || [];
     if (cats) config.categories = JSON.parse(cats.text).categories || [];
+    if (music) {
+      var mj = JSON.parse(music.text);
+      musicList = (mj && Array.isArray(mj.playlist)) ? mj.playlist : [];
+    } else {
+      // 回退到 site.json 里的 netease iframe（旧数据）
+      musicList = [];
+    }
     fillForm();
     setStatus('', '');
   } catch (e) {
@@ -244,11 +271,10 @@ function fillForm(){
   $('f-desc').value = (config.hero && config.hero.desc) || '';
   $('f-about').value = config.about || '';
   $('f-contact').value = config.contact || '';
-  $('f-music').value = (config.music && config.music.netease) || '';
   $('f-douyin').value = (config.video && config.video.douyin) || '';
   $('f-bilibili').value = (config.video && config.video.bilibili) || '';
   $('f-youtube').value = (config.video && config.video.youtube) || '';
-  renderThemes(); renderWorks(); renderCats();
+  renderThemes(); renderWorks(); renderCats(); renderMusicList();
 }
 
 function collect(){
@@ -256,9 +282,72 @@ function collect(){
   config.hero = { tags: $('f-tags').value.trim(), slogan: $('f-slogan').value.trim(), desc: $('f-desc').value.trim() };
   config.about = $('f-about').value;
   config.contact = $('f-contact').value;
-  config.music = { netease: $('f-music').value.trim() };
   config.video = { douyin: $('f-douyin').value.trim(), bilibili: $('f-bilibili').value.trim(), youtube: $('f-youtube').value.trim() };
 }
+
+/* ================= 音乐管理 ================= */
+function renderMusicList(){
+  var box = $('music-list');
+  box.innerHTML = '';
+  if (!musicList.length) {
+    box.innerHTML = '<p class="hint">歌单为空 — 添加网易云歌曲或上传音乐文件。</p>';
+    return;
+  }
+  musicList.forEach(function(s, idx){
+    var row = document.createElement('div');
+    row.className = 'music-row';
+    row.innerHTML =
+      '<div class="mr-head">' +
+        '<span class="mr-tag">' + (s.type === 'file' ? '自传文件' : '网易云') + '</span>' +
+        '<span class="mr-title">' + esc(s.title || '未知歌曲') + '</span>' +
+        '<span class="mr-artist">' + esc(s.artist || '') + '</span>' +
+        '<button class="small" data-mdel="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
+      '</div>' +
+      '<div class="mr-fields">' +
+        '<input type="text" value="' + esc(s.title || '') + '" data-mi="' + idx + '" data-mk="title" placeholder="歌名">' +
+        '<input type="text" value="' + esc(s.artist || '') + '" data-mi="' + idx + '" data-mk="artist" placeholder="歌手">' +
+      '</div>' +
+      '<textarea data-mi="' + idx + '" data-mk="lrc" placeholder="歌词（可选，LRC 格式）" style="min-height:40px">' + esc(s.lrc || '') + '</textarea>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-mk]').forEach(function(inp){
+    inp.addEventListener('input', function(){ musicList[+this.dataset.mi][this.dataset.mk] = this.value; });
+  });
+  box.querySelectorAll('textarea[data-mk]').forEach(function(ta){
+    ta.addEventListener('input', function(){ musicList[+this.dataset.mi].lrc = this.value; });
+  });
+  box.querySelectorAll('button[data-mdel]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var s = musicList[+this.dataset.mdel];
+      if (s.type === 'file' && s.url) delete newMusicFiles[s.url];
+      musicList.splice(+this.dataset.mdel, 1);
+      renderMusicList();
+    });
+  });
+}
+
+$('btn-add-music').addEventListener('click', function(){
+  var id = $('f-new-music-id').value.trim();
+  if (!id) return;
+  musicList.push({ type: 'netease', id: id, title: '网易云歌曲 ' + id, artist: '', cover: '', lrc: '' });
+  $('f-new-music-id').value = '';
+  renderMusicList();
+});
+
+$('btn-upload-music').addEventListener('click', function(){ $('inp-music').click(); });
+$('inp-music').addEventListener('change', function(){
+  var f = this.files[0]; if (!f) return;
+  var n = 1;
+  var used = {};
+  musicList.forEach(function(s){ if (s.type === 'file' && s.url) used[s.url] = true; });
+  var p = '';
+  do { p = 'assets/music/song-' + String(n).padStart(3,'0') + '.mp3'; n++; } while (used[p]);
+  newMusicFiles[p] = f;
+  var title = f.name.replace(/\.[^.]+$/, '') || '新歌';
+  musicList.push({ type: 'file', url: p, title: title, artist: '', cover: '', lrc: '' });
+  renderMusicList();
+  this.value = '';
+});
 
 /* ================= 主题 ================= */
 var currentTheme = 'cyber-cyan';
@@ -404,14 +493,19 @@ $('btn-save').addEventListener('click', async function(){
       about: config.about,
       contact: config.contact,
       video: config.video,
-      music: config.music
+      music: {}
     };
     await contentPut('content/site.json', JSON.stringify(site, null, 2));
     await contentPut('content/works.json', JSON.stringify({ works: config.works }, null, 2));
     await contentPut('content/categories.json', JSON.stringify({ categories: config.categories }, null, 2));
+    await contentPut('content/music.json', JSON.stringify({ playlist: musicList }, null, 2));
     for (var p in newImages) {
       var b64 = await fileToBase64(newImages[p]);
       await contentPut(p, b64, true);
+    }
+    for (var mp in newMusicFiles) {
+      var mb64 = await fileToBase64(newMusicFiles[mp]);
+      await contentPut(mp, mb64, true);
     }
     if (newAvatar) {
       var av64 = await fileToBase64(newAvatar);
@@ -419,6 +513,7 @@ $('btn-save').addEventListener('click', async function(){
       newAvatar = null;
     }
     newImages = {};
+    newMusicFiles = {};
     setStatus('✅ 保存成功！网站正在自动更新，1-2 分钟后刷新查看。', 'ok');
   } catch (e) {
     setStatus('❌ 保存失败：' + e.message, 'err');

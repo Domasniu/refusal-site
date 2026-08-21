@@ -9,7 +9,6 @@
   var CFG = window.SITE_CONFIG || {};
   var PAL = window.SITE_PALETTES || [];
   var MUSIC = [];        // 来自 content/music.json 的歌单
-  var currentSong = null; // 当前播放的歌
 
   /* ---------- 异步加载线上内容（失败自动回退默认值） ---------- */
   function tryFetch(url) {
@@ -144,15 +143,17 @@
     });
   }
 
-  /* ---------- 渲染音乐（歌单切换） ---------- */
-  function renderMusic() {
+  /* ---------- 渲染音乐（自定义播放器，支持网易云外链 + 自传文件） ---------- */
+  function initMusicPlayer() {
+    if (!window.REFUSAL_PLAYER) return;
     var box = document.getElementById('music-box');
-    if (!MUSIC || !MUSIC.length) {
+    var list = (MUSIC && MUSIC.length) ? MUSIC : (CFG.playlist || []);
+    // 无歌单时回退到 site-config 里的网易云 iframe 代码
+    if (!list.length) {
       var code = (CFG.music && CFG.music.netease) || '';
       if (code && /<iframe/i.test(code)) {
-        box.innerHTML = '<div class="netease-wrap">' + code + '</div>';
-        box.classList.add('has-player');
-      } else {
+        if (box) { box.innerHTML = '<div class="netease-wrap">' + code + '</div>'; box.classList.add('has-player'); }
+      } else if (box) {
         box.classList.remove('has-player');
         box.innerHTML =
           '<div class="music-eq"><i></i><i></i><i></i><i></i><i></i></div>' +
@@ -160,26 +161,74 @@
       }
       return;
     }
-    var song = currentSong || MUSIC[0];
-    box.classList.add('has-player');
-    box.innerHTML =
-      '<div class="music-player">' +
-        '<iframe src="https://music.163.com/outchain/player?type=2&id=' + encodeURIComponent(song.id) + '&auto=0&height=66" frameborder="0" scrolling="no" referrerpolicy="no-referrer" loading="lazy" title="网易云音乐播放器"></iframe>' +
-      '</div>' +
-      '<ul class="music-list">' +
-        MUSIC.map(function (s, i) {
-          return '<li class="music-item' + (s.id === song.id ? ' on' : '') + '" data-i="' + i + '">' +
-            '<span class="mi-title">' + escHtml(s.title) + '</span>' +
-            '<span class="mi-artist">' + escHtml(s.artist || '') + '</span>' +
-          '</li>';
-        }).join('') +
-      '</ul>';
-    box.querySelectorAll('.music-item').forEach(function (li) {
-      li.addEventListener('click', function () {
-        currentSong = MUSIC[+li.dataset.i];
-        renderMusic();
-      });
+    var ui = {
+      panel: document.getElementById('player-panel'),
+      cover: document.getElementById('p-cover'),
+      title: document.getElementById('p-title'),
+      artist: document.getElementById('p-artist'),
+      playBtn: document.getElementById('p-play'),
+      prevBtn: document.getElementById('p-prev'),
+      nextBtn: document.getElementById('p-next'),
+      modeBtn: document.getElementById('p-mode'),
+      muteBtn: document.getElementById('p-mute'),
+      volBar: document.getElementById('p-vol'),
+      volFill: document.getElementById('p-vol-fill'),
+      progBar: document.getElementById('p-bar'),
+      progFill: document.getElementById('p-fill'),
+      curTime: document.getElementById('p-cur'),
+      durTime: document.getElementById('p-dur'),
+      status: document.getElementById('p-status'),
+      lrcBox: document.getElementById('p-lrc'),
+      list: document.getElementById('p-list'),
+      mini: document.getElementById('mini-player'),
+      miniCover: document.getElementById('mp-cover'),
+      miniTitle: document.getElementById('mp-title'),
+      miniArtist: document.getElementById('mp-artist'),
+      miniPlay: document.getElementById('mp-play'),
+      miniPrev: document.getElementById('mp-prev'),
+      miniNext: document.getElementById('mp-next'),
+      miniFill: document.getElementById('mp-fill'),
+      hmCover: document.getElementById('hm-cover'),
+      hmTitle: document.getElementById('hm-title'),
+      hmArtist: document.getElementById('hm-artist'),
+      hmPlay: document.getElementById('hm-play'),
+      hmPrev: document.getElementById('hm-prev'),
+      hmNext: document.getElementById('hm-next'),
+      hmBar: document.getElementById('hm-bar'),
+      hmFill: document.getElementById('hm-fill'),
+      hmCur: document.getElementById('hm-cur'),
+      hmDur: document.getElementById('hm-dur')
+    };
+    // 首页播放器与迷你播放器事件（复用同一套逻辑）
+    if (ui.hmPlay) ui.hmPlay.addEventListener('click', function () { window.REFUSAL_PLAYER.togglePlay(); });
+    if (ui.hmPrev) ui.hmPrev.addEventListener('click', function () { window.REFUSAL_PLAYER.prev(); });
+    if (ui.hmNext) ui.hmNext.addEventListener('click', function () { window.REFUSAL_PLAYER.next(); });
+    if (ui.hmBar) ui.hmBar.addEventListener('click', function (e) {
+      var r = ui.hmBar.getBoundingClientRect();
+      window.REFUSAL_PLAYER.seek && window.REFUSAL_PLAYER.seek((e.clientX - r.left) / r.width);
     });
+    // 播放器状态变化时同步首页播放器
+    window.REFUSAL_PLAYER.setOnState(function () {
+      var song = window.REFUSAL_PLAYER.getCurrent();
+      if (!song) return;
+      if (ui.hmTitle) ui.hmTitle.textContent = song.title || '—';
+      if (ui.hmArtist) ui.hmArtist.textContent = song.artist || '';
+      if (ui.hmCover) {
+        ui.hmCover.style.backgroundImage = song.cover ? 'url(' + song.cover + ')' : '';
+        ui.hmCover.classList.toggle('noimg', !song.cover);
+      }
+      if (ui.hmPlay) ui.hmPlay.textContent = window.REFUSAL_PLAYER.isPlaying() ? '⏸' : '▶';
+    });
+    // 首次同步一次
+    var firstSong = window.REFUSAL_PLAYER.getCurrent();
+    if (firstSong && ui.hmTitle) {
+      ui.hmTitle.textContent = firstSong.title || '—';
+      ui.hmArtist.textContent = firstSong.artist || '';
+      if (ui.hmCover) {
+        ui.hmCover.style.backgroundImage = firstSong.cover ? 'url(' + firstSong.cover + ')' : '';
+        ui.hmCover.classList.toggle('noimg', !firstSong.cover);
+      }
+    }
   }
 
   /* ---------- 开机画面 ---------- */
@@ -368,7 +417,7 @@
     renderHero();
     renderText();
     renderVideo();
-    renderMusic();
+    initMusicPlayer();
     renderFilters();
     renderWorks('all');
     renderHomeStats();
