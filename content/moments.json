@@ -17,6 +17,16 @@
         "assets/works/drawing-1-house.jpg"
       ],
       "video": ""
+    },
+    {
+      "id": "M-003",
+      "type": "text",
+      "date": "2026-08-22",
+      "text": "",
+      "images": [
+        "assets/moments/img-001.jpg"
+      ],
+      "video": ""
     }
   ]
 }
