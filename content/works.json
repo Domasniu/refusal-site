@@ -1,3 +1,9 @@
 {
-  "works": []
+  "works": [
+    { "id": "W-001", "cat": "handmade", "title": "蝴蝶结发箍", "img": "assets/works/handmade-1-headband.jpg" },
+    { "id": "W-002", "cat": "handmade", "title": "蓝缎带蝴蝶结", "img": "assets/works/handmade-2-bow-pink.jpg" },
+    { "id": "W-003", "cat": "handmade", "title": "白玫瑰缎带结", "img": "assets/works/handmade-3-bow-rose.jpg" },
+    { "id": "W-004", "cat": "papercut", "title": "剪纸 · 武将", "img": "assets/works/papercut-1.jpg" },
+    { "id": "W-005", "cat": "drawing", "title": "乡间木屋线稿", "img": "assets/works/drawing-1-house.jpg" }
+  ]
 }
