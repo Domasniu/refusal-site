@@ -5,6 +5,10 @@
       "cat": "handmade",
       "title": "蝴蝶结发箍",
       "img": "assets/works/handmade-1-headband.jpg",
+      "images": [
+        "assets/works/handmade-1-headband.jpg",
+        "assets/works/微信图片_20260821152752_3_38.jpg"
+      ],
       "desc": "缎带手工蝴蝶结发箍，粉色系，适合日常搭配。"
     },
     {
@@ -12,6 +16,9 @@
       "cat": "handmade",
       "title": "蓝缎带蝴蝶结",
       "img": "assets/works/handmade-2-bow-pink.jpg",
+      "images": [
+        "assets/works/handmade-2-bow-pink.jpg"
+      ],
       "desc": "蓝色缎带蝴蝶结，手工缝制，细节精致。"
     },
     {
@@ -19,6 +26,9 @@
       "cat": "handmade",
       "title": "白玫瑰缎带结",
       "img": "assets/works/handmade-3-bow-rose.jpg",
+      "images": [
+        "assets/works/handmade-3-bow-rose.jpg"
+      ],
       "desc": "白玫瑰造型缎带结，优雅温婉。"
     },
     {
@@ -26,6 +36,9 @@
       "cat": "papercut",
       "title": "剪纸 · 武将",
       "img": "assets/works/papercut-1.jpg",
+      "images": [
+        "assets/works/papercut-1.jpg"
+      ],
       "desc": "武将主题剪纸作品，线条利落，气势十足。"
     },
     {
@@ -33,6 +46,9 @@
       "cat": "drawing",
       "title": "乡间木屋线稿",
       "img": "assets/works/drawing-1-house.jpg",
+      "images": [
+        "assets/works/drawing-1-house.jpg"
+      ],
       "desc": "乡间木屋钢笔线稿，记录旅途中的静谧风景。"
     }
   ]

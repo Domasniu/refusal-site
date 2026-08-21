@@ -43,6 +43,12 @@ button.small{padding:4px 10px;font-size:12px}
 .work-card:hover{border-color:var(--cyan)}
 .wc-thumb{height:120px;background:#0a0f1e;overflow:hidden;border-bottom:1px solid var(--line)}
 .wc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.wc-thumbs{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#0a0f1e;border-bottom:1px solid var(--line)}
+.wc-thumb-item{position:relative;width:64px;height:64px;border:1px solid var(--line);border-radius:5px;overflow:hidden;cursor:pointer;flex-shrink:0}
+.wc-thumb-item img{width:100%;height:100%;object-fit:cover;display:block}
+.wc-thumb-item:hover{border-color:#ff5c5c}
+.wc-thumb-item.main{border-color:var(--cyan)}
+.wc-thumb-item em{position:absolute;left:2px;top:2px;font-style:normal;font-size:9px;color:#001018;background:var(--cyan);padding:0 4px;border-radius:2px}
 .wc-body{padding:9px;display:flex;flex-direction:column;gap:7px}
 .wc-body input,.wc-body select{width:100%;background:#0a0f1e;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px;box-sizing:border-box}
 .wc-actions{display:flex;gap:6px}
@@ -142,10 +148,14 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑦ 作品</h2>
+    <h2>⑦ 作品（可多图）</h2>
+    <p class="hint">每件作品可上传多张照片：点「添加图片」给当前作品追加图片，第一张为主图。点图片可删除。</p>
     <div id="work-list"></div>
-    <button id="btn-add-work">＋ 添加作品</button>
-    <input type="file" id="inp-work" accept="image/*" style="display:none">
+    <div class="toolbar">
+      <button id="btn-add-work">＋ 添加作品</button>
+      <input type="file" id="inp-work" accept="image/*" style="display:none">
+      <input type="file" id="inp-work-extra" accept="image/*" multiple style="display:none">
+    </div>
   </div>
 
   <div class="card">
@@ -155,6 +165,17 @@ button.small{padding:4px 10px;font-size:12px}
       <button id="btn-add-cat" class="small">添加</button>
     </div>
     <div id="cat-list"></div>
+  </div>
+
+  <div class="card">
+    <h2>⑨ 生活动态（说说）</h2>
+    <p class="hint">分享文字 / 图片 / 视频。类型自动判断：填了视频地址→视频，传了图片→图片，只有文字→文字。</p>
+    <div id="moment-list"></div>
+    <div class="toolbar">
+      <button id="btn-add-moment">＋ 添加动态</button>
+      <input type="file" id="inp-moment-img" accept="image/*" multiple style="display:none">
+      <input type="file" id="inp-moment-video" accept="video/*" style="display:none">
+    </div>
   </div>
 
 </main>
@@ -173,6 +194,10 @@ var newImages = {};                     // 待上传图片 { path: File }
 var newAvatar = null;
 var musicList = [];                     // 歌单
 var newMusicFiles = {};                 // 待上传音乐文件 { path: File }
+var momentList = [];                    // 动态
+var newMomentImgs = {};                 // 动态待上传图片 { path: File }
+var newMomentVideos = {};               // 动态待上传视频 { path: File }
+var pendingWorkExtra = {};              // 作品追加图片 { workIndex: [File] }
 
 var PALETTES = [
   { id:'cyber-cyan', name:'赛博青', c:['#05070d','#00f0ff','#ff2d95','#a855f7'] },
@@ -242,6 +267,7 @@ async function loadContent(){
     var works = await contentGet('content/works.json');
     var cats = await contentGet('content/categories.json');
     var music = await contentGet('content/music.json');
+    var moments = await contentGet('content/moments.json');
     if (site) config = Object.assign(config, JSON.parse(site.text));
     if (works) config.works = JSON.parse(works.text).works || [];
     if (cats) config.categories = JSON.parse(cats.text).categories || [];
@@ -251,6 +277,12 @@ async function loadContent(){
     } else {
       // 回退到 site.json 里的 netease iframe（旧数据）
       musicList = [];
+    }
+    if (moments) {
+      var moj = JSON.parse(moments.text);
+      momentList = (moj && Array.isArray(moj.moments)) ? moj.moments : [];
+    } else {
+      momentList = [];
     }
     fillForm();
     setStatus('', '');
@@ -274,7 +306,7 @@ function fillForm(){
   $('f-douyin').value = (config.video && config.video.douyin) || '';
   $('f-bilibili').value = (config.video && config.video.bilibili) || '';
   $('f-youtube').value = (config.video && config.video.youtube) || '';
-  renderThemes(); renderWorks(); renderCats(); renderMusicList();
+  renderThemes(); renderWorks(); renderCats(); renderMusicList(); renderMomentList();
 }
 
 function collect(){
@@ -372,19 +404,25 @@ $('inp-avatar').addEventListener('change', function(){
   this.value = '';
 });
 
-/* ================= 作品 ================= */
-var pendingWorkFile = null;
+/* ================= 作品（支持多图） ================= */
+function nextWorkImgPath(base){
+  var n = 1;
+  var used = {};
+  config.works.forEach(function(w){
+    used[w.img] = true;
+    (w.images || []).forEach(function(im){ used[im] = true; });
+  });
+  var p = '';
+  do { p = base + String(n).padStart(3,'0') + '.jpg'; n++; } while (used[p]);
+  return p;
+}
 $('btn-add-work').addEventListener('click', function(){ $('inp-work').click(); });
 $('inp-work').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
-  var n = 1;
-  var used = {};
-  config.works.forEach(function(w){ used[w.img] = true; });
-  var p = '';
-  do { p = 'assets/works/work-' + String(n).padStart(3,'0') + '.jpg'; n++; } while (used[p]);
+  var p = nextWorkImgPath('assets/works/work-');
   newImages[p] = f;
   var cat = config.categories.length ? config.categories[0].id : '';
-  config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p });
+  config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
   renderWorks(); renderCats();
   this.value = '';
 });
@@ -394,20 +432,27 @@ function renderWorks(){
   var grid = document.createElement('div');
   grid.className = 'work-grid';
   config.works.forEach(function(w, idx){
+    var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
     var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
     var catOpts = config.categories.map(function(c){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
+    var thumbs = imgs.map(function(im, ti){
+      var src = newImages[im] ? URL.createObjectURL(newImages[im]) : imgSrc(im);
+      return '<span class="wc-thumb-item' + (ti === 0 ? ' main' : '') + '" data-wi="' + idx + '" data-ri="' + ti + '" title="点击移除">' +
+        '<img src="' + src + '" alt="">' + (ti === 0 ? '<em>主</em>' : '') + '</span>';
+    }).join('');
     var card = document.createElement('div');
     card.className = 'work-card';
     card.innerHTML =
-      '<div class="wc-thumb"><img src="' + preview + '" alt=""></div>' +
+      '<div class="wc-thumbs">' + thumbs + '</div>' +
       '<div class="wc-body">' +
         '<input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title" placeholder="标题">' +
         '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>' +
         '<textarea data-i="' + idx + '" data-k="desc" placeholder="作品描述（可选）" style="min-height:44px">' + esc(w.desc || '') + '</textarea>' +
         '<div class="wc-actions">' +
-          '<button class="small" data-replace="' + idx + '">换图</button>' +
+          '<button class="small" data-addimg="' + idx + '">＋ 加图</button>' +
+          '<button class="small" data-replace="' + idx + '">换主图</button>' +
           '<button class="small" data-del="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
         '</div>' +
       '</div>';
@@ -438,13 +483,157 @@ function renderWorks(){
       inp.onchange = function(){
         var f = inp.files[0]; if (!f) return;
         var w = config.works[+this.dataset.replace];
-        newImages[w.img] = f;
+        var p = nextWorkImgPath('assets/works/work-');
+        newImages[p] = f;
+        w.img = p;
+        if (!w.images || !w.images.length) w.images = [p];
+        else w.images[0] = p;
         renderWorks();
       }.bind(this);
       inp.click();
     });
   });
+  // 追加图片
+  box.querySelectorAll('button[data-addimg]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = +this.dataset.addimg;
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
+      inp.onchange = function(){
+        var w = config.works[idx];
+        if (!w.images) w.images = (w.img ? [w.img] : []);
+        Array.prototype.forEach.call(inp.files, function(f){
+          var p = nextWorkImgPath('assets/works/work-');
+          newImages[p] = f;
+          w.images.push(p);
+        });
+        renderWorks();
+      };
+      inp.click();
+    });
+  });
+  // 移除某张图
+  box.querySelectorAll('.wc-thumb-item').forEach(function(el){
+    el.addEventListener('click', function(){
+      var w = config.works[+this.dataset.wi];
+      var ri = +this.dataset.ri;
+      var imgs = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
+      if (imgs.length <= 1) return; // 至少保留一张
+      delete newImages[imgs[ri]];
+      imgs.splice(ri, 1);
+      if (ri === 0) w.img = imgs[0];
+      w.images = imgs;
+      renderWorks();
+    });
+  });
 }
+
+/* ================= 动态（说说） ================= */
+function nextMomentImgPath(){
+  var n = 1; var used = {};
+  momentList.forEach(function(m){ (m.images || []).forEach(function(im){ used[im] = true; }); });
+  var p = '';
+  do { p = 'assets/moments/img-' + String(n).padStart(3,'0') + '.jpg'; n++; } while (used[p]);
+  return p;
+}
+function nextMomentVideoPath(){
+  var n = 1; var used = {};
+  momentList.forEach(function(m){ if (m.video) used[m.video] = true; });
+  var p = '';
+  do { p = 'assets/moments/video-' + String(n).padStart(3,'0') + '.mp4'; n++; } while (used[p]);
+  return p;
+}
+function renderMomentList(){
+  var box = $('moment-list');
+  box.innerHTML = '';
+  if (!momentList.length) {
+    box.innerHTML = '<p class="hint">暂无动态 — 点「添加动态」发布第一条说说。</p>';
+    return;
+  }
+  momentList.forEach(function(m, idx){
+    var thumbs = (m.images || []).map(function(im){
+      var src = newMomentImgs[im] ? URL.createObjectURL(newMomentImgs[im]) : imgSrc(im);
+      return '<span class="wc-thumb-item" data-mwi="' + idx + '" data-mri="' + im + '" title="点击移除"><img src="' + src + '" alt=""></span>';
+    }).join('');
+    var row = document.createElement('div');
+    row.className = 'music-row';
+    row.innerHTML =
+      '<div class="mr-head">' +
+        '<span class="mr-tag">' + (m.video ? '🎬 视频' : (m.images && m.images.length ? '🖼️ 图片' : '💬 文字')) + '</span>' +
+        '<input type="text" value="' + esc(m.date || '') + '" data-moi="' + idx + '" data-mok="date" placeholder="日期，如 2026-08-22" style="width:130px">' +
+        '<button class="small" data-model="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
+      '</div>' +
+      '<textarea data-moi="' + idx + '" data-mok="text" placeholder="动态文字内容" style="min-height:56px">' + esc(m.text || '') + '</textarea>' +
+      (thumbs ? '<div class="wc-thumbs">' + thumbs + '</div>' : '') +
+      '<div class="toolbar" style="margin-top:6px">' +
+        '<button class="small" data-maddimg="' + idx + '">＋ 图片</button>' +
+        '<button class="small" data-maddvid="' + idx + '">🎬 视频</button>' +
+        (m.video ? '<span class="hint" style="margin:0">' + esc(m.video) + '</span>' : '') +
+      '</div>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-mok]').forEach(function(inp){
+    inp.addEventListener('input', function(){ momentList[+this.dataset.moi][this.dataset.mok] = this.value; });
+  });
+  box.querySelectorAll('textarea[data-mok]').forEach(function(ta){
+    ta.addEventListener('input', function(){ momentList[+this.dataset.moi].text = this.value; });
+  });
+  box.querySelectorAll('button[data-mdel]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var m = momentList[+this.dataset.mdel];
+      (m.images || []).forEach(function(im){ delete newMomentImgs[im]; });
+      if (m.video) delete newMomentVideos[m.video];
+      momentList.splice(+this.dataset.mdel, 1);
+      renderMomentList();
+    });
+  });
+  box.querySelectorAll('button[data-maddimg]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
+      inp.onchange = function(){
+        var m = momentList[+this.dataset.maddimg];
+        if (!m.images) m.images = [];
+        Array.prototype.forEach.call(inp.files, function(f){
+          var p = nextMomentImgPath();
+          newMomentImgs[p] = f;
+          m.images.push(p);
+        });
+        renderMomentList();
+      }.bind(this);
+      inp.click();
+    });
+  });
+  box.querySelectorAll('button[data-maddvid]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'video/*';
+      inp.onchange = function(){
+        var m = momentList[+this.dataset.maddvid];
+        var p = nextMomentVideoPath();
+        newMomentVideos[p] = inp.files[0];
+        m.video = p;
+        renderMomentList();
+      }.bind(this);
+      inp.click();
+    });
+  });
+  box.querySelectorAll('.wc-thumb-item[data-mwi]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var m = momentList[+this.dataset.mwi];
+      var im = this.dataset.mri;
+      delete newMomentImgs[im];
+      m.images = (m.images || []).filter(function(x){ return x !== im; });
+      renderMomentList();
+    });
+  });
+}
+$('btn-add-moment').addEventListener('click', function(){
+  var d = new Date();
+  var p = function(n){ return String(n).padStart(2,'0'); };
+  momentList.push({ id: 'M-' + String(momentList.length + 1).padStart(3,'0'), type: 'text', date: d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()), text: '', images: [], video: '' });
+  renderMomentList();
+});
 
 /* ================= 分类 ================= */
 $('btn-add-cat').addEventListener('click', function(){
@@ -499,6 +688,7 @@ $('btn-save').addEventListener('click', async function(){
     await contentPut('content/works.json', JSON.stringify({ works: config.works }, null, 2));
     await contentPut('content/categories.json', JSON.stringify({ categories: config.categories }, null, 2));
     await contentPut('content/music.json', JSON.stringify({ playlist: musicList }, null, 2));
+    await contentPut('content/moments.json', JSON.stringify({ moments: momentList }, null, 2));
     for (var p in newImages) {
       var b64 = await fileToBase64(newImages[p]);
       await contentPut(p, b64, true);
@@ -507,6 +697,14 @@ $('btn-save').addEventListener('click', async function(){
       var mb64 = await fileToBase64(newMusicFiles[mp]);
       await contentPut(mp, mb64, true);
     }
+    for (var mi in newMomentImgs) {
+      var mib64 = await fileToBase64(newMomentImgs[mi]);
+      await contentPut(mi, mib64, true);
+    }
+    for (var mv in newMomentVideos) {
+      var mvb64 = await fileToBase64(newMomentVideos[mv]);
+      await contentPut(mv, mvb64, true);
+    }
     if (newAvatar) {
       var av64 = await fileToBase64(newAvatar);
       await contentPut('assets/avatar.jpg', av64, true);
@@ -514,6 +712,8 @@ $('btn-save').addEventListener('click', async function(){
     }
     newImages = {};
     newMusicFiles = {};
+    newMomentImgs = {};
+    newMomentVideos = {};
     setStatus('✅ 保存成功！网站正在自动更新，1-2 分钟后刷新查看。', 'ok');
   } catch (e) {
     setStatus('❌ 保存失败：' + e.message, 'err');

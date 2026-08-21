@@ -46,15 +46,24 @@ window.SITE_CONFIG = {
     { id: 'handmade', label: '手工发饰' },
     { id: 'papercut', label: '剪纸' },
     { id: 'drawing',  label: '绘画' },
-    { id: 'photo',    label: '摄影' }
+    { id: 'photo',    label: '摄影' },
+    { id: 'landscape', label: '风景' },
+    { id: 'people',   label: '人物' },
+    { id: 'pet',      label: '宠物' }
   ],
 
-  /* -------- 作品列表 -------- */
+  /* -------- 作品列表（images 为多图，第一张与 img 一致） -------- */
   works: [
-    { id: 'W-001', cat: 'handmade', title: '蝴蝶结发箍',   img: 'assets/works/handmade-1-headband.jpg', desc: '缎带手工蝴蝶结发箍，粉色系，适合日常搭配。' },
-    { id: 'W-002', cat: 'handmade', title: '蓝缎带蝴蝶结', img: 'assets/works/handmade-2-bow-pink.jpg', desc: '蓝色缎带蝴蝶结，手工缝制，细节精致。' },
-    { id: 'W-003', cat: 'handmade', title: '白玫瑰缎带结', img: 'assets/works/handmade-3-bow-rose.jpg', desc: '白玫瑰造型缎带结，优雅温婉。' },
-    { id: 'W-004', cat: 'papercut', title: '剪纸 · 武将',   img: 'assets/works/papercut-1.jpg', desc: '武将主题剪纸作品，线条利落，气势十足。' },
-    { id: 'W-005', cat: 'drawing',  title: '乡间木屋线稿', img: 'assets/works/drawing-1-house.jpg', desc: '乡间木屋钢笔线稿，记录旅途中的静谧风景。' }
+    { id: 'W-001', cat: 'handmade', title: '蝴蝶结发箍', img: 'assets/works/handmade-1-headband.jpg', images: ['assets/works/handmade-1-headband.jpg', 'assets/works/微信图片_20260821152752_3_38.jpg'], desc: '缎带手工蝴蝶结发箍，粉色系，适合日常搭配。' },
+    { id: 'W-002', cat: 'handmade', title: '蓝缎带蝴蝶结', img: 'assets/works/handmade-2-bow-pink.jpg', images: ['assets/works/handmade-2-bow-pink.jpg'], desc: '蓝色缎带蝴蝶结，手工缝制，细节精致。' },
+    { id: 'W-003', cat: 'handmade', title: '白玫瑰缎带结', img: 'assets/works/handmade-3-bow-rose.jpg', images: ['assets/works/handmade-3-bow-rose.jpg'], desc: '白玫瑰造型缎带结，优雅温婉。' },
+    { id: 'W-004', cat: 'papercut', title: '剪纸 · 武将', img: 'assets/works/papercut-1.jpg', images: ['assets/works/papercut-1.jpg'], desc: '武将主题剪纸作品，线条利落，气势十足。' },
+    { id: 'W-005', cat: 'drawing', title: '乡间木屋线稿', img: 'assets/works/drawing-1-house.jpg', images: ['assets/works/drawing-1-house.jpg'], desc: '乡间木屋钢笔线稿，记录旅途中的静谧风景。' }
+  ],
+
+  /* -------- 生活动态（说说）：type=text/image/video，视频填 video 字段 -------- */
+  moments: [
+    { id: 'M-001', type: 'text', date: '2026-08-22', text: '新作品完成啦！今天做了个蝴蝶结发箍，粉粉的很喜欢～', images: [], video: '' },
+    { id: 'M-002', type: 'image', date: '2026-08-21', text: '窗外下了一整天的雨，宅家画线稿。', images: ['assets/works/drawing-1-house.jpg'], video: '' }
   ]
 };

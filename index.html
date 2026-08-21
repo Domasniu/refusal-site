@@ -66,6 +66,7 @@
       <span class="topbar-tag">v2026.05</span>
     </div>
     <div class="topbar-right">
+      <button id="search-open" class="theme-toggle" title="搜索">🔍</button>
       <button id="theme-toggle" class="theme-toggle" title="切换主题配色">🎨</button>
       <a class="admin-link" href="console/" title="站长登录 · 傻瓜后台">⚙ 管理</a>
       <span class="status-dot"></span><span class="topbar-status">SYSTEM ONLINE</span>
@@ -73,12 +74,22 @@
     </div>
   </header>
 
+  <!-- 搜索面板 -->
+  <div id="search-panel" class="search-panel hidden">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="搜索作品 / 动态 / 分类…（ESC 关闭）" autocomplete="off">
+      <button id="search-close" class="search-close">✕</button>
+    </div>
+    <div id="search-results" class="search-results"></div>
+  </div>
+
   <!-- 侧边导航 -->
   <nav class="sidebar" id="sidebar">
     <a href="#home" class="nav-link active" data-sec="home">HOME</a>
     <a href="#works" class="nav-link" data-sec="works">WORKS · 作品</a>
     <a href="#video" class="nav-link" data-sec="video">VIDEO · 视频</a>
     <a href="#music" class="nav-link" data-sec="music">MUSIC · 音乐</a>
+    <a href="#life" class="nav-link" data-sec="life">LIFE · 动态</a>
     <a href="#about" class="nav-link" data-sec="about">ABOUT · 关于</a>
     <a href="#contact" class="nav-link" data-sec="contact">CONTACT · 联系</a>
   </nav>
@@ -126,10 +137,7 @@
           </div>
         </div>
       </div>
-      <div class="home-latest">
-        <h3 class="home-latest-title"><span class="tick">▸</span> 最新作品 / LATEST WORKS</h3>
-        <div class="home-latest-grid" id="home-latest-grid"></div>
-      </div>
+      <div class="home-cats" id="home-cats"></div>
     </section>
 
     <!-- ====== WORKS ====== -->
@@ -180,6 +188,12 @@
       </div>
     </section>
 
+    <!-- ====== LIFE 动态 ====== -->
+    <section id="life" class="panel">
+      <h2 class="sec-title"><span class="tick">▸</span> LIFE / 生活动态</h2>
+      <div id="moment-grid" class="moment-grid"></div>
+    </section>
+
     <!-- ====== ABOUT ====== -->
     <section id="about" class="panel">
       <h2 class="sec-title"><span class="tick">▸</span> ABOUT / 关于</h2>
@@ -204,7 +218,10 @@
 <!-- ============ 灯箱 ============ -->
 <div id="lightbox" class="lightbox hidden">
   <button id="lb-close" class="lb-close">✕</button>
+  <button id="lb-prev" class="lb-nav lb-prev hidden" title="上一张">‹</button>
+  <button id="lb-next" class="lb-nav lb-next hidden" title="下一张">›</button>
   <img id="lb-img" src="" alt="">
+  <div id="lb-count" class="lb-count hidden"></div>
   <div id="lb-caption" class="lb-caption"></div>
   <div id="lb-desc" class="lb-desc hidden"></div>
 </div>

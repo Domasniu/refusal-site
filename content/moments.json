@@ -1,0 +1,22 @@
+{
+  "moments": [
+    {
+      "id": "M-001",
+      "type": "text",
+      "date": "2026-08-22",
+      "text": "新作品完成啦！今天做了个蝴蝶结发箍，粉粉的很喜欢～",
+      "images": [],
+      "video": ""
+    },
+    {
+      "id": "M-002",
+      "type": "image",
+      "date": "2026-08-21",
+      "text": "窗外下了一整天的雨，宅家画线稿。",
+      "images": [
+        "assets/works/drawing-1-house.jpg"
+      ],
+      "video": ""
+    }
+  ]
+}
