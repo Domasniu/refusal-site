@@ -222,6 +222,9 @@
       }
       if (ui.hmPlay) ui.hmPlay.textContent = window.REFUSAL_PLAYER.isPlaying() ? '⏸' : '▶';
     });
+    // 初始化播放器（传入歌单 + 全部 UI 引用）
+    // noAuto: true —— 不自动播放，避免浏览器自动播放策略拦截，用户点击后再播放
+    window.REFUSAL_PLAYER.init({ playlist: list, ui: ui, noAuto: true });
     // 首次同步一次
     var firstSong = window.REFUSAL_PLAYER.getCurrent();
     if (firstSong && ui.hmTitle) {
@@ -279,12 +282,14 @@
   function skipBoot() {
     document.getElementById('boot').style.display = 'none';
     document.getElementById('os').classList.remove('hidden');
+    initCarousels();
   }
 
   function enterOS() {
     document.getElementById('boot').classList.add('gone');
     document.getElementById('os').classList.remove('hidden');
     setTimeout(function () { document.getElementById('boot').style.display = 'none'; }, 650);
+    initCarousels();
   }
 
   /* ---------- 时钟 ---------- */
@@ -296,10 +301,17 @@
 
   /* ---------- 导航 ---------- */
   var currentFilter = 'all';
+  /* 轮播队列：等进入系统（容器可见）后再初始化，避免 hidden 容器测量为 0 */
+  var carouselQueue = [];
+  function initCarousels() {
+    carouselQueue.forEach(function (q) { initHomeCarousel(q.sec, q.track); });
+    carouselQueue = [];
+  }
   function showSection(id) {
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === id); });
     document.querySelectorAll('.nav-link').forEach(function (l) { l.classList.toggle('active', l.dataset.sec === id); });
     if (id === 'works') renderWorks(currentFilter);
+    if (id === 'home') initCarousels();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -411,7 +423,7 @@
     // 旧版"最新作品"网格已被首页分类模块轮播替代
   }
 
-  /* ---------- 首页分类模块轮播 ---------- */
+  /* ---------- 首页分类模块轮播（幻灯片：自动播放 + 指示器 + 箭头） ---------- */
   function renderHomeCats() {
     var box = document.getElementById('home-cats');
     if (!box) return;
@@ -429,6 +441,8 @@
         '<span class="home-cat-count">' + list.length + ' 件</span>' +
         '<a href="#works" data-sec="works" data-cat="' + escHtml(c.id) + '" class="home-cat-more">查看全部 →</a>';
       sec.appendChild(head);
+      var wrap = document.createElement('div');
+      wrap.className = 'cat-carousel-wrap';
       var track = document.createElement('div');
       track.className = 'cat-carousel';
       list.forEach(function (w) {
@@ -436,7 +450,7 @@
         card.className = 'work-card';
         card.innerHTML =
           '<span class="work-id">' + escHtml(w.id) + '</span>' +
-          '<img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
+          '<div class="slide-img"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" decoding="async"></div>' +
           '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
           '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span></div>' +
           (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
@@ -444,8 +458,10 @@
         card.addEventListener('click', function () { openLightbox(w); });
         track.appendChild(card);
       });
-      sec.appendChild(track);
+      wrap.appendChild(track);
+      sec.appendChild(wrap);
       box.appendChild(sec);
+      carouselQueue.push({ sec: sec, track: track });
     });
     // 分类"查看全部"跳转到作品区并应用筛选
     box.querySelectorAll('.home-cat-more').forEach(function (a) {
@@ -458,6 +474,84 @@
         history.replaceState(null, '', '#works');
       });
     });
+  }
+
+  /* 单个分类模块的幻灯片轮播：一次一张 + 自动播放 + 左右箭头 + 指示器圆点 */
+  function initHomeCarousel(sec, track) {
+    var cards = Array.prototype.slice.call(track.children);
+    var GAP = 16;                                       // 卡片间距 1rem
+    var step = function () { return cards[0].offsetWidth + GAP; };
+    var canScroll = function () { return track.scrollWidth > track.clientWidth + 4; };
+    if (cards.length < 2 || !canScroll()) return;       // 单张或一屏放得下时无需轮播
+
+    // 左右箭头
+    var wrap = sec.querySelector('.cat-carousel-wrap');
+    var prevBtn = document.createElement('button');
+    prevBtn.className = 'car-arrow car-prev';
+    prevBtn.innerHTML = '‹';
+    prevBtn.title = '上一张';
+    var nextBtn = document.createElement('button');
+    nextBtn.className = 'car-arrow car-next';
+    nextBtn.innerHTML = '›';
+    nextBtn.title = '下一张';
+    wrap.appendChild(prevBtn);
+    wrap.appendChild(nextBtn);
+
+    // 指示器圆点
+    var dots = document.createElement('div');
+    dots.className = 'car-dots';
+    sec.appendChild(dots);
+    var dotEls = cards.map(function (_, i) {
+      var d = document.createElement('button');
+      d.className = 'car-dot';
+      d.title = '第 ' + (i + 1) + ' 张';
+      d.addEventListener('click', function () { goTo(i); });
+      dots.appendChild(d);
+      return d;
+    });
+
+    var cur = 0;
+    var timer = null;
+    function updateDots() {
+      dotEls.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
+    }
+    function goTo(i) {
+      cur = Math.max(0, Math.min(cards.length - 1, i));
+      track.scrollTo({ left: cur * step(), behavior: 'smooth' });
+      updateDots();
+    }
+    function next() { goTo(cur + 1 >= cards.length ? 0 : cur + 1); }
+    function prev() { goTo(cur - 1 < 0 ? cards.length - 1 : cur - 1); }
+    function start() {
+      stop();
+      if (!canScroll()) return;
+      timer = setInterval(next, 4000);
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+    prevBtn.addEventListener('click', function () { stop(); prev(); });
+    nextBtn.addEventListener('click', function () { stop(); next(); });
+    // 悬停 / 触摸暂停，离开恢复
+    wrap.addEventListener('mouseenter', stop);
+    wrap.addEventListener('mouseleave', start);
+    track.addEventListener('touchstart', stop, { passive: true });
+    track.addEventListener('touchend', function () { setTimeout(start, 2500); }, { passive: true });
+    // 手动滚动后同步指示器
+    track.addEventListener('scroll', function () {
+      var idx = Math.round(track.scrollLeft / step());
+      if (idx >= 0 && idx < cards.length && idx !== cur) { cur = idx; updateDots(); }
+    }, { passive: true });
+    // 窗口尺寸变化时重算（防抖）
+    var rt = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () {
+        if (canScroll()) { start(); } else { stop(); }
+      }, 200);
+    });
+
+    updateDots();
+    start();
   }
 
   /* ---------- 生活动态（说说） ---------- */

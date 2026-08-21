@@ -21,6 +21,7 @@
   var lyricIdx = -1;
   var ui = {};                // DOM 引用
   var onState = null;         // 状态变化回调（首页/迷你同步）
+  var errorCount = 0;         // 连续播放失败计数（用于自动跳过失效歌曲）
 
   /* ---------- 工具 ---------- */
   function $(id) { return document.getElementById(id); }
@@ -92,9 +93,7 @@
     audio.addEventListener('ended', onEnded);
     audio.addEventListener('play', function () { isPlaying = true; syncAll(); });
     audio.addEventListener('pause', function () { isPlaying = false; syncAll(); });
-    audio.addEventListener('error', function () {
-      setStatus('播放失败，可能是版权限制或链接失效');
-    });
+    audio.addEventListener('error', onAudioError);
     return audio;
   }
 
@@ -102,18 +101,34 @@
     if (ui.status) ui.status.textContent = msg || '';
   }
 
+  /* 播放失败：自动尝试下一首，全部失败才提示 */
+  function onAudioError() {
+    errorCount++;
+    if (errorCount >= playlist.length) {
+      setStatus('播放失败，可能是版权限制或链接失效');
+      return;
+    }
+    setStatus('当前歌曲无法播放，正在尝试下一首…');
+    var a = ensureAudio();
+    if (!a.paused) a.pause();
+    setTimeout(function () { playIndex(index + 1, true); }, 400);
+  }
+
   function playIndex(i, auto) {
     if (!playlist.length) return;
     if (i < 0) i = playlist.length - 1;
     if (i >= playlist.length) i = 0;
     index = i;
+    errorCount = 0;
     var song = playlist[index];
     var src = songUrl(song);
     var a = ensureAudio();
     if (!src) { setStatus('该歌曲没有可用的音频链接'); return; }
     a.src = src;
     a.volume = muted ? 0 : volume;
-    a.play().catch(function () { setStatus('浏览器阻止了自动播放，请点击播放'); });
+    if (auto !== false) {
+      a.play().catch(function () { setStatus('浏览器阻止了自动播放，请点击播放'); });
+    }
     lyricLines = parseLrc(song.lrc || '');
     lyricIdx = -1;
     if (ui.lrcBox) {
@@ -376,6 +391,9 @@
     bindEvents();
     if (playlist.length && !opts.noAuto) {
       playIndex(0, true);
+    } else if (playlist.length) {
+      // noAuto：只预载第一首（显示歌名/时长），不自动播放
+      playIndex(0, false);
     } else {
       syncAll();
     }

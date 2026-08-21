@@ -222,14 +222,15 @@ body::after{
   color:#001018;background:var(--magenta);border-color:var(--magenta);
   box-shadow:var(--glow-magenta);font-weight:700;
 }
-.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.3rem}
+.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.3rem;align-items:start}
 .work-card{
   position:relative;background:var(--panel);border:1px solid var(--line);border-radius:6px;
   overflow:hidden;cursor:pointer;transition:.25s;
 }
 .work-card:hover{transform:translateY(-5px);border-color:var(--cyan);box-shadow:var(--glow-cyan)}
-.work-card img{width:100%;height:210px;object-fit:cover;display:block;transition:.3s}
-.work-card:hover img{transform:scale(1.05)}
+/* 作品区网格：图片按原始比例完整显示（不裁剪），超高限制 */
+.work-grid .work-card img{width:100%;height:auto;max-height:340px;object-fit:contain;display:block;transition:.3s;background:rgba(0,0,0,.22)}
+.work-grid .work-card:hover img{transform:scale(1.05)}
 .work-card .work-meta{
   padding:.8rem .9rem;display:flex;justify-content:space-between;align-items:center;
   font-size:.72rem;letter-spacing:.1em;
@@ -344,20 +345,53 @@ body::after{
 
 /* ============ 首页分类模块轮播 ============ */
 .home-cats{margin-top:.4rem;display:flex;flex-direction:column;gap:1.8rem}
-.home-cat-sec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.2rem}
+.home-cat-sec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.2rem;position:relative}
 .home-cat-head{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem}
 .home-cat-name{font-size:1rem;font-weight:800;letter-spacing:.12em;color:var(--cyan);text-shadow:0 0 10px rgba(0,240,255,.4)}
 .home-cat-count{font-size:.66rem;color:var(--dim);letter-spacing:.1em;border:1px solid var(--line);padding:.15rem .5rem;border-radius:3px}
 .home-cat-more{margin-left:auto;font-size:.72rem;color:var(--dim);letter-spacing:.1em;border:1px solid var(--line);padding:.3rem .7rem;border-radius:4px;transition:.2s;text-decoration:none}
 .home-cat-more:hover{color:var(--cyan);border-color:var(--cyan)}
+.cat-carousel-wrap{position:relative}
+/* 首页分类模块：幻灯片模式（一次一张，大图完整显示） */
 .cat-carousel{
-  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);
+  display:grid;grid-auto-flow:column;grid-auto-columns:100%;
   gap:1rem;overflow-x:auto;padding-bottom:.5rem;scroll-snap-type:x mandatory;
-  scrollbar-width:thin;
+  scrollbar-width:thin;align-items:start;
 }
 .cat-carousel::-webkit-scrollbar{height:6px}
 .cat-carousel::-webkit-scrollbar-thumb{background:rgba(0,240,255,.25);border-radius:3px}
 .cat-carousel .work-card{scroll-snap-align:start}
+.cat-carousel .slide-img{
+  height:340px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.22);overflow:hidden;
+}
+.cat-carousel .slide-img img{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:.3s}
+.cat-carousel .work-card:hover .slide-img img{transform:scale(1.05)}
+
+/* 幻灯片轮播：箭头 + 指示器 */
+.car-arrow{
+  position:absolute;top:38%;transform:translateY(-50%);z-index:6;
+  width:34px;height:44px;border-radius:6px;
+  background:rgba(3,8,18,.72);border:1px solid var(--line);color:var(--cyan);
+  font-size:1.35rem;cursor:pointer;transition:.2s;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.car-arrow:hover{background:var(--cyan);color:#001018;border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+.car-prev{left:-13px}
+.car-next{right:-13px}
+.car-dots{display:flex;justify-content:center;align-items:center;gap:.5rem;margin-top:.85rem;min-height:10px}
+.car-dot{
+  width:9px;height:9px;border-radius:50%;padding:0;border:1px solid var(--line);
+  background:rgba(0,240,255,.15);cursor:pointer;transition:.2s;flex-shrink:0;
+}
+.car-dot:hover{background:rgba(0,240,255,.45)}
+.car-dot.on{background:var(--magenta);border-color:var(--magenta);box-shadow:var(--glow-magenta);transform:scale(1.25)}
+@media(max-width:600px){
+  .car-arrow{width:30px;height:38px;font-size:1.1rem}
+  .car-prev{left:-8px}
+  .car-next{right:-8px}
+}
 
 /* ============ 生活动态 ============ */
 .moment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.3rem}
@@ -371,7 +405,7 @@ body::after{
 .moment-date{margin-left:auto;font-size:.66rem;color:var(--dim);font-family:Consolas,monospace}
 .moment-text{padding:.9rem 1rem;font-size:.85rem;line-height:1.9;color:var(--text)}
 .moment-media{position:relative;cursor:zoom-in}
-.moment-media img{width:100%;height:200px;object-fit:cover;display:block}
+.moment-media img{width:100%;height:auto;max-height:340px;object-fit:contain;display:block;background:rgba(0,0,0,.22)}
 .moment-count{position:absolute;bottom:.6rem;right:.6rem;font-size:.62rem;color:var(--cyan);background:rgba(0,0,0,.6);padding:.2rem .5rem;border-radius:3px;letter-spacing:.08em}
 .moment-video{width:100%;display:block;background:#000}
 

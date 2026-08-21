@@ -37,7 +37,7 @@ window.SITE_CONFIG = {
 
   /* -------- 内置歌单（本地双击预览时使用，线上以 content/music.json 为准） -------- */
   playlist: [
-    { type: 'netease', id: '3023862', title: 'Oceanside', artist: 'Lainey Lou', cover: '', lrc: '' },
+    { type: 'file', url: 'assets/music/song-001.mp3', title: 'Oceanside', artist: 'Lainey Lou', cover: '', lrc: '' },
     { type: 'netease', id: '347230', title: '海阔天空', artist: 'Beyond', cover: '', lrc: '' }
   ],
 

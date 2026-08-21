@@ -1,8 +1,8 @@
 {
   "playlist": [
     {
-      "type": "netease",
-      "id": "3023862",
+      "type": "file",
+      "url": "assets/music/song-001.mp3",
       "title": "Oceanside",
       "artist": "Lainey Lou",
       "cover": "",
@@ -13,22 +13,6 @@
       "id": "347230",
       "title": "海阔天空",
       "artist": "Beyond",
-      "cover": "",
-      "lrc": ""
-    },
-    {
-      "type": "file",
-      "url": "assets/music/song-001.mp3",
-      "title": "[双语字幕]Oceanside-Lainey Lou - 1.Oceanside-Lainey Lou(Av752688579,P1)",
-      "artist": "",
-      "cover": "",
-      "lrc": ""
-    },
-    {
-      "type": "file",
-      "url": "assets/music/song-002.mp3",
-      "title": "[双语字幕]Oceanside-Lainey Lou - 1.Oceanside-Lainey Lou(Av752688579,P1)",
-      "artist": "",
       "cover": "",
       "lrc": ""
     }
