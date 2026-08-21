@@ -49,6 +49,8 @@
     document.getElementById('hero-tags').textContent = h.tags || '';
     document.getElementById('hero-slogan').textContent = h.slogan || '';
     document.getElementById('hero-desc').textContent = h.desc || '';
+    var av = document.getElementById('avatar-img');
+    if (av && CFG.avatar) av.src = CFG.avatar;
   }
 
   /* ---------- 渲染关于 / 联系 ---------- */
