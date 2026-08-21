@@ -87,12 +87,17 @@
   function ensureAudio() {
     if (audio) return audio;
     audio = new Audio();
-    audio.preload = 'metadata';
+    audio.preload = 'auto';
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
     audio.addEventListener('ended', onEnded);
-    audio.addEventListener('play', function () { isPlaying = true; syncAll(); });
+    audio.addEventListener('play', function () { isPlaying = true; setStatus(''); syncAll(); });
     audio.addEventListener('pause', function () { isPlaying = false; syncAll(); });
+    // 缓冲/加载反馈
+    audio.addEventListener('waiting', function () { if (!audio.paused) setStatus('加载中，请稍候…'); });
+    audio.addEventListener('stalled', function () { if (!audio.paused) setStatus('网络缓冲中…'); });
+    audio.addEventListener('canplay', function () { setStatus(''); });
+    audio.addEventListener('playing', function () { setStatus(''); });
     audio.addEventListener('error', onAudioError);
     return audio;
   }
@@ -226,8 +231,19 @@
   /* ---------- 渲染 ---------- */
   function currentSong() { return playlist[index] || null; }
 
+  /* 封面旋转：仅在播放时旋转（多个封面共用） */
+  function syncSpin() {
+    if (!ui) return;
+    [ui.cover, ui.miniCover, ui.hmCover].forEach(function (el) {
+      if (!el) return;
+      if (isPlaying && !el.classList.contains('noimg')) el.classList.add('spinning');
+      else el.classList.remove('spinning');
+    });
+  }
+
   function syncAll() {
     syncProgress();
+    syncSpin();
     renderMini();
     renderPanel();
     renderList();
@@ -243,10 +259,16 @@
     var ratio = d > 0 ? Math.min(1, t / d) : 0;
     if (ui.curTime) ui.curTime.textContent = fmt(t);
     if (ui.durTime) ui.durTime.textContent = fmt(d);
+    if (ui.hmCur) ui.hmCur.textContent = fmt(t);
+    if (ui.hmDur) ui.hmDur.textContent = fmt(d);
     if (ui.progFill) ui.progFill.style.width = (ratio * 100) + '%';
+    if (ui.hmFill) ui.hmFill.style.width = (ratio * 100) + '%';
     if (ui.miniFill) ui.miniFill.style.width = (ratio * 100) + '%';
     if (ui.progBar && ui.progBar.dataset.drag !== '1') {
       ui.progBar.dataset.ratio = String(ratio);
+    }
+    if (ui.hmBar && ui.hmBar.dataset.drag !== '1') {
+      ui.hmBar.dataset.ratio = String(ratio);
     }
   }
 

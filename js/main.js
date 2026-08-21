@@ -213,6 +213,8 @@
     // 播放器状态变化时同步首页播放器
     window.REFUSAL_PLAYER.setOnState(function () {
       var song = window.REFUSAL_PLAYER.getCurrent();
+      var hmBox = document.querySelector('.home-music');
+      if (hmBox) hmBox.classList.toggle('playing', window.REFUSAL_PLAYER.isPlaying());
       if (!song) return;
       if (ui.hmTitle) ui.hmTitle.textContent = song.title || '—';
       if (ui.hmArtist) ui.hmArtist.textContent = song.artist || '';
@@ -408,15 +410,33 @@
   }
 
   /* ---------- 首页统计 + 最新作品 ---------- */
+  var CAT_ICONS = {
+    handmade: '🎀', papercut: '✂️', drawing: '🎨', photo: '📷',
+    landscape: '🏞️', people: '👤', pet: '🐾'
+  };
+  function catIcon(id) { return CAT_ICONS[id] || '🖼️'; }
   function renderHomeStats() {
     var box = document.getElementById('home-stats');
     if (!box) return;
     var wCount = (CFG.works || []).length;
     var cCount = (CFG.categories || []).length;
     box.innerHTML =
-      '<div class="stat"><span class="stat-num">' + wCount + '</span><span class="stat-label">作品 / WORKS</span></div>' +
-      '<div class="stat"><span class="stat-num">' + cCount + '</span><span class="stat-label">分类 / CATEGORIES</span></div>' +
-      '<div class="stat"><span class="stat-num">ONLINE</span><span class="stat-label">状态 / STATUS</span></div>';
+      '<div class="stat"><span class="stat-ico">🗂️</span><span class="stat-num" data-count="' + wCount + '">0</span><span class="stat-label">作品 / WORKS</span></div>' +
+      '<div class="stat"><span class="stat-ico">🏷️</span><span class="stat-num" data-count="' + cCount + '">0</span><span class="stat-label">分类 / CATEGORIES</span></div>' +
+      '<div class="stat"><span class="stat-ico">🟢</span><span class="stat-num">ONLINE</span><span class="stat-label">状态 / STATUS</span></div>';
+    // 数字滚动动画
+    box.querySelectorAll('.stat-num[data-count]').forEach(function (el) {
+      var target = parseInt(el.dataset.count, 10) || 0;
+      if (!target) { el.textContent = '0'; return; }
+      var t0 = null;
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var p = Math.min(1, (ts - t0) / 900);
+        el.textContent = Math.round(target * (0.2 + 0.8 * (1 - Math.pow(1 - p, 3))));
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
   }
 
   function renderLatestWorks() {
@@ -437,6 +457,7 @@
       var head = document.createElement('div');
       head.className = 'home-cat-head';
       head.innerHTML =
+        '<span class="home-cat-ico">' + catIcon(c.id) + '</span>' +
         '<span class="home-cat-name">' + escHtml(c.label) + '</span>' +
         '<span class="home-cat-count">' + list.length + ' 件</span>' +
         '<a href="#works" data-sec="works" data-cat="' + escHtml(c.id) + '" class="home-cat-more">查看全部 →</a>';
@@ -445,12 +466,14 @@
       wrap.className = 'cat-carousel-wrap';
       var track = document.createElement('div');
       track.className = 'cat-carousel';
-      list.forEach(function (w) {
+      list.forEach(function (w, wi) {
         var card = document.createElement('div');
         card.className = 'work-card';
+        // 第一张 eager（首屏优先），其余 lazy 加速加载
+        var lazyAttr = wi === 0 ? '' : ' loading="lazy"';
         card.innerHTML =
           '<span class="work-id">' + escHtml(w.id) + '</span>' +
-          '<div class="slide-img"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" decoding="async"></div>' +
+          '<div class="slide-img"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '"' + lazyAttr + ' decoding="async"></div>' +
           '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
           '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span></div>' +
           (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
@@ -717,6 +740,16 @@
     });
   }
 
+  /* ---------- 图片加载完成渐入（避免突兀闪现） ---------- */
+  function initImgFade() {
+    document.addEventListener('load', function (e) {
+      var t = e.target;
+      if (t && t.tagName === 'IMG' && t.closest && (t.closest('.work-card') || t.closest('.moment-media'))) {
+        t.classList.add('loaded');
+      }
+    }, true);
+  }
+
   /* ---------- 返回顶部 ---------- */
   function initToTop() {
     var btn = document.getElementById('to-top');
@@ -742,6 +775,7 @@
     renderHomeStats();
     renderHomeCats();
     renderMoments();
+    initImgFade();
     initThemeToggle();
     initToTop();
     initSearch();
