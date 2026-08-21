@@ -98,54 +98,69 @@
 
     <!-- ====== HOME ====== -->
     <section id="home" class="panel active">
-      <div class="hero">
-        <div class="avatar-wrap">
-          <div class="avatar-ring"></div>
-          <img id="avatar-img" src="assets/avatar.jpg" alt="refusal· 头像" class="avatar" fetchpriority="high" decoding="async">
-          <div class="avatar-hud">ID: REFUSAL_2026<br>STATUS: CREATOR</div>
-        </div>
-        <div class="hero-text">
-          <h1 class="glitch" data-text="refusal·">refusal·</h1>
+      <div class="home-layout">
+        <!-- 左栏：个人卡片（头像 / 信息 / 统计 / 音乐 / 快捷导航） -->
+        <aside class="home-side">
+          <div class="side-avatar">
+            <div class="avatar-ring"></div>
+            <img id="avatar-img" src="assets/avatar.jpg" alt="refusal· 头像" class="avatar" fetchpriority="high" decoding="async">
+            <div class="avatar-hud">ID: REFUSAL_2026<br>STATUS: CREATOR</div>
+          </div>
+          <h1 class="glitch side-name" data-text="refusal·">refusal·</h1>
           <p id="hero-tags" class="hero-tags"></p>
-          <p id="hero-slogan" class="hero-slogan"></p>
-          <p id="hero-desc" class="hero-desc"></p>
-          <div class="hero-actions">
-            <a href="#works" data-sec="works" class="btn btn-primary">▶ 查看作品</a>
-            <a href="#contact" data-sec="contact" class="btn btn-ghost">联系我</a>
+          <div class="home-stats" id="home-stats"></div>
+          <div class="side-music">
+            <h3 class="home-latest-title"><span class="tick">▸</span> 正在播放 / NOW PLAYING</h3>
+            <div class="home-music-player">
+              <div class="player-cover mini-cover" id="hm-cover"><span class="p-cover-fallback">🎵</span></div>
+              <div class="player-body">
+                <div class="p-title" id="hm-title">—</div>
+                <div class="p-artist" id="hm-artist">—</div>
+                <div class="p-progress">
+                  <span class="p-time" id="hm-cur">00:00</span>
+                  <div class="p-bar" id="hm-bar"><div class="p-fill" id="hm-fill"></div></div>
+                  <span class="p-time" id="hm-dur">00:00</span>
+                </div>
+                <div class="p-controls">
+                  <button class="p-btn" id="hm-prev" title="上一首">⏮</button>
+                  <button class="p-btn p-play" id="hm-play" title="播放/暂停">▶</button>
+                  <button class="p-btn" id="hm-next" title="下一首">⏭</button>
+                  <span class="hm-more"><a href="#music" data-sec="music" class="hm-more-link">完整播放器 →</a></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <nav class="side-nav">
+            <a href="#works" data-sec="works" class="side-nav-link">🎨 作品 WORKS</a>
+            <a href="#life" data-sec="life" class="side-nav-link">💬 动态 LIFE</a>
+            <a href="#about" data-sec="about" class="side-nav-link">👤 关于 ABOUT</a>
+            <a href="#contact" data-sec="contact" class="side-nav-link">✉️ 联系 CONTACT</a>
+          </nav>
+        </aside>
+        <!-- 右栏：自我介绍 / 最新动态 / 作品分类 / 联系 -->
+        <div class="home-main">
+          <div class="home-welcome">
+            <p class="wm-kicker">HELLO, I'M refusal·</p>
+            <p id="hero-slogan" class="hero-slogan"></p>
+            <p id="hero-desc" class="hero-desc"></p>
+            <div class="hero-actions">
+              <a href="#works" data-sec="works" class="btn btn-primary">▶ 查看作品</a>
+              <a href="#contact" data-sec="contact" class="btn btn-ghost">联系我</a>
+            </div>
+          </div>
+          <div class="home-moments">
+            <div class="home-moments-head">
+              <h3 class="home-latest-title"><span class="tick">▸</span> 最新动态 / LATEST MOMENTS</h3>
+              <a href="#life" data-sec="life" class="home-cat-more">全部动态 →</a>
+            </div>
+            <div id="home-moments-grid" class="home-moments-grid"></div>
+          </div>
+          <div class="home-cats" id="home-cats"></div>
+          <div class="home-note">
+            <span class="tick">✉️</span> 想聊聊作品、合作或日常？<a href="#contact" data-sec="contact" class="hm-note-link">去联系页找我 →</a>
           </div>
         </div>
       </div>
-      <div class="home-stats" id="home-stats"></div>
-      <div class="home-music">
-        <h3 class="home-latest-title"><span class="tick">▸</span> 正在播放 / NOW PLAYING</h3>
-        <div class="home-music-player">
-          <div class="player-cover mini-cover" id="hm-cover"><span class="p-cover-fallback">🎵</span></div>
-          <div class="player-body">
-            <div class="p-title" id="hm-title">—</div>
-            <div class="p-artist" id="hm-artist">—</div>
-            <div class="p-progress">
-              <span class="p-time" id="hm-cur">00:00</span>
-              <div class="p-bar" id="hm-bar"><div class="p-fill" id="hm-fill"></div></div>
-              <span class="p-time" id="hm-dur">00:00</span>
-            </div>
-            <div class="p-controls">
-              <button class="p-btn" id="hm-prev" title="上一首">⏮</button>
-              <button class="p-btn p-play" id="hm-play" title="播放/暂停">▶</button>
-              <button class="p-btn" id="hm-next" title="下一首">⏭</button>
-              <span class="hm-more"><a href="#music" data-sec="music" class="hm-more-link">完整播放器 →</a></span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- 首页最新动态（小红书风格卡片） -->
-      <div class="home-moments">
-        <div class="home-moments-head">
-          <h3 class="home-latest-title"><span class="tick">▸</span> 最新动态 / LATEST MOMENTS</h3>
-          <a href="#life" data-sec="life" class="home-cat-more">全部动态 →</a>
-        </div>
-        <div id="home-moments-grid" class="home-moments-grid"></div>
-      </div>
-      <div class="home-cats" id="home-cats"></div>
     </section>
 
     <!-- ====== WORKS ====== -->

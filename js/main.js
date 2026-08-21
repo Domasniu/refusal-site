@@ -213,7 +213,7 @@
     // 播放器状态变化时同步首页播放器
     window.REFUSAL_PLAYER.setOnState(function () {
       var song = window.REFUSAL_PLAYER.getCurrent();
-      var hmBox = document.querySelector('.home-music');
+      var hmBox = document.querySelector('.side-music');
       if (hmBox) hmBox.classList.toggle('playing', window.REFUSAL_PLAYER.isPlaying());
       if (!song) return;
       if (ui.hmTitle) ui.hmTitle.textContent = song.title || '—';
