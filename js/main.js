@@ -577,6 +577,65 @@
     start();
   }
 
+  /* ---------- 首页最新动态（小红书风格卡片） ---------- */
+  function isEmptyMoment(m) {
+    return !(m.text || (m.images && m.images.length) || m.video);
+  }
+  function renderHomeMoments() {
+    var grid = document.getElementById('home-moments-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    var list = MOMENTS.filter(function (m) { return !isEmptyMoment(m); });
+    if (!list.length) {
+      document.querySelector('.home-moments').style.display = 'none';
+      return;
+    }
+    document.querySelector('.home-moments').style.display = '';
+    var recent = list.slice().reverse().slice(0, 4); // 最新 4 条
+    recent.forEach(function (m) {
+      var card = document.createElement('div');
+      card.className = 'home-moment-card' + (m.images && m.images.length ? ' has-img' : ' text-only');
+      var media = '';
+      if (m.video) {
+        media = '<div class="hm-moment-media"><video src="' + escHtml(m.video) + '" preload="metadata" muted></video><span class="hm-play-badge">▶</span></div>';
+      } else if (m.images && m.images.length) {
+        var first = m.images[0];
+        media = '<div class="hm-moment-media"><img src="' + escHtml(first) + '" alt="" loading="lazy" decoding="async">' +
+          (m.images.length > 1 ? '<span class="hm-moment-count">' + m.images.length + '</span>' : '') +
+          '</div>';
+      }
+      card.innerHTML =
+        media +
+        '<div class="hm-moment-body">' +
+          '<p class="hm-moment-text">' + escHtml(m.text || '') + '</p>' +
+          '<div class="hm-moment-foot">' +
+            '<span class="hm-moment-type">' + momentTypeLabel(m) + '</span>' +
+            '<span class="hm-moment-date">' + escHtml(m.date || '') + '</span>' +
+          '</div>' +
+        '</div>';
+      // 点击：有图打开灯箱，否则跳 LIFE
+      card.addEventListener('click', function () {
+        if (m.images && m.images.length) {
+          lbImages = m.images.slice();
+          lbIndex = 0;
+          lbCaption = m.date + ' · 动态';
+          lbDesc = m.text || '';
+          document.getElementById('lb-caption').textContent = lbCaption;
+          var descEl = document.getElementById('lb-desc');
+          if (lbDesc) { descEl.textContent = lbDesc; descEl.classList.remove('hidden'); }
+          else { descEl.textContent = ''; descEl.classList.add('hidden'); }
+          showLbImage(0);
+          lb.classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        } else {
+          var link = document.querySelector('[data-sec="life"]');
+          if (link) link.click();
+        }
+      });
+      grid.appendChild(card);
+    });
+  }
+
   /* ---------- 生活动态（说说） ---------- */
   function momentTypeLabel(m) {
     if (m.video) return '视频';
@@ -587,21 +646,23 @@
     var grid = document.getElementById('moment-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    if (!MOMENTS.length) {
+    var list = MOMENTS.filter(function (m) { return !isEmptyMoment(m); });
+    if (!list.length) {
       grid.innerHTML = '<p class="panel-note">[ 暂无动态，敬请期待 ]</p>';
       return;
     }
-    MOMENTS.slice().reverse().forEach(function (m) {
+    list.slice().reverse().forEach(function (m, idx) {
       var card = document.createElement('div');
-      card.className = 'moment-card';
+      card.className = 'moment-card' + (m.images && m.images.length ? ' has-img' : ' text-only');
+      card.style.animationDelay = (idx * 60) + 'ms';
       var media = '';
       if (m.video) {
-        media = '<video class="moment-video" src="' + escHtml(m.video) + '" controls preload="metadata"></video>';
+        media = '<div class="moment-media"><video class="moment-video" src="' + escHtml(m.video) + '" controls preload="metadata"></video></div>';
       } else if (m.images && m.images.length) {
         var first = m.images[0];
         media = '<div class="moment-media' + (m.images.length > 1 ? ' multi' : '') + '">' +
           '<img src="' + escHtml(first) + '" alt="" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(m.images)) + '">' +
-          (m.images.length > 1 ? '<span class="moment-count">' + m.images.length + ' 图</span>' : '') +
+          (m.images.length > 1 ? '<span class="moment-count">' + m.images.length + '</span>' : '') +
           '</div>';
       }
       card.innerHTML =
@@ -774,6 +835,7 @@
     renderWorks('all');
     renderHomeStats();
     renderHomeCats();
+    renderHomeMoments();
     renderMoments();
     initImgFade();
     initThemeToggle();
