@@ -8,6 +8,8 @@
 
   var CFG = window.SITE_CONFIG || {};
   var PAL = window.SITE_PALETTES || [];
+  var MUSIC = [];        // 来自 content/music.json 的歌单
+  var currentSong = null; // 当前播放的歌
 
   /* ---------- 异步加载线上内容（失败自动回退默认值） ---------- */
   function tryFetch(url) {
@@ -20,9 +22,11 @@
     var site = await tryFetch('content/site.json');
     var works = await tryFetch('content/works.json');
     var cats = await tryFetch('content/categories.json');
+    var music = await tryFetch('content/music.json');
     if (site) CFG = Object.assign({}, CFG, site);
     if (works && Array.isArray(works.works)) CFG.works = works.works;
     if (cats && Array.isArray(cats.categories)) CFG.categories = cats.categories;
+    if (music && Array.isArray(music.playlist)) MUSIC = music.playlist;
     init();
   }
 
@@ -83,19 +87,42 @@
     });
   }
 
-  /* ---------- 渲染音乐 ---------- */
+  /* ---------- 渲染音乐（歌单切换） ---------- */
   function renderMusic() {
     var box = document.getElementById('music-box');
-    var code = (CFG.music && CFG.music.netease) || '';
-    if (code && /<iframe/i.test(code)) {
-      box.innerHTML = '<div class="netease-wrap">' + code + '</div>';
-      box.classList.add('has-player');
-    } else {
-      box.classList.remove('has-player');
-      box.innerHTML =
-        '<div class="music-eq"><i></i><i></i><i></i><i></i><i></i></div>' +
-        '<p class="music-txt">[ MUSIC CHANNEL ]<br>在后台「基础设置」中粘贴网易云外链播放器代码即可播放</p>';
+    if (!MUSIC || !MUSIC.length) {
+      var code = (CFG.music && CFG.music.netease) || '';
+      if (code && /<iframe/i.test(code)) {
+        box.innerHTML = '<div class="netease-wrap">' + code + '</div>';
+        box.classList.add('has-player');
+      } else {
+        box.classList.remove('has-player');
+        box.innerHTML =
+          '<div class="music-eq"><i></i><i></i><i></i><i></i><i></i></div>' +
+          '<p class="music-txt">[ MUSIC CHANNEL ]<br>歌单为空，稍后添加</p>';
+      }
+      return;
     }
+    var song = currentSong || MUSIC[0];
+    box.classList.add('has-player');
+    box.innerHTML =
+      '<div class="music-player">' +
+        '<iframe src="https://music.163.com/outchain/player?type=2&id=' + song.id + '&auto=0&height=66" frameborder="0" scrolling="no"></iframe>' +
+      '</div>' +
+      '<ul class="music-list">' +
+        MUSIC.map(function (s, i) {
+          return '<li class="music-item' + (s.id === song.id ? ' on' : '') + '" data-i="' + i + '">' +
+            '<span class="mi-title">' + s.title + '</span>' +
+            '<span class="mi-artist">' + (s.artist || '') + '</span>' +
+          '</li>';
+        }).join('') +
+      '</ul>';
+    box.querySelectorAll('.music-item').forEach(function (li) {
+      li.addEventListener('click', function () {
+        currentSong = MUSIC[+li.dataset.i];
+        renderMusic();
+      });
+    });
   }
 
   /* ---------- 开机画面 ---------- */
@@ -211,6 +238,36 @@
     document.body.style.overflow = '';
   }
 
+  /* ---------- 首页统计 + 最新作品 ---------- */
+  function renderHomeStats() {
+    var box = document.getElementById('home-stats');
+    if (!box) return;
+    var wCount = (CFG.works || []).length;
+    var cCount = (CFG.categories || []).length;
+    box.innerHTML =
+      '<div class="stat"><span class="stat-num">' + wCount + '</span><span class="stat-label">作品 / WORKS</span></div>' +
+      '<div class="stat"><span class="stat-num">' + cCount + '</span><span class="stat-label">分类 / CATEGORIES</span></div>' +
+      '<div class="stat"><span class="stat-num">ONLINE</span><span class="stat-label">状态 / STATUS</span></div>';
+  }
+
+  function renderLatestWorks() {
+    var grid = document.getElementById('home-latest-grid');
+    if (!grid) return;
+    var latest = (CFG.works || []).slice(0, 4);
+    if (!latest.length) { grid.innerHTML = '<p class="panel-note">[ 暂无作品 ]</p>'; return; }
+    latest.forEach(function (w) {
+      var card = document.createElement('div');
+      card.className = 'work-card';
+      card.innerHTML =
+        '<img src="' + w.img + '" alt="' + w.title + '" loading="lazy">' +
+        '<div class="work-meta"><span class="work-name">' + w.title + '</span>' +
+        '<span class="work-cat">' + catLabel(w.cat) + '</span></div>' +
+        '<div class="cat-bar"></div>';
+      card.addEventListener('click', function () { openLightbox(w); });
+      grid.appendChild(card);
+    });
+  }
+
   /* ---------- 初始化 ---------- */
   function init() {
     applyTheme();
@@ -220,6 +277,8 @@
     renderMusic();
     renderFilters();
     renderWorks('all');
+    renderHomeStats();
+    renderLatestWorks();
 
     enterBtn.addEventListener('click', enterOS);
     if (new URLSearchParams(location.search).get('skip') === '1') {
@@ -231,12 +290,16 @@
     setInterval(tick, 1000);
     tick();
 
-    document.querySelectorAll('.nav-link').forEach(function (l) {
+    document.querySelectorAll('[data-sec]').forEach(function (l) {
       l.addEventListener('click', function (e) {
         e.preventDefault();
         showSection(l.dataset.sec);
         history.replaceState(null, '', '#' + l.dataset.sec);
       });
+    });
+    window.addEventListener('hashchange', function () {
+      var hid = location.hash.slice(1);
+      if (hid && document.getElementById(hid)) showSection(hid);
     });
     if (location.hash && location.hash.length > 1) {
       var hid = location.hash.slice(1);
