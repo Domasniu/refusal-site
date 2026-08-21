@@ -561,7 +561,7 @@ function renderMomentList(){
       '<div class="mr-head">' +
         '<span class="mr-tag">' + (m.video ? '🎬 视频' : (m.images && m.images.length ? '🖼️ 图片' : '💬 文字')) + '</span>' +
         '<input type="text" value="' + esc(m.date || '') + '" data-moi="' + idx + '" data-mok="date" placeholder="日期，如 2026-08-22" style="width:130px">' +
-        '<button class="small" data-model="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
+        '<button class="small" data-mdel="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
       '</div>' +
       '<textarea data-moi="' + idx + '" data-mok="text" placeholder="动态文字内容" style="min-height:56px">' + esc(m.text || '') + '</textarea>' +
       (thumbs ? '<div class="wc-thumbs">' + thumbs + '</div>' : '') +
