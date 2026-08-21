@@ -63,13 +63,17 @@ button.small{padding:4px 10px;font-size:12px}
 
 <header>
   <h1>💠 REFUSAL<span>·</span> OS · 傻瓜后台</h1>
-  <span id="who">未登录</span>
+  <span style="display:flex;align-items:center;gap:12px">
+    <span id="who">未登录</span>
+    <button id="btn-logout" class="small" style="display:none">退出</button>
+  </span>
 </header>
 
 <div id="login-box" class="card">
   <h2>🔐 站长登录</h2>
-  <p class="hint" style="margin-bottom:20px">登录后即可修改网站内容，保存后自动发布</p>
-  <button id="login-btn" class="primary">登录 / 注册</button>
+  <p class="hint" style="margin-bottom:16px">输入后台密码（在 Cloudflare 环境变量 CONSOLE_PASSWORD 中设置）</p>
+  <input type="password" id="login-pwd" placeholder="后台密码" style="max-width:260px;margin:0 auto 14px;display:block;text-align:center">
+  <button id="login-btn" class="primary">进入后台</button>
 </div>
 
 <main id="editor" style="display:none">
@@ -143,11 +147,10 @@ button.small{padding:4px 10px;font-size:12px}
 </div>
 <div id="status"></div>
 
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
 'use strict';
 /* ================= 状态 ================= */
-var API_URL = '/.netlify/functions/content-api';
+var API_URL = '/api';
 var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg' };
 var newImages = {};                     // 待上传图片 { path: File }
 var newAvatar = null;
@@ -165,23 +168,31 @@ function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function setStatus(msg, cls){ var s=$('status'); s.className=cls; s.textContent=msg; }
 
-/* ================= 登录 ================= */
-window.netlifyIdentity && netlifyIdentity.init();
+/* ================= 登录（密码） ================= */
+var consoleKey = localStorage.getItem('consoleKey') || '';
 function tryAutoLogin(){
-  var u = window.netlifyIdentity && netlifyIdentity.currentUser();
-  if (u) { showEditor(); return; }
+  if (consoleKey) { showEditor(); return; }
 }
-netlifyIdentity && netlifyIdentity.on('login', function(){ showEditor(); });
-netlifyIdentity && netlifyIdentity.on('logout', function(){ location.reload(); });
-$('login-btn').addEventListener('click', function(){ netlifyIdentity.open(); });
+$('login-btn').addEventListener('click', function(){
+  var pwd = $('login-pwd').value.trim();
+  if (!pwd) return;
+  consoleKey = pwd;
+  localStorage.setItem('consoleKey', pwd);
+  showEditor();
+});
+$('login-pwd').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('login-btn').click(); });
+$('btn-logout').addEventListener('click', function(){
+  localStorage.removeItem('consoleKey');
+  location.reload();
+});
 tryAutoLogin();
 
 function showEditor(){
   $('login-box').style.display = 'none';
   $('editor').style.display = 'block';
   $('savebar').style.display = 'flex';
-  var u = netlifyIdentity.currentUser();
-  $('who').textContent = '已登录：' + (u && u.email ? u.email : '站长');
+  $('btn-logout').style.display = 'inline-block';
+  $('who').textContent = '已登录 · 站长';
   loadContent();
 }
 
@@ -189,7 +200,7 @@ function showEditor(){
 async function api(action, payload){
   var r = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Console-Key': consoleKey },
     body: JSON.stringify(Object.assign({ action: action }, payload || {}))
   });
   var j = await r.json().catch(function(){ return {}; });
