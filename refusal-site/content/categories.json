@@ -1,0 +1,8 @@
+{
+  "categories": [
+    { "id": "handmade", "label": "手工发饰" },
+    { "id": "papercut", "label": "剪纸" },
+    { "id": "drawing", "label": "绘画" },
+    { "id": "photo", "label": "摄影" }
+  ]
+}

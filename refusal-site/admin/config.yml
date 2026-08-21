@@ -1,0 +1,87 @@
+# REFUSAL OS — Decap CMS 配置
+# 后台地址：https://你的网址/admin
+# 登录方式：Netlify Identity（邮箱+密码），需在 Netlify 后台开启 Identity + Git Gateway
+
+backend:
+  name: git-gateway
+  branch: main
+
+# 上传的图片自动存入 assets/works/
+media_folder: assets/works
+public_folder: assets/works
+
+collections:
+  - name: settings
+    label: "⚙️ 基础设置"
+    files:
+      - name: site
+        label: "站点设置（主题 / 主页文字 / 自我介绍 / 音乐 / 视频）"
+        file: content/site.json
+        fields:
+          - label: "界面主题"
+            name: theme
+            widget: select
+            options:
+              - { label: "赛博青（默认）", value: "cyber-cyan" }
+              - { label: "霓虹品红", value: "neon-magenta" }
+              - { label: "紫罗兰梦境", value: "violet-dream" }
+              - { label: "矩阵绿", value: "matrix-green" }
+              - { label: "琥珀终端", value: "amber-terminal" }
+              - { label: "血色警报", value: "blood-red" }
+          - label: "主页文字"
+            name: hero
+            widget: object
+            fields:
+              - { label: "标语标签（英文，用 · 分隔）", name: tags, widget: string }
+              - { label: "一句话标语", name: slogan, widget: string }
+              - { label: "主页介绍", name: desc, widget: text }
+          - label: "自我介绍（每行一段）"
+            name: about
+            widget: text
+          - label: "联系信息"
+            name: contact
+            widget: text
+          - label: "视频链接（留空显示即将上线）"
+            name: video
+            widget: object
+            fields:
+              - { label: "抖音主页", name: douyin, widget: string, required: false }
+              - { label: "B站主页", name: bilibili, widget: string, required: false }
+              - { label: "YouTube 主页", name: youtube, widget: string, required: false }
+          - label: "音乐（网易云外链播放器代码）"
+            name: music
+            widget: object
+            fields:
+              - { label: "网易云 iframe 代码", name: netease, widget: text, required: false }
+
+  - name: categories
+    label: "🏷️ 作品分类"
+    files:
+      - name: cats
+        label: "分类列表"
+        file: content/categories.json
+        fields:
+          - label: "分类"
+            name: categories
+            widget: list
+            collapsed: false
+            fields:
+              - { label: "ID（英文标识，如 handmade）", name: id, widget: string }
+              - { label: "显示名称", name: label, widget: string }
+
+  - name: works
+    label: "🖼️ 作品"
+    files:
+      - name: works
+        label: "作品列表（图片自动上传到 assets/works/）"
+        file: content/works.json
+        fields:
+          - label: "作品"
+            name: works
+            widget: list
+            collapsed: false
+            fields:
+              - { label: "编号（如 W-006）", name: id, widget: string }
+              - { label: "标题", name: title, widget: string }
+              - { label: "分类（填分类 ID，如 handmade）", name: cat, widget: string }
+              - { label: "图片", name: img, widget: image, choose_url: false }
