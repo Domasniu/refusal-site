@@ -249,4 +249,16 @@ git push origin main     # 触发 Cloudflare Pages 自动部署
 
 ---
 
+## 十一、开发环境与工具链（本机）
+
+- **本地仓库路径**：`D:\DeepseekHarness\refusal-site`
+- **Node**：`C:\Program Files\nodejs\node.exe`（v24.19.0，dsh 需要 ≥ 22.19）
+- **Git**：`C:\Program Files\Git\bin\git.exe`（仓库已配置身份 `Domasniu`）
+- **视觉引擎（modlens）**：已配置千问 `qwen-vl-max`（OpenAI 兼容），配置在 `C:\Users\12619\.modlens\config.json`
+  - 当前模型不支持直接读图，用 `npx @liustack/modlens analyze -i <图片路径>` 读图
+  - 密钥轮换方式：`"<新key>" | npx @liustack/modlens config set openai.apiKey`
+- **本机完整会话交接文档**：`D:\DeepseekHarness\SESSION_HANDOVER.md`（含凭证位置、未完成事项、常用命令，**未纳入本仓库**）
+
+---
+
 *文档由 DeepSeek Harness 协助编写，供 refusal· 本人或后续维护者使用。*
