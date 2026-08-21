@@ -144,10 +144,7 @@ button.small{padding:4px 10px;font-size:12px}
 <script>
 'use strict';
 /* ================= 状态 ================= */
-var REPO_OWNER = 'Domasniu';
-var REPO_NAME = 'refusal-site';
-var PREFIX = '';                            // 仓库内网站目录（已移至仓库根）
-var ghToken = null;                     // git-gateway 换来的 GitHub 令牌
+var API_URL = '/.netlify/functions/content-api';
 var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg' };
 var newImages = {};                     // 待上传图片 { path: File }
 var newAvatar = null;
@@ -185,66 +182,39 @@ function showEditor(){
   loadContent();
 }
 
-/* ================= Git Gateway → GitHub 令牌 ================= */
-async function getGitHubToken(){
-  if (ghToken) return ghToken;
-  var u = netlifyIdentity.currentUser();
-  if (!u) throw new Error('未登录');
-  var jwt = u.token && u.token.access_token;
-  var r = await fetch('/.netlify/git-gateway/authorize', {
+/* ================= 保存接口（Netlify Function，绕开 Git Gateway） ================= */
+async function api(action, payload){
+  var r = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: jwt })
+    body: JSON.stringify(Object.assign({ action: action }, payload || {}))
   });
-  if (!r.ok) throw new Error('Git Gateway 未开启或令牌无效（HTTP ' + r.status + '）');
-  var j = await r.json();
-  ghToken = j.token;
-  if (!ghToken) throw new Error('未拿到 GitHub 令牌');
-  return ghToken;
+  var j = await r.json().catch(function(){ return {}; });
+  if (!r.ok) throw new Error(j.error || ('请求失败 HTTP ' + r.status));
+  return j;
 }
-function gh(apiPath, opts){
-  var token = ghToken;
-  return fetch('https://api.github.com' + apiPath, Object.assign({
-    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-  }, opts || {}));
+async function contentGet(path){
+  var j = await api('get', { path: path });
+  return j.data;   // { sha, text } 或 null
 }
-async function ghGet(path){
-  var r = await gh('/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + encodeURIComponent(PREFIX + path));
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error('读取失败：' + r.status);
-  var j = await r.json();
-  return { sha: j.sha, text: j.encoding === 'base64' ? decodeURIComponent(escape(atob(j.content))) : '' };
-}
-async function ghPut(path, content, isBase64){
-  var old = await ghGet(path);
-  var body = {
-    message: 'update: ' + path,
-    content: isBase64 ? content : btoa(unescape(encodeURIComponent(content)))
-  };
-  if (old && old.sha) body.sha = old.sha;
-  var r = await gh('/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + encodeURIComponent(PREFIX + path), {
-    method: 'PUT',
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) throw new Error('写入失败 ' + path + '：' + r.status);
-  return true;
+async function contentPut(path, content, isBase64){
+  await api('put', { path: path, content: content, isBase64: !!isBase64 });
 }
 
 /* ================= 加载内容 ================= */
 async function loadContent(){
   setStatus('正在读取网站内容…', 'busy');
   try {
-    await getGitHubToken();
-    var site = await ghGet('content/site.json');
-    var works = await ghGet('content/works.json');
-    var cats = await ghGet('content/categories.json');
+    var site = await contentGet('content/site.json');
+    var works = await contentGet('content/works.json');
+    var cats = await contentGet('content/categories.json');
     if (site) config = Object.assign(config, JSON.parse(site.text));
     if (works) config.works = JSON.parse(works.text).works || [];
     if (cats) config.categories = JSON.parse(cats.text).categories || [];
     fillForm();
     setStatus('', '');
   } catch (e) {
-    setStatus('加载失败：' + e.message + '（请确认已在 Netlify 开启 Git Gateway）', 'err');
+    setStatus('加载失败：' + e.message, 'err');
   }
 }
 
@@ -397,7 +367,6 @@ $('btn-save').addEventListener('click', async function(){
   collect();
   setStatus('正在保存并发布…', 'busy');
   try {
-    await getGitHubToken();
     var site = {
       avatar: config.avatar || 'assets/avatar.jpg',
       theme: config.theme,
@@ -407,17 +376,16 @@ $('btn-save').addEventListener('click', async function(){
       video: config.video,
       music: config.music
     };
-    var done = [];
-    done.push(await ghPut('content/site.json', JSON.stringify(site, null, 2)));
-    done.push(await ghPut('content/works.json', JSON.stringify({ works: config.works }, null, 2)));
-    done.push(await ghPut('content/categories.json', JSON.stringify({ categories: config.categories }, null, 2)));
+    await contentPut('content/site.json', JSON.stringify(site, null, 2));
+    await contentPut('content/works.json', JSON.stringify({ works: config.works }, null, 2));
+    await contentPut('content/categories.json', JSON.stringify({ categories: config.categories }, null, 2));
     for (var p in newImages) {
       var b64 = await fileToBase64(newImages[p]);
-      done.push(await ghPut(p, b64, true));
+      await contentPut(p, b64, true);
     }
     if (newAvatar) {
       var av64 = await fileToBase64(newAvatar);
-      done.push(await ghPut('assets/avatar.jpg', av64, true));
+      await contentPut('assets/avatar.jpg', av64, true);
       newAvatar = null;
     }
     newImages = {};

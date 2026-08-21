@@ -2,3 +2,6 @@
 # 网站文件在仓库根目录，发布目录为根目录
 [build]
   publish = "."
+
+[functions]
+  directory = "netlify/functions"
