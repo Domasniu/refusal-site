@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REFUSAL OS · 傻瓜后台</title>
+<style>
+:root{--bg:#05070d;--panel:#0c1120;--line:rgba(0,240,255,.18);--cyan:#00f0ff;--magenta:#ff2d95;--text:#d7e4ff;--dim:#5f7396;--ok:#3dff8f}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px}
+header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:rgba(5,8,16,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+header h1{font-size:16px;letter-spacing:.12em;color:var(--cyan)}
+header h1 span{color:var(--magenta)}
+#who{font-size:12px;color:var(--dim)}
+main{max-width:760px;margin:0 auto;padding:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:14px;letter-spacing:.14em;color:var(--cyan);margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+label{display:block;font-size:12px;color:var(--dim);margin:10px 0 4px}
+input[type=text],textarea{width:100%;background:#070b16;border:1px solid var(--line);color:var(--text);padding:9px 11px;border-radius:6px;font-size:13px}
+input:focus,textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 8px rgba(0,240,255,.25)}
+textarea{min-height:64px;resize:vertical}
+button{cursor:pointer;border:1px solid var(--cyan);background:transparent;color:var(--cyan);padding:8px 16px;border-radius:6px;font-size:13px;transition:.15s}
+button:hover{background:rgba(0,240,255,.12)}
+button.primary{background:var(--magenta);border-color:var(--magenta);color:#fff;font-weight:700}
+button.primary:hover{box-shadow:0 0 14px rgba(255,45,149,.6)}
+button.small{padding:4px 10px;font-size:12px}
+.hint{font-size:12px;color:var(--dim);line-height:1.8;margin-top:6px}
+/* 登录区 */
+#login-box{text-align:center;padding:60px 20px}
+#login-box h2{font-size:20px;color:var(--cyan);letter-spacing:.1em;margin-bottom:24px}
+#login-btn{font-size:15px;padding:12px 34px}
+/* 主题色板 */
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatch{width:104px;border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;cursor:pointer;transition:.15s;background:#070b16}
+.swatch:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.swatch.on{border-color:var(--magenta);box-shadow:0 0 12px rgba(255,45,149,.45)}
+.swatch .dots{display:flex;gap:3px;justify-content:center;margin-bottom:6px}
+.swatch .dot{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,.2)}
+.swatch .nm{font-size:11px}
+/* 作品行 */
+.work-row{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:10px;background:#070b16;flex-wrap:wrap}
+.work-row img{width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.work-row .f1{flex:2;min-width:140px}
+.work-row .f2{flex:1;min-width:120px}
+.work-row input{margin-top:3px}
+.work-row select{width:100%;background:#070b16;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:6px;margin-top:3px}
+.avatar-prev{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);display:block;margin-bottom:8px}
+.cat-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:8px;background:#070b16}
+.cat-row .nm{flex:1}
+#status{display:none;margin-top:14px;padding:10px 14px;border-radius:6px;font-size:13px;line-height:1.7}
+#status.ok{display:block;background:rgba(61,255,143,.1);border:1px solid var(--ok);color:var(--ok)}
+#status.err{display:block;background:rgba(255,92,92,.1);border:1px solid #ff5c5c;color:#ff8a8a}
+#status.busy{display:block;background:rgba(0,240,255,.08);border:1px solid var(--line);color:var(--cyan)}
+.toolbar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.savebar{position:sticky;bottom:0;background:rgba(5,8,16,.96);border-top:1px solid var(--line);padding:12px 20px;display:flex;justify-content:center;gap:14px;backdrop-filter:blur(6px);z-index:10}
+#btn-save{font-size:15px;padding:11px 40px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💠 REFUSAL<span>·</span> OS · 傻瓜后台</h1>
+  <span id="who">未登录</span>
+</header>
+
+<div id="login-box" class="card">
+  <h2>🔐 站长登录</h2>
+  <p class="hint" style="margin-bottom:20px">登录后即可修改网站内容，保存后自动发布</p>
+  <button id="login-btn" class="primary">登录 / 注册</button>
+</div>
+
+<main id="editor" style="display:none">
+
+  <div class="card">
+    <h2>① 界面主题（点一下切换）</h2>
+    <div class="swatches" id="theme-swatches"></div>
+  </div>
+
+  <div class="card">
+    <h2>② 头像</h2>
+    <img id="avatar-prev" class="avatar-prev" src="" alt="">
+    <button id="btn-avatar" class="small">🖼️ 更换头像</button>
+    <input type="file" id="inp-avatar" accept="image/*" style="display:none">
+  </div>
+
+  <div class="card">
+    <h2>③ 主页文字</h2>
+    <label>标语标签（英文，用 · 分隔）</label>
+    <input type="text" id="f-tags">
+    <label>一句话标语</label>
+    <input type="text" id="f-slogan">
+    <label>主页介绍</label>
+    <textarea id="f-desc"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>④ 自我介绍 / 联系</h2>
+    <label>自我介绍（每行一段）</label>
+    <textarea id="f-about" style="min-height:90px"></textarea>
+    <label>联系信息</label>
+    <textarea id="f-contact"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 音乐（网易云）</h2>
+    <p class="hint">网易云音乐网页版 → 点「生成外链播放器」→ 复制代码粘贴到下面</p>
+    <textarea id="f-music" placeholder="<iframe frameborder=&quot;no&quot; ..."></textarea>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 视频链接（留空显示即将上线）</h2>
+    <label>抖音主页</label>
+    <input type="text" id="f-douyin" placeholder="https://v.douyin.com/...">
+    <label>B站主页</label>
+    <input type="text" id="f-bilibili" placeholder="https://space.bilibili.com/...">
+    <label>YouTube 主页</label>
+    <input type="text" id="f-youtube" placeholder="https://www.youtube.com/@...">
+  </div>
+
+  <div class="card">
+    <h2>⑦ 作品</h2>
+    <div id="work-list"></div>
+    <button id="btn-add-work">＋ 添加作品</button>
+    <input type="file" id="inp-work" accept="image/*" style="display:none">
+  </div>
+
+  <div class="card">
+    <h2>⑧ 作品分类</h2>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="f-new-cat" placeholder="新分类名，如：陶艺" style="flex:1">
+      <button id="btn-add-cat" class="small">添加</button>
+    </div>
+    <div id="cat-list"></div>
+  </div>
+
+</main>
+
+<div class="savebar" id="savebar" style="display:none">
+  <button id="btn-save" class="primary">💾 保存并发布</button>
+</div>
+<div id="status"></div>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+'use strict';
+/* ================= 状态 ================= */
+var REPO_OWNER = 'Domasniu';
+var REPO_NAME = 'refusal-site';
+var PREFIX = 'refusal-site/';           // 仓库内网站目录
+var ghToken = null;                     // git-gateway 换来的 GitHub 令牌
+var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg' };
+var newImages = {};                     // 待上传图片 { path: File }
+var newAvatar = null;
+
+var PALETTES = [
+  { id:'cyber-cyan', name:'赛博青', c:['#05070d','#00f0ff','#ff2d95','#a855f7'] },
+  { id:'neon-magenta', name:'霓虹品红', c:['#0d0208','#ff2d95','#00f0ff','#c084fc'] },
+  { id:'violet-dream', name:'紫罗兰', c:['#09051a','#c084fc','#ff2d95','#8b5cf6'] },
+  { id:'matrix-green', name:'矩阵绿', c:['#030a04','#22ff88','#ff2d95','#4ade80'] },
+  { id:'amber-terminal', name:'琥珀', c:['#0c0802','#ffb020','#ff2d95','#ff8c42'] },
+  { id:'blood-red', name:'血红', c:['#0d0204','#ff3b3b','#ff2d95','#f87171'] }
+];
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setStatus(msg, cls){ var s=$('status'); s.className=cls; s.textContent=msg; }
+
+/* ================= 登录 ================= */
+window.netlifyIdentity && netlifyIdentity.init();
+function tryAutoLogin(){
+  var u = window.netlifyIdentity && netlifyIdentity.currentUser();
+  if (u) { showEditor(); return; }
+}
+netlifyIdentity && netlifyIdentity.on('login', function(){ showEditor(); });
+netlifyIdentity && netlifyIdentity.on('logout', function(){ location.reload(); });
+$('login-btn').addEventListener('click', function(){ netlifyIdentity.open(); });
+tryAutoLogin();
+
+function showEditor(){
+  $('login-box').style.display = 'none';
+  $('editor').style.display = 'block';
+  $('savebar').style.display = 'flex';
+  var u = netlifyIdentity.currentUser();
+  $('who').textContent = '已登录：' + (u && u.email ? u.email : '站长');
+  loadContent();
+}
+
+/* ================= Git Gateway → GitHub 令牌 ================= */
+async function getGitHubToken(){
+  if (ghToken) return ghToken;
+  var u = netlifyIdentity.currentUser();
+  if (!u) throw new Error('未登录');
+  var jwt = u.token && u.token.access_token;
+  var r = await fetch('/.netlify/git-gateway/authorize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: jwt })
+  });
+  if (!r.ok) throw new Error('Git Gateway 未开启或令牌无效（HTTP ' + r.status + '）');
+  var j = await r.json();
+  ghToken = j.token;
+  if (!ghToken) throw new Error('未拿到 GitHub 令牌');
+  return ghToken;
+}
+function gh(apiPath, opts){
+  var token = ghToken;
+  return fetch('https://api.github.com' + apiPath, Object.assign({
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+  }, opts || {}));
+}
+async function ghGet(path){
+  var r = await gh('/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + encodeURIComponent(PREFIX + path));
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('读取失败：' + r.status);
+  var j = await r.json();
+  return { sha: j.sha, text: j.encoding === 'base64' ? decodeURIComponent(escape(atob(j.content))) : '' };
+}
+async function ghPut(path, content, isBase64){
+  var old = await ghGet(path);
+  var body = {
+    message: 'update: ' + path,
+    content: isBase64 ? content : btoa(unescape(encodeURIComponent(content)))
+  };
+  if (old && old.sha) body.sha = old.sha;
+  var r = await gh('/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + encodeURIComponent(PREFIX + path), {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error('写入失败 ' + path + '：' + r.status);
+  return true;
+}
+
+/* ================= 加载内容 ================= */
+async function loadContent(){
+  setStatus('正在读取网站内容…', 'busy');
+  try {
+    await getGitHubToken();
+    var site = await ghGet('content/site.json');
+    var works = await ghGet('content/works.json');
+    var cats = await ghGet('content/categories.json');
+    if (site) config = Object.assign(config, JSON.parse(site.text));
+    if (works) config.works = JSON.parse(works.text).works || [];
+    if (cats) config.categories = JSON.parse(cats.text).categories || [];
+    fillForm();
+    setStatus('', '');
+  } catch (e) {
+    setStatus('加载失败：' + e.message + '（请确认已在 Netlify 开启 Git Gateway）', 'err');
+  }
+}
+
+function fillForm(){
+  $('avatar-prev').src = config.avatar || 'assets/avatar.jpg';
+  $('f-tags').value = (config.hero && config.hero.tags) || '';
+  $('f-slogan').value = (config.hero && config.hero.slogan) || '';
+  $('f-desc').value = (config.hero && config.hero.desc) || '';
+  $('f-about').value = config.about || '';
+  $('f-contact').value = config.contact || '';
+  $('f-music').value = (config.music && config.music.netease) || '';
+  $('f-douyin').value = (config.video && config.video.douyin) || '';
+  $('f-bilibili').value = (config.video && config.video.bilibili) || '';
+  $('f-youtube').value = (config.video && config.video.youtube) || '';
+  renderThemes(); renderWorks(); renderCats();
+}
+
+function collect(){
+  config.theme = currentTheme;
+  config.hero = { tags: $('f-tags').value.trim(), slogan: $('f-slogan').value.trim(), desc: $('f-desc').value.trim() };
+  config.about = $('f-about').value;
+  config.contact = $('f-contact').value;
+  config.music = { netease: $('f-music').value.trim() };
+  config.video = { douyin: $('f-douyin').value.trim(), bilibili: $('f-bilibili').value.trim(), youtube: $('f-youtube').value.trim() };
+}
+
+/* ================= 主题 ================= */
+var currentTheme = 'cyber-cyan';
+function renderThemes(){
+  var box = $('theme-swatches');
+  box.innerHTML = '';
+  PALETTES.forEach(function(p){
+    var d = document.createElement('div');
+    d.className = 'swatch' + (p.id === currentTheme ? ' on' : '');
+    d.innerHTML = '<div class="dots">' + p.c.map(function(c){ return '<span class="dot" style="background:' + c + '"></span>'; }).join('') + '</div><div class="nm">' + p.name + '</div>';
+    d.onclick = function(){ currentTheme = p.id; renderThemes(); };
+    box.appendChild(d);
+  });
+}
+
+/* ================= 头像 ================= */
+$('btn-avatar').addEventListener('click', function(){ $('inp-avatar').click(); });
+$('inp-avatar').addEventListener('change', function(){
+  var f = this.files[0]; if (!f) return;
+  newAvatar = f;
+  $('avatar-prev').src = URL.createObjectURL(f);
+  this.value = '';
+});
+
+/* ================= 作品 ================= */
+var pendingWorkFile = null;
+$('btn-add-work').addEventListener('click', function(){ $('inp-work').click(); });
+$('inp-work').addEventListener('change', function(){
+  var f = this.files[0]; if (!f) return;
+  var n = 1;
+  var used = {};
+  config.works.forEach(function(w){ used[w.img] = true; });
+  var p = '';
+  do { p = 'assets/works/work-' + String(n).padStart(3,'0') + '.jpg'; n++; } while (used[p]);
+  newImages[p] = f;
+  var cat = config.categories.length ? config.categories[0].id : '';
+  config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p });
+  renderWorks(); renderCats();
+  this.value = '';
+});
+function renderWorks(){
+  var box = $('work-list');
+  box.innerHTML = '';
+  config.works.forEach(function(w, idx){
+    var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : w.img;
+    var catOpts = config.categories.map(function(c){
+      return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+    }).join('');
+    var row = document.createElement('div');
+    row.className = 'work-row';
+    row.innerHTML =
+      '<img src="' + preview + '">' +
+      '<div class="f1"><label style="margin:0">标题</label><input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title"></div>' +
+      '<div class="f2"><label style="margin:0">分类</label><select data-i="' + idx + '" data-k="cat">' + catOpts + '</select></div>' +
+      '<button class="small" data-replace="' + idx + '">换图</button>' +
+      '<button class="small" data-del="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-k]').forEach(function(inp){
+    inp.addEventListener('input', function(){ config.works[+this.dataset.i].title = this.value; });
+  });
+  box.querySelectorAll('select[data-k]').forEach(function(sel){
+    sel.addEventListener('change', function(){ config.works[+this.dataset.i].cat = this.value; });
+  });
+  box.querySelectorAll('button[data-del]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var w = config.works[+this.dataset.del];
+      delete newImages[w.img];
+      config.works.splice(+this.dataset.del, 1);
+      renderWorks();
+    });
+  });
+  box.querySelectorAll('button[data-replace]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*';
+      inp.onchange = function(){
+        var f = inp.files[0]; if (!f) return;
+        var w = config.works[+this.dataset.i];
+        newImages[w.img] = f;
+        renderWorks();
+      }.bind(this);
+      inp.click();
+    });
+  });
+}
+
+/* ================= 分类 ================= */
+$('btn-add-cat').addEventListener('click', function(){
+  var label = $('f-new-cat').value.trim(); if (!label) return;
+  config.categories.push({ id: 'cat-' + Date.now().toString(36), label: label });
+  $('f-new-cat').value = '';
+  renderCats(); renderWorks();
+});
+function renderCats(){
+  var box = $('cat-list');
+  box.innerHTML = '';
+  config.categories.forEach(function(c, idx){
+    var used = config.works.filter(function(w){ return w.cat === c.id; }).length;
+    var row = document.createElement('div');
+    row.className = 'cat-row';
+    row.innerHTML = '<span class="nm">' + esc(c.label) + ' <span style="color:var(--dim);font-size:11px">(' + used + ' 件)</span></span>';
+    if (!used) {
+      var b = document.createElement('button');
+      b.className = 'small';
+      b.style.cssText = 'border-color:#ff5c5c;color:#ff5c5c';
+      b.textContent = '删除';
+      b.onclick = function(){ config.categories.splice(idx,1); renderCats(); renderWorks(); };
+      row.appendChild(b);
+    }
+    box.appendChild(row);
+  });
+}
+
+/* ================= 保存 ================= */
+function fileToBase64(f){
+  return new Promise(function(res, rej){
+    var rd = new FileReader();
+    rd.onload = function(){ res(String(rd.result).split(',')[1]); };
+    rd.onerror = rej;
+    rd.readAsDataURL(f);
+  });
+}
+$('btn-save').addEventListener('click', async function(){
+  collect();
+  setStatus('正在保存并发布…', 'busy');
+  try {
+    await getGitHubToken();
+    var site = {
+      avatar: config.avatar || 'assets/avatar.jpg',
+      theme: config.theme,
+      hero: config.hero,
+      about: config.about,
+      contact: config.contact,
+      video: config.video,
+      music: config.music
+    };
+    var done = [];
+    done.push(await ghPut('content/site.json', JSON.stringify(site, null, 2)));
+    done.push(await ghPut('content/works.json', JSON.stringify({ works: config.works }, null, 2)));
+    done.push(await ghPut('content/categories.json', JSON.stringify({ categories: config.categories }, null, 2)));
+    for (var p in newImages) {
+      var b64 = await fileToBase64(newImages[p]);
+      done.push(await ghPut(p, b64, true));
+    }
+    if (newAvatar) {
+      var av64 = await fileToBase64(newAvatar);
+      done.push(await ghPut('assets/avatar.jpg', av64, true));
+      newAvatar = null;
+    }
+    newImages = {};
+    setStatus('✅ 保存成功！网站正在自动更新，1-2 分钟后刷新查看。', 'ok');
+  } catch (e) {
+    setStatus('❌ 保存失败：' + e.message, 'err');
+  }
+});
+</script>
+</body>
+</html>
