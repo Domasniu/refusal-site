@@ -5,7 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>refusal· | REFUSAL OS v2026</title>
 <meta name="description" content="refusal· 的个人作品集 —— 手工发饰 / 剪纸 / 绘画 / 影像">
+<meta name="theme-color" content="#05070d">
+<meta name="robots" content="index, follow">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="REFUSAL OS">
+<meta property="og:title" content="refusal· | REFUSAL OS v2026">
+<meta property="og:description" content="refusal· 的个人作品集 —— 手工发饰 / 剪纸 / 绘画 / 影像。亲手建造，用故事思考。">
+<meta property="og:url" content="https://refusal-site.pages.dev/">
+<meta property="og:image" content="https://refusal-site.pages.dev/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="refusal· | REFUSAL OS v2026">
+<meta name="twitter:description" content="refusal· 的个人作品集 —— 手工发饰 / 剪纸 / 绘画 / 影像">
+<meta name="twitter:image" content="https://refusal-site.pages.dev/assets/og-cover.png">
+<link rel="canonical" href="https://refusal-site.pages.dev/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💠</text></svg>">
+<!-- 结构化数据：Person -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "refusal·",
+  "url": "https://refusal-site.pages.dev/",
+  "image": "https://refusal-site.pages.dev/assets/avatar.jpg",
+  "description": "手工发饰 / 剪纸 / 绘画 / 影像创作者",
+  "sameAs": []
+}
+</script>
 <style>
   /* 站长管理入口 */
   .admin-link{color:var(--dim);font-size:.72rem;letter-spacing:.1em;border:1px solid var(--line);padding:.25rem .7rem;border-radius:3px;transition:.2s;text-decoration:none}
@@ -36,6 +66,7 @@
       <span class="topbar-tag">v2026.05</span>
     </div>
     <div class="topbar-right">
+      <button id="theme-toggle" class="theme-toggle" title="切换主题配色">🎨</button>
       <a class="admin-link" href="console/" title="站长登录 · 傻瓜后台">⚙ 管理</a>
       <span class="status-dot"></span><span class="topbar-status">SYSTEM ONLINE</span>
       <span id="clock" class="topbar-clock">--:--:--</span>
@@ -59,7 +90,7 @@
       <div class="hero">
         <div class="avatar-wrap">
           <div class="avatar-ring"></div>
-          <img id="avatar-img" src="assets/avatar.jpg" alt="refusal· 头像" class="avatar">
+          <img id="avatar-img" src="assets/avatar.jpg" alt="refusal· 头像" class="avatar" fetchpriority="high" decoding="async">
           <div class="avatar-hud">ID: REFUSAL_2026<br>STATUS: CREATOR</div>
         </div>
         <div class="hero-text">
@@ -125,7 +156,11 @@
   <button id="lb-close" class="lb-close">✕</button>
   <img id="lb-img" src="" alt="">
   <div id="lb-caption" class="lb-caption"></div>
+  <div id="lb-desc" class="lb-desc hidden"></div>
 </div>
+
+<!-- ============ 返回顶部 ============ -->
+<button id="to-top" class="to-top hidden" title="返回顶部">▲</button>
 
 <script src="js/palettes.js"></script>
 <script src="js/site-config.js"></script>

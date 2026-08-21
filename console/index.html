@@ -316,6 +316,7 @@ function renderWorks(){
       '<div class="wc-body">' +
         '<input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title" placeholder="标题">' +
         '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>' +
+        '<textarea data-i="' + idx + '" data-k="desc" placeholder="作品描述（可选）" style="min-height:44px">' + esc(w.desc || '') + '</textarea>' +
         '<div class="wc-actions">' +
           '<button class="small" data-replace="' + idx + '">换图</button>' +
           '<button class="small" data-del="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
@@ -326,6 +327,9 @@ function renderWorks(){
   box.appendChild(grid);
   box.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){ config.works[+this.dataset.i].title = this.value; });
+  });
+  box.querySelectorAll('textarea[data-k]').forEach(function(ta){
+    ta.addEventListener('input', function(){ config.works[+this.dataset.i].desc = this.value; });
   });
   box.querySelectorAll('select[data-k]').forEach(function(sel){
     sel.addEventListener('change', function(){ config.works[+this.dataset.i].cat = this.value; });

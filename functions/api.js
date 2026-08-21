@@ -31,10 +31,7 @@ export async function onRequest(context) {
 
   const token = env.GH_TOKEN;
   if (!token) return respond(500, {
-    error: 'GH_TOKEN 未配置',
-    envKeys: Object.keys(env),
-    ctxKeys: Object.keys(context),
-    hasPwd: !!env.CONSOLE_PASSWORD,
+    error: 'GH_TOKEN 未配置：请在 Cloudflare Pages 环境变量中添加 GH_TOKEN（GitHub 经典 token，repo 权限）',
   });
 
   let payload;

@@ -47,6 +47,57 @@
     root.setProperty('--dim', p.colors.dim);
   }
 
+  /* ---------- 访客主题切换（localStorage 记忆，覆盖站长的默认主题） ---------- */
+  var THEME_KEY = 'refusal-theme';
+  function applyVisitorTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch (e) { saved = null; }
+    if (!saved) return; // 没有访客偏好就用站长主题
+    var p = PAL.filter(function (x) { return x.id === saved; })[0];
+    if (!p) return;
+    var root = document.documentElement.style;
+    root.setProperty('--bg', p.colors.bg);
+    root.setProperty('--bg2', p.colors.bg2);
+    root.setProperty('--panel', p.colors.panel);
+    root.setProperty('--cyan', p.colors.cyan);
+    root.setProperty('--magenta', p.colors.magenta);
+    root.setProperty('--purple', p.colors.purple);
+    root.setProperty('--yellow', p.colors.yellow);
+    root.setProperty('--text', p.colors.text);
+    root.setProperty('--dim', p.colors.dim);
+  }
+  function initThemeToggle() {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var cur = null;
+      try { cur = localStorage.getItem(THEME_KEY); } catch (e) { cur = null; }
+      if (!cur) cur = CFG.theme;
+      var idx = -1;
+      for (var i = 0; i < PAL.length; i++) if (PAL[i].id === cur) { idx = i; break; }
+      var next = PAL[(idx + 1) % PAL.length];
+      try { localStorage.setItem(THEME_KEY, next.id); } catch (e) {}
+      var root = document.documentElement.style;
+      root.setProperty('--bg', next.colors.bg);
+      root.setProperty('--bg2', next.colors.bg2);
+      root.setProperty('--panel', next.colors.panel);
+      root.setProperty('--cyan', next.colors.cyan);
+      root.setProperty('--magenta', next.colors.magenta);
+      root.setProperty('--purple', next.colors.purple);
+      root.setProperty('--yellow', next.colors.yellow);
+      root.setProperty('--text', next.colors.text);
+      root.setProperty('--dim', next.colors.dim);
+      // 轻提示当前主题名
+      var nm = next.name || next.id;
+      var tip = document.createElement('div');
+      tip.className = 'theme-tip';
+      tip.textContent = '🎨 ' + nm;
+      document.body.appendChild(tip);
+      setTimeout(function () { tip.classList.add('out'); }, 900);
+      setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 1400);
+    });
+  }
+
   /* ---------- 渲染主页文字 ---------- */
   function renderHero() {
     var h = CFG.hero || {};
@@ -58,9 +109,15 @@
   }
 
   /* ---------- 渲染关于 / 联系 ---------- */
+  function escHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
   function renderText() {
+    var about = String(CFG.about || '').split('\n');
     document.getElementById('about-card').innerHTML =
-      String(CFG.about || '').split('\n').map(function (s) { return '<p>' + s + '</p>'; }).join('');
+      about.map(function (s) { return '<p>' + escHtml(s) + '</p>'; }).join('');
     document.getElementById('contact-card').textContent = CFG.contact || '';
   }
 
@@ -107,13 +164,13 @@
     box.classList.add('has-player');
     box.innerHTML =
       '<div class="music-player">' +
-        '<iframe src="https://music.163.com/outchain/player?type=2&id=' + song.id + '&auto=0&height=66" frameborder="0" scrolling="no"></iframe>' +
+        '<iframe src="https://music.163.com/outchain/player?type=2&id=' + encodeURIComponent(song.id) + '&auto=0&height=66" frameborder="0" scrolling="no" referrerpolicy="no-referrer" loading="lazy" title="网易云音乐播放器"></iframe>' +
       '</div>' +
       '<ul class="music-list">' +
         MUSIC.map(function (s, i) {
           return '<li class="music-item' + (s.id === song.id ? ' on' : '') + '" data-i="' + i + '">' +
-            '<span class="mi-title">' + s.title + '</span>' +
-            '<span class="mi-artist">' + (s.artist || '') + '</span>' +
+            '<span class="mi-title">' + escHtml(s.title) + '</span>' +
+            '<span class="mi-artist">' + escHtml(s.artist || '') + '</span>' +
           '</li>';
         }).join('') +
       '</ul>';
@@ -157,6 +214,19 @@
     term.innerHTML = '';
     for (var i = 0; i < bootLines.length; i++) await typeLine(bootLines[i]);
     enterBtn.classList.remove('hidden');
+  }
+
+  /* 返回访客自动跳过开机动画（sessionStorage 记忆，?boot=1 可强制重看） */
+  function shouldSkipBoot() {
+    if (new URLSearchParams(location.search).get('boot') === '1') return false;
+    try { return sessionStorage.getItem('refusal-booted') === '1'; } catch (e) { return false; }
+  }
+  function markBooted() {
+    try { sessionStorage.setItem('refusal-booted', '1'); } catch (e) {}
+  }
+  function skipBoot() {
+    document.getElementById('boot').style.display = 'none';
+    document.getElementById('os').classList.remove('hidden');
   }
 
   function enterOS() {
@@ -215,10 +285,11 @@
       var card = document.createElement('div');
       card.className = 'work-card';
       card.innerHTML =
-        '<span class="work-id">' + w.id + '</span>' +
-        '<img src="' + w.img + '" alt="' + w.title + '" loading="lazy">' +
-        '<div class="work-meta"><span class="work-name">' + w.title + '</span>' +
-        '<span class="work-cat">' + catLabel(w.cat) + '</span></div>' +
+        '<span class="work-id">' + escHtml(w.id) + '</span>' +
+        '<img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
+        '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
+        '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span></div>' +
+        (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
         '<div class="cat-bar"></div>';
       card.addEventListener('click', function () { openLightbox(w); });
       grid.appendChild(card);
@@ -230,6 +301,14 @@
   function openLightbox(w) {
     document.getElementById('lb-img').src = w.img;
     document.getElementById('lb-caption').textContent = w.id + ' · ' + w.title + ' · ' + catLabel(w.cat);
+    var descEl = document.getElementById('lb-desc');
+    if (w.desc) {
+      descEl.textContent = w.desc;
+      descEl.classList.remove('hidden');
+    } else {
+      descEl.textContent = '';
+      descEl.classList.add('hidden');
+    }
     lb.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
@@ -259,18 +338,33 @@
       var card = document.createElement('div');
       card.className = 'work-card';
       card.innerHTML =
-        '<img src="' + w.img + '" alt="' + w.title + '" loading="lazy">' +
-        '<div class="work-meta"><span class="work-name">' + w.title + '</span>' +
-        '<span class="work-cat">' + catLabel(w.cat) + '</span></div>' +
+        '<span class="work-id">' + escHtml(w.id) + '</span>' +
+        '<img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
+        '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
+        '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span></div>' +
+        (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
         '<div class="cat-bar"></div>';
       card.addEventListener('click', function () { openLightbox(w); });
       grid.appendChild(card);
     });
   }
 
+  /* ---------- 返回顶部 ---------- */
+  function initToTop() {
+    var btn = document.getElementById('to-top');
+    if (!btn) return;
+    window.addEventListener('scroll', function () {
+      btn.classList.toggle('hidden', (window.scrollY || document.documentElement.scrollTop) < 300);
+    }, { passive: true });
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   /* ---------- 初始化 ---------- */
   function init() {
     applyTheme();
+    applyVisitorTheme();
     renderHero();
     renderText();
     renderVideo();
@@ -279,11 +373,14 @@
     renderWorks('all');
     renderHomeStats();
     renderLatestWorks();
+    initThemeToggle();
+    initToTop();
 
-    enterBtn.addEventListener('click', enterOS);
-    if (new URLSearchParams(location.search).get('skip') === '1') {
-      document.getElementById('boot').style.display = 'none';
-      document.getElementById('os').classList.remove('hidden');
+    enterBtn.addEventListener('click', function () { markBooted(); enterOS(); });
+    if (shouldSkipBoot()) {
+      skipBoot();
+    } else if (new URLSearchParams(location.search).get('skip') === '1') {
+      skipBoot();
     }
     boot();
 
