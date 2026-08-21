@@ -1,129 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>refusal· | REFUSAL OS v2026</title>
-<meta name="description" content="refusal· 的个人作品集 —— 手工发饰 / 剪纸 / 绘画 / 影像">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💠</text></svg>">
-<style>
-  /* 站长管理入口 */
-  .admin-link{color:var(--dim);font-size:.72rem;letter-spacing:.1em;border:1px solid var(--line);padding:.25rem .7rem;border-radius:3px;transition:.2s;text-decoration:none}
-  .admin-link:hover{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px rgba(0,240,255,.3)}
-  @media(max-width:860px){.admin-link{margin-right:.4rem}}
-</style>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REFUSAL OS · 内容管理</title>
 </head>
 <body>
-
-<!-- ============ 开机引导画面 ============ -->
-<div id="boot" class="boot">
-  <div class="boot-inner">
-    <div class="boot-logo">💠 REFUSAL<span>·</span></div>
-    <pre id="boot-terminal" class="boot-terminal"></pre>
-    <button id="boot-enter" class="boot-enter hidden">▶ TAP TO ENTER · 进入系统</button>
-  </div>
-  <div class="scanlines"></div>
-</div>
-
-<!-- ============ 主系统界面 ============ -->
-<div id="os" class="os hidden">
-
-  <!-- 顶部状态栏 -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <span class="os-logo">💠 REFUSAL<span>·</span> OS</span>
-      <span class="topbar-tag">v2026.05</span>
-    </div>
-    <div class="topbar-right">
-      <a class="admin-link" href="admin/" title="站长登录 · 管理内容">⚙ 管理</a>
-      <span class="status-dot"></span><span class="topbar-status">SYSTEM ONLINE</span>
-      <span id="clock" class="topbar-clock">--:--:--</span>
-    </div>
-  </header>
-
-  <!-- 侧边导航 -->
-  <nav class="sidebar" id="sidebar">
-    <a href="#home" class="nav-link active" data-sec="home">HOME</a>
-    <a href="#works" class="nav-link" data-sec="works">WORKS · 作品</a>
-    <a href="#video" class="nav-link" data-sec="video">VIDEO · 视频</a>
-    <a href="#music" class="nav-link" data-sec="music">MUSIC · 音乐</a>
-    <a href="#about" class="nav-link" data-sec="about">ABOUT · 关于</a>
-    <a href="#contact" class="nav-link" data-sec="contact">CONTACT · 联系</a>
-  </nav>
-
-  <main class="content">
-
-    <!-- ====== HOME ====== -->
-    <section id="home" class="panel active">
-      <div class="hero">
-        <div class="avatar-wrap">
-          <div class="avatar-ring"></div>
-          <img src="assets/avatar.jpg" alt="refusal· 头像" class="avatar">
-          <div class="avatar-hud">ID: REFUSAL_2026<br>STATUS: CREATOR</div>
-        </div>
-        <div class="hero-text">
-          <h1 class="glitch" data-text="refusal·">refusal·</h1>
-          <p id="hero-tags" class="hero-tags"></p>
-          <p id="hero-slogan" class="hero-slogan"></p>
-          <p id="hero-desc" class="hero-desc"></p>
-          <div class="hero-actions">
-            <a href="#works" class="btn btn-primary">▶ 查看作品</a>
-            <a href="#contact" class="btn btn-ghost">联系我</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== WORKS ====== -->
-    <section id="works" class="panel">
-      <h2 class="sec-title"><span class="tick">▸</span> WORKS / 作品档案</h2>
-      <div id="work-filters" class="filters"></div>
-      <div id="work-grid" class="work-grid"></div>
-    </section>
-
-    <!-- ====== VIDEO ====== -->
-    <section id="video" class="panel">
-      <h2 class="sec-title"><span class="tick">▸</span> VIDEO / 影像区</h2>
-      <div id="video-grid" class="media-grid"></div>
-    </section>
-
-    <!-- ====== MUSIC ====== -->
-    <section id="music" class="panel">
-      <h2 class="sec-title"><span class="tick">▸</span> MUSIC / 音乐播放</h2>
-      <div id="music-box" class="music-box"></div>
-    </section>
-
-    <!-- ====== ABOUT ====== -->
-    <section id="about" class="panel">
-      <h2 class="sec-title"><span class="tick">▸</span> ABOUT / 关于</h2>
-      <div id="about-card" class="about-card"></div>
-    </section>
-
-    <!-- ====== CONTACT ====== -->
-    <section id="contact" class="panel">
-      <h2 class="sec-title"><span class="tick">▸</span> CONTACT / 联系</h2>
-      <div id="contact-card" class="contact-card"></div>
-    </section>
-
-  </main>
-
-  <!-- 页脚状态栏 -->
-  <footer class="botbar">
-    <span>© 2026 refusal· ALL RIGHTS RESERVED</span>
-    <span>REFUSAL OS v2026.05 · AI DEPUTY ONLINE</span>
-  </footer>
-</div>
-
-<!-- ============ 灯箱 ============ -->
-<div id="lightbox" class="lightbox hidden">
-  <button id="lb-close" class="lb-close">✕</button>
-  <img id="lb-img" src="" alt="">
-  <div id="lb-caption" class="lb-caption"></div>
-</div>
-
-<script src="js/palettes.js"></script>
-<script src="js/site-config.js"></script>
-<script src="js/main.js"></script>
+  <!-- Netlify Identity 登录组件（提供 GitHub 登录 / 注册 / 忘记密码） -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <!-- Decap CMS 后台：访问 https://你的网址/admin 登录后管理内容 -->
+  <script src="https://cdn.jsdelivr.net/npm/decap-cms@3/dist/decap-cms.js"></script>
 </body>
 </html>
