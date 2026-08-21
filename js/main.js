@@ -284,14 +284,12 @@
   function skipBoot() {
     document.getElementById('boot').style.display = 'none';
     document.getElementById('os').classList.remove('hidden');
-    initCarousels();
   }
 
   function enterOS() {
     document.getElementById('boot').classList.add('gone');
     document.getElementById('os').classList.remove('hidden');
     setTimeout(function () { document.getElementById('boot').style.display = 'none'; }, 650);
-    initCarousels();
   }
 
   /* ---------- 时钟 ---------- */
@@ -303,17 +301,10 @@
 
   /* ---------- 导航 ---------- */
   var currentFilter = 'all';
-  /* 轮播队列：等进入系统（容器可见）后再初始化，避免 hidden 容器测量为 0 */
-  var carouselQueue = [];
-  function initCarousels() {
-    carouselQueue.forEach(function (q) { initHomeCarousel(q.sec, q.track); });
-    carouselQueue = [];
-  }
   function showSection(id) {
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === id); });
     document.querySelectorAll('.nav-link').forEach(function (l) { l.classList.toggle('active', l.dataset.sec === id); });
     if (id === 'works') renderWorks(currentFilter);
-    if (id === 'home') initCarousels();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -462,29 +453,27 @@
         '<span class="home-cat-count">' + list.length + ' 件</span>' +
         '<a href="#works" data-sec="works" data-cat="' + escHtml(c.id) + '" class="home-cat-more">查看全部 →</a>';
       sec.appendChild(head);
-      var wrap = document.createElement('div');
-      wrap.className = 'cat-carousel-wrap';
-      var track = document.createElement('div');
-      track.className = 'cat-carousel';
+      // 淘宝式紧凑卡片网格（一屏多张，节省空间）
+      var grid = document.createElement('div');
+      grid.className = 'cat-grid';
       list.forEach(function (w, wi) {
         var card = document.createElement('div');
-        card.className = 'work-card';
+        card.className = 'work-card compact';
         // 第一张 eager（首屏优先），其余 lazy 加速加载
         var lazyAttr = wi === 0 ? '' : ' loading="lazy"';
         card.innerHTML =
           '<span class="work-id">' + escHtml(w.id) + '</span>' +
-          '<div class="slide-img"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '"' + lazyAttr + ' decoding="async"></div>' +
-          '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
-          '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span></div>' +
-          (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
+          '<div class="compact-thumb"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '"' + lazyAttr + ' decoding="async"></div>' +
+          '<div class="compact-info">' +
+            '<span class="work-name">' + escHtml(w.title) + '</span>' +
+            '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span>' +
+          '</div>' +
           '<div class="cat-bar"></div>';
         card.addEventListener('click', function () { openLightbox(w); });
-        track.appendChild(card);
+        grid.appendChild(card);
       });
-      wrap.appendChild(track);
-      sec.appendChild(wrap);
+      sec.appendChild(grid);
       box.appendChild(sec);
-      carouselQueue.push({ sec: sec, track: track });
     });
     // 分类"查看全部"跳转到作品区并应用筛选
     box.querySelectorAll('.home-cat-more').forEach(function (a) {
@@ -497,84 +486,6 @@
         history.replaceState(null, '', '#works');
       });
     });
-  }
-
-  /* 单个分类模块的幻灯片轮播：一次一张 + 自动播放 + 左右箭头 + 指示器圆点 */
-  function initHomeCarousel(sec, track) {
-    var cards = Array.prototype.slice.call(track.children);
-    var GAP = 16;                                       // 卡片间距 1rem
-    var step = function () { return cards[0].offsetWidth + GAP; };
-    var canScroll = function () { return track.scrollWidth > track.clientWidth + 4; };
-    if (cards.length < 2 || !canScroll()) return;       // 单张或一屏放得下时无需轮播
-
-    // 左右箭头
-    var wrap = sec.querySelector('.cat-carousel-wrap');
-    var prevBtn = document.createElement('button');
-    prevBtn.className = 'car-arrow car-prev';
-    prevBtn.innerHTML = '‹';
-    prevBtn.title = '上一张';
-    var nextBtn = document.createElement('button');
-    nextBtn.className = 'car-arrow car-next';
-    nextBtn.innerHTML = '›';
-    nextBtn.title = '下一张';
-    wrap.appendChild(prevBtn);
-    wrap.appendChild(nextBtn);
-
-    // 指示器圆点
-    var dots = document.createElement('div');
-    dots.className = 'car-dots';
-    sec.appendChild(dots);
-    var dotEls = cards.map(function (_, i) {
-      var d = document.createElement('button');
-      d.className = 'car-dot';
-      d.title = '第 ' + (i + 1) + ' 张';
-      d.addEventListener('click', function () { goTo(i); });
-      dots.appendChild(d);
-      return d;
-    });
-
-    var cur = 0;
-    var timer = null;
-    function updateDots() {
-      dotEls.forEach(function (d, i) { d.classList.toggle('on', i === cur); });
-    }
-    function goTo(i) {
-      cur = Math.max(0, Math.min(cards.length - 1, i));
-      track.scrollTo({ left: cur * step(), behavior: 'smooth' });
-      updateDots();
-    }
-    function next() { goTo(cur + 1 >= cards.length ? 0 : cur + 1); }
-    function prev() { goTo(cur - 1 < 0 ? cards.length - 1 : cur - 1); }
-    function start() {
-      stop();
-      if (!canScroll()) return;
-      timer = setInterval(next, 4000);
-    }
-    function stop() { if (timer) { clearInterval(timer); timer = null; } }
-
-    prevBtn.addEventListener('click', function () { stop(); prev(); });
-    nextBtn.addEventListener('click', function () { stop(); next(); });
-    // 悬停 / 触摸暂停，离开恢复
-    wrap.addEventListener('mouseenter', stop);
-    wrap.addEventListener('mouseleave', start);
-    track.addEventListener('touchstart', stop, { passive: true });
-    track.addEventListener('touchend', function () { setTimeout(start, 2500); }, { passive: true });
-    // 手动滚动后同步指示器
-    track.addEventListener('scroll', function () {
-      var idx = Math.round(track.scrollLeft / step());
-      if (idx >= 0 && idx < cards.length && idx !== cur) { cur = idx; updateDots(); }
-    }, { passive: true });
-    // 窗口尺寸变化时重算（防抖）
-    var rt = null;
-    window.addEventListener('resize', function () {
-      clearTimeout(rt);
-      rt = setTimeout(function () {
-        if (canScroll()) { start(); } else { stop(); }
-      }, 200);
-    });
-
-    updateDots();
-    start();
   }
 
   /* ---------- 首页最新动态（小红书风格卡片） ---------- */
@@ -801,14 +712,29 @@
     });
   }
 
-  /* ---------- 图片加载完成渐入（避免突兀闪现） ---------- */
+  /* ---------- 图片加载完成渐入（避免突兀闪现；兼容缓存图片） ---------- */
+  function markImgLoaded(img) {
+    if (!img || img.classList.contains('loaded')) return;
+    // 缓存图片 complete 为 true 且 naturalWidth>0，直接显示
+    if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+  }
   function initImgFade() {
+    var selector = '.work-card img, .moment-media img, .hm-moment-media img, .compact-thumb img';
     document.addEventListener('load', function (e) {
       var t = e.target;
-      if (t && t.tagName === 'IMG' && t.closest && (t.closest('.work-card') || t.closest('.moment-media'))) {
+      if (t && t.tagName === 'IMG' && t.closest && t.closest(selector)) {
         t.classList.add('loaded');
       }
     }, true);
+    // 兜底：内容异步渲染，轮询检查已加载/缓存的图片
+    var iv = setInterval(function () {
+      var pending = document.querySelectorAll(selector + ':not(.loaded)');
+      if (!pending.length) { clearInterval(iv); return; }
+      pending.forEach(markImgLoaded);
+    }, 500);
+    setTimeout(function () { clearInterval(iv); }, 20000);
+    // 立即检查一次（DOM 已就绪的图片）
+    document.querySelectorAll(selector).forEach(markImgLoaded);
   }
 
   /* ---------- 返回顶部 ---------- */
