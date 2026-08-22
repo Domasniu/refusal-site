@@ -30,6 +30,10 @@ button.small{padding:4px 10px;font-size:12px}
 .tab-btn{flex:1;min-width:90px;background:transparent;border:1px solid var(--line);color:var(--dim);padding:9px 12px;border-radius:6px;font-size:13px;cursor:pointer;transition:.15s}
 .tab-btn:hover{color:var(--cyan);border-color:var(--cyan)}
 .tab-btn.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
+.work-scope{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.scope-btn{background:transparent;border:1px solid var(--line);color:var(--dim);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;transition:.15s}
+.scope-btn:hover{color:var(--cyan);border-color:var(--cyan)}
+.scope-btn.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
 /* 登录区 */
 #login-box{text-align:center;padding:60px 20px}
 #login-box h2{font-size:20px;color:var(--cyan);letter-spacing:.1em;margin-bottom:24px}
@@ -211,6 +215,12 @@ button.small{padding:4px 10px;font-size:12px}
   <div class="card" data-tab="works">
     <h2>⑩ 作品（可多图）</h2>
     <p class="hint">每件作品可上传多张照片：点「添加图片」给当前作品追加图片，第一张为主图。点图片可删除。</p>
+    <div class="work-scope">
+      <button class="scope-btn active" data-scope="all">全部</button>
+      <button class="scope-btn" data-scope="works">作品</button>
+      <button class="scope-btn" data-scope="pet">🐾 宠物</button>
+      <button class="scope-btn" data-scope="photo">📷 摄影</button>
+    </div>
     <div id="work-list"></div>
     <div class="toolbar">
       <button id="btn-add-work">＋ 添加作品</button>
@@ -513,17 +523,40 @@ $('inp-work').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
   var p = nextWorkImgPath('assets/works/work-');
   newImages[p] = f;
-  var cat = config.categories.length ? config.categories[0].id : '';
+  var cat = defaultCatForScope();
   config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
   renderWorks(); renderCats();
   this.value = '';
+});
+/* ================= 作品分区过滤（作品/宠物/摄影） ================= */
+var workScope = 'all';
+function workInScope(w, scope){
+  if (scope === 'all') return true;
+  if (scope === 'works') return w.cat !== 'pet' && w.cat !== 'photo';
+  return w.cat === scope;
+}
+function defaultCatForScope(){
+  if (workScope === 'pet') return 'pet';
+  if (workScope === 'photo') return 'photo';
+  var cats = (config.categories || []).filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; });
+  return cats.length ? cats[0].id : '';
+}
+document.querySelectorAll('.scope-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    workScope = btn.dataset.scope;
+    document.querySelectorAll('.scope-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
+    renderWorks();
+  });
 });
 function renderWorks(){
   var box = $('work-list');
   box.innerHTML = '';
   var grid = document.createElement('div');
   grid.className = 'work-grid';
+  var shown = 0;
   config.works.forEach(function(w, idx){
+    if (!workInScope(w, workScope)) return;
+    shown++;
     var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
     var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
     var catOpts = config.categories.map(function(c){
@@ -550,6 +583,7 @@ function renderWorks(){
       '</div>';
     grid.appendChild(card);
   });
+  if (!shown) grid.innerHTML = '<p class="hint" style="grid-column:1/-1">该分区暂无作品。</p>';
   box.appendChild(grid);
   box.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){ config.works[+this.dataset.i].title = this.value; });
@@ -737,7 +771,8 @@ $('btn-add-cat').addEventListener('click', function(){
 function renderCats(){
   var box = $('cat-list');
   box.innerHTML = '';
-  config.categories.forEach(function(c, idx){
+  // 作品分类（可编辑，不含宠物/摄影）
+  config.categories.filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; }).forEach(function(c){
     var used = config.works.filter(function(w){ return w.cat === c.id; }).length;
     var row = document.createElement('div');
     row.className = 'cat-row';
@@ -747,11 +782,27 @@ function renderCats(){
       b.className = 'small';
       b.style.cssText = 'border-color:#ff5c5c;color:#ff5c5c';
       b.textContent = '删除';
-      b.onclick = function(){ config.categories.splice(idx,1); renderCats(); renderWorks(); };
+      b.onclick = function(){ config.categories = config.categories.filter(function(x){ return x.id !== c.id; }); renderCats(); renderWorks(); };
       row.appendChild(b);
     }
     box.appendChild(row);
   });
+  // 独立分区（宠物/摄影，通过上方筛选管理，不可删）
+  var fixed = config.categories.filter(function(c){ return c.id === 'pet' || c.id === 'photo'; });
+  if (fixed.length) {
+    var t = document.createElement('p');
+    t.className = 'hint';
+    t.style.cssText = 'margin-top:8px;color:var(--magenta)';
+    t.textContent = '独立分区（通过上方「宠物 / 摄影」筛选管理，不可删除）';
+    box.appendChild(t);
+    fixed.forEach(function(c){
+      var used = config.works.filter(function(w){ return w.cat === c.id; }).length;
+      var row = document.createElement('div');
+      row.className = 'cat-row';
+      row.innerHTML = '<span class="nm">' + esc(c.label) + ' <span style="color:var(--dim);font-size:11px">(' + used + ' 件)</span></span><span style="color:var(--dim);font-size:11px">独立分区</span>';
+      box.appendChild(row);
+    });
+  }
 }
 
 /* ================= 侧栏导航（可视化编辑） ================= */
