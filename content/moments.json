@@ -1,16 +1,6 @@
 {
   "moments": [
     {
-      "id": "M-002",
-      "type": "image",
-      "date": "2026-08-21",
-      "text": "窗外下了一整天的雨，宅家画线稿。",
-      "images": [
-        "assets/works/drawing-1-house.jpg"
-      ],
-      "video": ""
-    },
-    {
       "id": "M-003",
       "type": "text",
       "date": "2026-08-22",
