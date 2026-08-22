@@ -443,19 +443,33 @@
 
   /* ---------- 灯箱（支持多图切换） ---------- */
   var lb = document.getElementById('lightbox');
-  var lbImages = [];   // 当前作品的图片列表
+  var lbItems = [];   // 当前作品的图片列表
   var lbIndex = 0;
   var lbDesc = '';
   var lbCaption = '';
-  function showLbImage(i) {
-    if (!lbImages.length) return;
-    if (i < 0) i = lbImages.length - 1;
-    if (i >= lbImages.length) i = 0;
+  function showLbItem(i) {
+    if (!lbItems.length) return;
+    if (i < 0) i = lbItems.length - 1;
+    if (i >= lbItems.length) i = 0;
     lbIndex = i;
-    document.getElementById('lb-img').src = lbImages[i];
+    var item = lbItems[i];
+    if (typeof item === 'string') item = { type: 'image', src: item };
+    var imgEl = document.getElementById('lb-img');
+    var vidEl = document.getElementById('lb-video');
+    if (item.type === 'video') {
+      imgEl.style.display = 'none';
+      vidEl.style.display = '';
+      vidEl.src = item.src;
+      vidEl.play();
+    } else {
+      vidEl.style.display = 'none';
+      vidEl.pause();
+      imgEl.style.display = '';
+      imgEl.src = item.src;
+    }
     var countEl = document.getElementById('lb-count');
-    if (lbImages.length > 1) {
-      countEl.textContent = (i + 1) + ' / ' + lbImages.length;
+    if (lbItems.length > 1) {
+      countEl.textContent = (i + 1) + ' / ' + lbItems.length;
       countEl.classList.remove('hidden');
       document.getElementById('lb-prev').classList.remove('hidden');
       document.getElementById('lb-next').classList.remove('hidden');
@@ -465,7 +479,7 @@
       document.getElementById('lb-next').classList.add('hidden');
     }
     var playBtn = document.getElementById('lb-play');
-    if (playBtn) { if (lbImages.length > 1) playBtn.classList.remove('hidden'); else playBtn.classList.add('hidden'); }
+    if (playBtn) { if (lbItems.length > 1) playBtn.classList.remove('hidden'); else playBtn.classList.add('hidden'); }
   }
   var lbTimer = null;
   function lbStopAuto() {
@@ -475,12 +489,14 @@
   }
   function lbToggleAuto() {
     if (lbTimer) { lbStopAuto(); return; }
-    if (lbImages.length <= 1) return;
+    if (lbItems.length <= 1) return;
     document.getElementById('lb-play').textContent = '⏸';
-    lbTimer = setInterval(function () { showLbImage(lbIndex + 1); }, 3000);
+    lbTimer = setInterval(function () { showLbItem(lbIndex + 1); }, 3000);
   }
   function showLightbox(imgs, caption, desc) {
-    lbImages = imgs && imgs.length ? imgs.slice() : [];
+    lbItems = (imgs && imgs.length ? imgs : []).map(function (it) {
+      return (typeof it === 'string') ? { type: 'image', src: it } : it;
+    }).filter(function (it) { return it && it.src; });
     lbIndex = 0;
     lbCaption = caption || '';
     lbDesc = desc || '';
@@ -493,8 +509,8 @@
       descEl.textContent = '';
       descEl.classList.add('hidden');
     }
-    if (!lbImages.length) return;
-    showLbImage(0);
+    if (!lbItems.length) return;
+    showLbItem(0);
     lb.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
@@ -506,6 +522,8 @@
     lb.classList.add('hidden');
     document.body.style.overflow = '';
     lbStopAuto();
+    var v = document.getElementById('lb-video');
+    if (v) { v.pause(); v.src = ''; }
   }
 
   /* ---------- 首页统计 + 最新作品 ---------- */
@@ -628,7 +646,7 @@
       '</div>';
     card.addEventListener('click', function () {
       if (m.images && m.images.length) {
-        lbImages = m.images.slice();
+        lbItems = m.images.slice();
         lbIndex = 0;
         lbCaption = m.date + ' · 动态';
         lbDesc = m.text || '';
@@ -636,7 +654,7 @@
         var descEl = document.getElementById('lb-desc');
         if (lbDesc) { descEl.textContent = lbDesc; descEl.classList.remove('hidden'); }
         else { descEl.textContent = ''; descEl.classList.add('hidden'); }
-        showLbImage(0);
+        showLbItem(0);
         lb.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
       } else {
@@ -668,24 +686,29 @@
       return;
     }
     list.slice().reverse().forEach(function (m, idx) {
-      var firstVideo = (m.videos && m.videos.length) ? m.videos[0] : (m.video || '');
-      var hasMedia = !!(firstVideo || (m.images && m.images.length));
+      var videos = (m.videos && m.videos.length) ? m.videos : (m.video ? [m.video] : []);
+      var imgs = m.images || [];
+      var mediaItems = imgs.map(function (p) { return { type: 'image', src: p }; })
+        .concat(videos.map(function (p) { return { type: 'video', src: p }; }));
+      var hasMedia = mediaItems.length > 0;
       var card = document.createElement('div');
       card.className = 'moment-card' + (hasMedia ? ' has-media' : ' text-only');
       card.style.animationDelay = (idx * 40) + 'ms';
       var media = '';
-      if (firstVideo) {
+      var countBadge = mediaItems.length > 1 ? '<span class="moment-count">' + mediaItems.length + '</span>' : '';
+      if (imgs.length) {
+        var first = imgs[0];
         media = '<div class="moment-media">' +
-          '<video class="moment-video" src="' + escHtml(firstVideo) + '" preload="metadata" muted playsinline></video>' +
+          '<img src="' + escHtml(thumbPath(first)) + '" data-fb="' + escHtml(first) + '" alt="" loading="lazy" decoding="async">' +
+          '<span class="moment-type">图片</span>' +
+          countBadge +
+          '</div>';
+      } else if (videos.length) {
+        media = '<div class="moment-media">' +
+          '<video class="moment-video" src="' + escHtml(videos[0]) + '" preload="metadata" muted playsinline></video>' +
           '<span class="moment-type">视频</span>' +
           '<span class="moment-play">▶</span>' +
-          '</div>';
-      } else if (m.images && m.images.length) {
-        var first = m.images[0];
-        media = '<div class="moment-media">' +
-          '<img src="' + escHtml(thumbPath(first)) + '" data-fb="' + escHtml(first) + '" alt="" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(m.images)) + '">' +
-          '<span class="moment-type">图片</span>' +
-          (m.images.length > 1 ? '<span class="moment-count">' + m.images.length + '</span>' : '') +
+          countBadge +
           '</div>';
       }
       card.innerHTML =
@@ -696,27 +719,23 @@
           '<span class="moment-date">' + escHtml(m.date || '') + '</span>' +
           '<span class="moment-likes">❤ ' + escHtml(m.likes || '999') + '</span>' +
         '</div>';
-      var img = card.querySelector('.moment-media img');
-      if (img) {
-        img.addEventListener('click', function () {
-          var arr = [];
-          try { arr = JSON.parse(img.dataset.imgs || '[]'); } catch (e) { arr = [img.src]; }
-          showLightbox(arr, m.date + ' · 动态', m.text || '');
-        });
-      }
-      // 视频点击播放/暂停（取消静音并显示控制条）
-      var vid = card.querySelector('.moment-media video');
-      if (vid) {
-        vid.addEventListener('click', function (e) {
-          e.stopPropagation();
-          if (vid.paused) {
-            vid.muted = false;
-            vid.controls = true;
-            vid.play();
-            var badge = card.querySelector('.moment-play');
-            if (badge) badge.style.display = 'none';
+      // 点击媒体：多图/多视频/混合 → 打开灯箱切换；单视频 → 内联播放
+      var mediaEl = card.querySelector('.moment-media');
+      if (mediaEl) {
+        mediaEl.addEventListener('click', function () {
+          if (mediaItems.length > 1) {
+            showLightbox(mediaItems, m.date + ' · 动态', m.text || '');
+          } else if (videos.length && !imgs.length) {
+            var v = card.querySelector('.moment-media video');
+            if (v) {
+              if (v.paused) {
+                v.muted = false; v.controls = true; v.play();
+                var b = card.querySelector('.moment-play');
+                if (b) b.style.display = 'none';
+              } else { v.pause(); }
+            }
           } else {
-            vid.pause();
+            showLightbox(imgs, m.date + ' · 动态', m.text || '');
           }
         });
       }
@@ -952,15 +971,15 @@
     }
 
     document.getElementById('lb-close').addEventListener('click', closeLightbox);
-    document.getElementById('lb-prev').addEventListener('click', function () { showLbImage(lbIndex - 1); });
-    document.getElementById('lb-next').addEventListener('click', function () { showLbImage(lbIndex + 1); });
+    document.getElementById('lb-prev').addEventListener('click', function () { showLbItem(lbIndex - 1); });
+    document.getElementById('lb-next').addEventListener('click', function () { showLbItem(lbIndex + 1); });
     document.getElementById('lb-play').addEventListener('click', lbToggleAuto);
     lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') { closeLightbox(); searchPanelClose(); }
       if (!lb.classList.contains('hidden')) {
-        if (e.key === 'ArrowLeft') showLbImage(lbIndex - 1);
-        if (e.key === 'ArrowRight') showLbImage(lbIndex + 1);
+        if (e.key === 'ArrowLeft') showLbItem(lbIndex - 1);
+        if (e.key === 'ArrowRight') showLbItem(lbIndex + 1);
       }
     });
   }
