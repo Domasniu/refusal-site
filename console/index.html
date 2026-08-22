@@ -174,6 +174,19 @@ button.small{padding:4px 10px;font-size:12px}
       <div class="fitem"><label>首页小纸条（A LITTLE NOTE 内容）</label><input type="text" id="f-note" placeholder="希望记录自己，留下回忆。"></div>
       <div class="fitem"><label>联系邮箱（首页底部显示）</label><input type="text" id="f-email" placeholder="hello@refusal.site"></div>
       <div class="fitem"><label>标题字号缩放（1 = 默认，1.2 放大 20%，支持小数）</label><input type="text" id="f-titlescale" placeholder="1"></div>
+      <div class="fitem"><label>首页卡片尺寸</label>
+        <select id="f-cardsize">
+          <option value="compact">紧凑（一屏更多）</option>
+          <option value="normal">标准</option>
+          <option value="large">大（推荐）</option>
+        </select>
+      </div>
+      <div class="fitem"><label>首页卡片自动轮播</label>
+        <select id="f-carousel">
+          <option value="1">开启（图片定时切换 / 视频静音播完再切）</option>
+          <option value="0">关闭（只显示第一张）</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -485,6 +498,8 @@ function fillForm(){
   $('f-note').value = config.note || '';
   $('f-email').value = config.contactEmail || '';
   $('f-titlescale').value = (config.hero && config.hero.titleScale) || 1;
+  $('f-cardsize').value = config.homeCardSize || 'large';
+  $('f-carousel').value = (config.homeCarousel === false) ? '0' : '1';
   $('f-about').value = config.about || '';
   $('f-contact').value = config.contact || '';
   $('f-douyin').value = (config.video && config.video.douyin) || '';
@@ -508,6 +523,8 @@ function collect(){
   };
   config.note = $('f-note').value.trim();
   config.contactEmail = $('f-email').value.trim();
+  config.homeCardSize = $('f-cardsize').value || 'large';
+  config.homeCarousel = $('f-carousel').value !== '0';
   config.about = $('f-about').value;
   config.contact = $('f-contact').value;
   config.video = { douyin: $('f-douyin').value.trim(), bilibili: $('f-bilibili').value.trim(), youtube: $('f-youtube').value.trim() };
@@ -1355,6 +1372,8 @@ $('btn-save').addEventListener('click', async function(){
       nav: config.nav,
       homeModules: config.homeModules,
       secTitles: config.secTitles,
+      homeCardSize: config.homeCardSize || 'large',
+      homeCarousel: config.homeCarousel !== false,
       note: config.note,
       contactEmail: config.contactEmail,
       about: config.about,

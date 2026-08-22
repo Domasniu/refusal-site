@@ -90,6 +90,8 @@
     }
   ],
   "secTitles": {},
+  "homeCardSize": "large",
+  "homeCarousel": true,
   "note": "希望记录自己，留下回忆。",
   "contactEmail": "hello@refusal.site",
   "about": "这里是一段自我介绍（占位）。\n喜欢手工、剪纸、绘画，正在用作品一点点填满这个赛博空间。",

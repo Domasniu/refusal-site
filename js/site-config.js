@@ -39,13 +39,16 @@ window.SITE_CONFIG = {
     { id: 'home', label: '小游戏', icon: '🎮' }
   ],
 
-  /* -------- 首页模块（配置化：moments=最新动态 / works=作品 / note=便签） -------- */
+  /* -------- 首页模块（配置化：moments=最新动态 / works=作品 / pet=宠物 / photo=摄影 / note=便签） -------- */
   homeModules: [
     { type: 'moments', title: '生活动态', sub: '记录日常，分享心情', sec: 'life' },
     { type: 'works', title: '最新作品', sub: '记录日常，分享心情', sec: 'works' },
-    { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'pet' },
-    { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'photo' }
+    { type: 'pet', title: '宠物日常', sub: '记录日常，分享心情', sec: 'pet' },
+    { type: 'photo', title: '摄影', sub: '随便拍拍', sec: 'photo' }
   ],
+  /* 首页卡片：尺寸（compact/normal/large）+ 自动轮播开关 */
+  homeCardSize: 'large',
+  homeCarousel: true,
   note: '希望记录自己，留下回忆。',
 
   /* -------- 面板标题（配置化） -------- */

@@ -291,17 +291,27 @@ body::after{
 .home-cat-cards{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.1rem;
 }
+.home-cat-cards.size-compact{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.home-cat-cards.size-normal{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.home-cat-cards.size-large{grid-template-columns:repeat(auto-fill,minmax(310px,1fr))}
 .home-cat-card{
   background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
   cursor:pointer;transition:.25s;position:relative;
 }
 .home-cat-card:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:var(--glow-cyan)}
-.hcc-thumb{aspect-ratio:1/1;overflow:hidden;background:rgba(0,0,0,.25)}
-.hcc-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s,opacity .5s;opacity:0}
-.hcc-thumb img.loaded{opacity:1}
+.hcc-thumb{aspect-ratio:1/1;overflow:hidden;background:rgba(0,0,0,.25);position:relative}
+.hcc-thumb > img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s,opacity .5s;opacity:0}
+.hcc-thumb > img.loaded{opacity:1}
 .hcc-thumb-empty{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,240,255,.08),rgba(255,45,149,.08)),rgba(0,0,0,.28)}
 .hcc-empty-ico{font-size:2rem;opacity:.45}
-.home-cat-card:hover .hcc-thumb img{transform:scale(1.05)}
+.home-cat-card:hover .hcc-thumb > img{transform:scale(1.05)}
+/* 首页卡片自动轮播 */
+.hcc-carousel{position:absolute;inset:0}
+.hcc-slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .55s;background:rgba(0,0,0,.25)}
+.hcc-slide.on{opacity:1}
+.hcc-dots{position:absolute;bottom:.55rem;left:50%;transform:translateX(-50%);display:flex;gap:.32rem;z-index:3}
+.hcc-dots i{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.38);transition:.25s}
+.hcc-dots i.on{width:18px;background:var(--cyan)}
 .hcc-body{padding:.75rem .9rem;display:flex;flex-direction:column;gap:.22rem}
 .hcc-title{font-size:.86rem;color:var(--text);letter-spacing:.04em}
 .hcc-sub{font-size:.66rem;color:var(--dim);letter-spacing:.05em}

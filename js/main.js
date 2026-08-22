@@ -573,33 +573,54 @@
       { type: 'pet', title: '宠物日常', sub: '记录日常，分享心情', sec: 'pet' },
       { type: 'photo', title: '摄影', sub: '随便拍拍', sec: 'photo' }
     ];
+    var carouselOn = CFG.homeCarousel !== false; // 默认开启自动轮播
+    var sizeCls = 'size-large';
+    if (CFG.homeCardSize === 'compact') sizeCls = 'size-compact';
+    else if (CFG.homeCardSize === 'normal') sizeCls = 'size-normal';
     // 大标题「最新动态」
     var stitle = document.createElement('div');
     stitle.className = 'home-sec-title';
     stitle.innerHTML = '<span class="tick">▸</span> 最新动态';
     box.appendChild(stitle);
-    // 四个分类卡片展示区（点击进入幻灯片播放）
+    // 分类卡片展示区
     var grid = document.createElement('div');
-    grid.className = 'home-cat-cards';
+    grid.className = 'home-cat-cards ' + sizeCls;
     modules.forEach(function (mod) {
       var media = collectModuleMedia(mod);
       var hasMedia = media.length > 0;
-      // 缩略图取最新的一张图片（若最新为视频则取其后第一张图片）
+      // 静态封面：取最新的一张图片（无图片则用 🎬 占位）
       var thumb = null;
       for (var k = 0; k < media.length; k++) {
         if (media[k].type === 'image') { thumb = media[k].src; break; }
       }
       var card = document.createElement('div');
       card.className = 'home-cat-card' + (hasMedia ? '' : ' empty');
+      var thumbHTML;
+      if (!hasMedia) {
+        thumbHTML = '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">🖼️</span></div>';
+      } else if (carouselOn && media.length > 1) {
+        // 自动轮播：图片定时切换 / 视频静音播放
+        var slides = media.map(function (it, i) {
+          if (it.type === 'video') {
+            return '<video class="hcc-slide" src="' + escHtml(it.src) + '" muted playsinline preload="metadata"></video>';
+          }
+          return '<img class="hcc-slide" src="' + escHtml(thumbPath(it.src)) + '" data-fb="' + escHtml(it.src) + '" alt="" decoding="async"' + (i === 0 ? '' : ' loading="lazy"') + '>';
+        }).join('');
+        var dots = '<span class="hcc-dots">' + media.map(function (_, i) { return '<i' + (i === 0 ? ' class="on"' : '') + '></i>'; }).join('') + '</span>';
+        thumbHTML = '<div class="hcc-thumb"><div class="hcc-carousel">' + slides + '</div>' + dots + '</div>';
+      } else if (thumb) {
+        thumbHTML = '<div class="hcc-thumb"><img src="' + escHtml(thumbPath(thumb)) + '" data-fb="' + escHtml(thumb) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>';
+      } else {
+        thumbHTML = '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">🎬</span></div>';
+      }
       card.innerHTML =
-        (thumb
-          ? '<div class="hcc-thumb"><img src="' + escHtml(thumbPath(thumb)) + '" data-fb="' + escHtml(thumb) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>'
-          : '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">' + (hasMedia ? '🎬' : '🖼️') + '</span></div>') +
+        thumbHTML +
         '<div class="hcc-body">' +
           '<span class="hcc-title">' + escHtml(mod.title || '') + '</span>' +
           (mod.sub ? '<span class="hcc-sub">' + escHtml(mod.sub) + '</span>' : '') +
         '</div>' +
         (hasMedia ? '<div class="hcc-likes">❤ ' + escHtml(mod.likes || '999') + '</div>' : '');
+      if (carouselOn && media.length > 1) initCardCarousel(card);
       card.addEventListener('click', function () {
         if (hasMedia) {
           showLightbox(media, mod.title || '', mod.sub || '');
@@ -613,6 +634,57 @@
       grid.appendChild(card);
     });
     box.appendChild(grid);
+  }
+
+  /* 首页卡片自动轮播：图片定时切换；视频静音播放，播完自动切下一张 */
+  function initCardCarousel(card) {
+    var root = card.querySelector('.hcc-carousel');
+    if (!root) return;
+    var slides = Array.prototype.slice.call(root.children);
+    var dots = card.querySelectorAll('.hcc-dots i');
+    var idx = 0;
+    var timer = null;
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+    function pauseVideos() {
+      slides.forEach(function (s) {
+        if (s.tagName === 'VIDEO') { s.pause(); s.currentTime = 0; }
+      });
+    }
+    function show(i) {
+      idx = (i + slides.length) % slides.length;
+      slides.forEach(function (s, k) { s.classList.toggle('on', k === idx); });
+      if (dots.length) dots.forEach(function (d, k) { d.classList.toggle('on', k === idx); });
+    }
+    function next() {
+      clearTimer();
+      pauseVideos();
+      show(idx + 1);
+      play();
+    }
+    function play() {
+      var s = slides[idx];
+      if (s.tagName === 'VIDEO') {
+        s.muted = true;
+        s.currentTime = 0;
+        var started = false;
+        // 兜底：3 秒内没开始播放（被拦截/加载失败）就跳过
+        var guard = setTimeout(function () { if (!started) next(); }, 3000);
+        s.onended = function () { clearTimeout(guard); next(); };
+        s.onerror = function () { clearTimeout(guard); next(); };
+        var p = s.play();
+        if (p && p.then) {
+          p.then(function () { started = true; clearTimeout(guard); })
+           .catch(function () { clearTimeout(guard); next(); });
+        } else {
+          started = true; clearTimeout(guard);
+        }
+      } else {
+        clearTimer();
+        timer = setTimeout(next, 3000);
+      }
+    }
+    show(0);
+    play();
   }
 
   /* 收集某分类卡片的全部媒体（图片 + 视频），统一按"最新在前"排序，供灯箱切换 */
