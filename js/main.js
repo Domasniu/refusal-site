@@ -676,7 +676,7 @@
       var media = '';
       if (firstVideo) {
         media = '<div class="moment-media">' +
-          '<video class="moment-video" src="' + escHtml(firstVideo) + '" preload="metadata" muted></video>' +
+          '<video class="moment-video" src="' + escHtml(firstVideo) + '" preload="metadata" muted playsinline></video>' +
           '<span class="moment-type">视频</span>' +
           '<span class="moment-play">▶</span>' +
           '</div>';
@@ -702,6 +702,22 @@
           var arr = [];
           try { arr = JSON.parse(img.dataset.imgs || '[]'); } catch (e) { arr = [img.src]; }
           showLightbox(arr, m.date + ' · 动态', m.text || '');
+        });
+      }
+      // 视频点击播放/暂停（取消静音并显示控制条）
+      var vid = card.querySelector('.moment-media video');
+      if (vid) {
+        vid.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (vid.paused) {
+            vid.muted = false;
+            vid.controls = true;
+            vid.play();
+            var badge = card.querySelector('.moment-play');
+            if (badge) badge.style.display = 'none';
+          } else {
+            vid.pause();
+          }
         });
       }
       grid.appendChild(card);
