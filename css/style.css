@@ -107,7 +107,7 @@ body::after{
 
 /* 全局左侧个人栏（切换页签保持不动） */
 .side-col{
-  position:fixed;top:46px;left:0;bottom:0;z-index:40;width:260px;
+  position:fixed;top:46px;left:0;bottom:0;z-index:40;width:300px;
   background:rgba(6,10,20,.94);border-right:1px solid var(--line);
   display:flex;flex-direction:column;align-items:center;padding:1.5rem 1.1rem;
   gap:.7rem;overflow-y:auto;backdrop-filter:blur(8px);
@@ -124,10 +124,13 @@ body::after{
 }
 .side-status{margin-top:.4rem;font-size:.66rem;color:var(--magenta);letter-spacing:.12em;text-shadow:0 0 8px rgba(255,45,149,.4)}
 .side-music{width:100%;margin-top:.2rem}
-.side-music .home-music-player{flex-direction:column;gap:.7rem;padding:.85rem;text-align:center;border-radius:10px}
-.side-music .player-cover{width:64px;height:64px;border-radius:50%}
-.side-music .p-title{font-size:.85rem}
-.side-music .p-controls{justify-content:center;gap:.5rem}
+.side-music .home-music-player{flex-direction:column;gap:.75rem;padding:1rem .9rem;text-align:center;border-radius:10px}
+.side-music .player-cover{width:76px;height:76px;border-radius:50%}
+.side-music .player-body{min-width:0;width:100%;display:flex;flex-direction:column;align-items:center}
+.side-music .p-title{font-size:.9rem;white-space:normal;overflow-wrap:break-word;text-align:center;width:100%}
+.side-music .p-artist{white-space:normal;overflow-wrap:break-word;text-align:center;width:100%}
+.side-music .p-progress{width:100%}
+.side-music .p-controls{justify-content:center;gap:.5rem;flex-wrap:wrap}
 .side-music .hm-more{margin-left:0;width:100%;text-align:center}
 .side-nav{
   width:100%;display:flex;flex-direction:column;gap:.3rem;margin-top:.4rem;
@@ -167,7 +170,7 @@ body::after{
 }
 
 .content{
-  margin:46px 0 40px 260px;padding:2.4rem 2.6rem;flex:1;
+  margin:46px 0 40px 300px;padding:2.4rem 2.6rem;flex:1;
 }
 .botbar{
   position:fixed;bottom:0;left:0;right:0;z-index:50;height:38px;
@@ -774,7 +777,7 @@ body::after{
 /* 全局悬浮迷你播放器 */
 .mini-player{
   position:fixed;left:1.2rem;bottom:3.4rem;z-index:85;
-  display:flex;align-items:center;gap:.8rem;padding:.55rem .9rem;
+  display:none!important;
   background:rgba(5,8,16,.94);border:1px solid var(--line);border-radius:10px;
   backdrop-filter:blur(8px);box-shadow:0 4px 24px rgba(0,0,0,.5);cursor:pointer;transition:.25s;
   max-width:min(420px,calc(100vw - 2rem));
