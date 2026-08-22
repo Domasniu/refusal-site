@@ -112,9 +112,12 @@ button.small{padding:4px 10px;font-size:12px}
 <main id="editor" style="display:none">
 
   <nav class="tabbar">
-    <button class="tab-btn active" data-tab="works">🖼️ 作品</button>
+    <button class="tab-btn active" data-tab="works">🎨 作品</button>
+    <button class="tab-btn" data-tab="pet">🐾 宠物</button>
+    <button class="tab-btn" data-tab="photo">📷 摄影</button>
     <button class="tab-btn" data-tab="moments">💬 动态</button>
-    <button class="tab-btn" data-tab="media">🎵 音乐视频</button>
+    <button class="tab-btn" data-tab="music">🎵 音乐</button>
+    <button class="tab-btn" data-tab="video">🎬 视频</button>
     <button class="tab-btn" data-tab="home">🏠 首页配置</button>
     <button class="tab-btn" data-tab="site">⚙️ 站点设置</button>
   </nav>
@@ -187,7 +190,7 @@ button.small{padding:4px 10px;font-size:12px}
     <textarea id="f-contact"></textarea>
   </div>
 
-  <div class="card" data-tab="media">
+  <div class="card" data-tab="music">
     <h2>⑧ 音乐（歌单）</h2>
     <p class="hint">两种添加方式：<br>
       <b>网易云歌曲</b>：填歌曲 ID（网易云网页版歌曲页 URL 里 /song?id= 后面的数字，如 3023862），标题歌手可自动留空后手动补。<br>
@@ -202,7 +205,7 @@ button.small{padding:4px 10px;font-size:12px}
     </div>
   </div>
 
-  <div class="card" data-tab="media">
+  <div class="card" data-tab="video">
     <h2>⑨ 视频链接（留空显示即将上线）</h2>
     <label>抖音主页</label>
     <input type="text" id="f-douyin" placeholder="https://v.douyin.com/...">
@@ -214,18 +217,30 @@ button.small{padding:4px 10px;font-size:12px}
 
   <div class="card" data-tab="works">
     <h2>⑩ 作品（可多图）</h2>
-    <p class="hint">每件作品可上传多张照片：点「添加图片」给当前作品追加图片，第一张为主图。点图片可删除。</p>
-    <div class="work-scope">
-      <button class="scope-btn active" data-scope="all">全部</button>
-      <button class="scope-btn" data-scope="works">作品</button>
-      <button class="scope-btn" data-scope="pet">🐾 宠物</button>
-      <button class="scope-btn" data-scope="photo">📷 摄影</button>
-    </div>
+    <p class="hint">作品区只显示「作品类」（手工发饰/剪纸/绘画/风景/人物）。宠物、摄影请到对应页签管理。</p>
     <div id="work-list"></div>
     <div class="toolbar">
       <button id="btn-add-work">＋ 添加作品</button>
       <input type="file" id="inp-work" accept="image/*" style="display:none">
       <input type="file" id="inp-work-extra" accept="image/*" multiple style="display:none">
+    </div>
+  </div>
+
+  <div class="card" data-tab="pet">
+    <h2>🐾 宠物日常</h2>
+    <p class="hint">管理宠物日常的作品（自动归入「宠物」分区）。</p>
+    <div id="pet-list"></div>
+    <div class="toolbar">
+      <button id="btn-add-pet">＋ 添加宠物</button>
+    </div>
+  </div>
+
+  <div class="card" data-tab="photo">
+    <h2>📷 我的摄影</h2>
+    <p class="hint">管理摄影作品（自动归入「摄影」分区）。</p>
+    <div id="photo-list"></div>
+    <div class="toolbar">
+      <button id="btn-add-photo">＋ 添加摄影</button>
     </div>
   </div>
 
@@ -396,7 +411,7 @@ function fillForm(){
   $('f-douyin').value = (config.video && config.video.douyin) || '';
   $('f-bilibili').value = (config.video && config.video.bilibili) || '';
   $('f-youtube').value = (config.video && config.video.youtube) || '';
-  renderThemes(); renderWorks(); renderCats(); renderMusicList(); renderMomentList();
+  renderThemes(); renderAllWorks(); renderCats(); renderMusicList(); renderMomentList();
   renderNav(); renderHomeModules(); renderSecTitles();
 }
 
@@ -518,44 +533,41 @@ function nextWorkImgPath(base){
   do { p = base + String(n).padStart(3,'0') + '.jpg'; n++; } while (used[p]);
   return p;
 }
-$('btn-add-work').addEventListener('click', function(){ $('inp-work').click(); });
+var addWorkScope = 'works';
+$('btn-add-work').addEventListener('click', function(){ addWorkScope = 'works'; $('inp-work').click(); });
+$('btn-add-pet').addEventListener('click', function(){ addWorkScope = 'pet'; $('inp-work').click(); });
+$('btn-add-photo').addEventListener('click', function(){ addWorkScope = 'photo'; $('inp-work').click(); });
 $('inp-work').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
   var p = nextWorkImgPath('assets/works/work-');
   newImages[p] = f;
-  var cat = defaultCatForScope();
+  var cat = addWorkScope === 'pet' ? 'pet' : addWorkScope === 'photo' ? 'photo' : defaultWorkCat();
   config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
-  renderWorks(); renderCats();
+  renderAllWorks(); renderCats();
   this.value = '';
 });
-/* ================= 作品分区过滤（作品/宠物/摄影） ================= */
-var workScope = 'all';
+/* ================= 作品分区（作品/宠物/摄影各自页签） ================= */
 function workInScope(w, scope){
-  if (scope === 'all') return true;
   if (scope === 'works') return w.cat !== 'pet' && w.cat !== 'photo';
   return w.cat === scope;
 }
-function defaultCatForScope(){
-  if (workScope === 'pet') return 'pet';
-  if (workScope === 'photo') return 'photo';
+function defaultWorkCat(){
   var cats = (config.categories || []).filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; });
   return cats.length ? cats[0].id : '';
 }
-document.querySelectorAll('.scope-btn').forEach(function(btn){
-  btn.addEventListener('click', function(){
-    workScope = btn.dataset.scope;
-    document.querySelectorAll('.scope-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
-    renderWorks();
-  });
-});
-function renderWorks(){
-  var box = $('work-list');
+function renderAllWorks(){
+  renderWorkList('work-list', 'works');
+  renderWorkList('pet-list', 'pet');
+  renderWorkList('photo-list', 'photo');
+}
+function renderWorkList(listId, scope){
+  var box = $(listId);
   box.innerHTML = '';
   var grid = document.createElement('div');
   grid.className = 'work-grid';
   var shown = 0;
   config.works.forEach(function(w, idx){
-    if (!workInScope(w, workScope)) return;
+    if (!workInScope(w, scope)) return;
     shown++;
     var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
     var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
@@ -599,7 +611,7 @@ function renderWorks(){
       var w = config.works[+this.dataset.del];
       delete newImages[w.img];
       config.works.splice(+this.dataset.del, 1);
-      renderWorks();
+      renderAllWorks();
     });
   });
   box.querySelectorAll('button[data-replace]').forEach(function(btn){
@@ -614,7 +626,7 @@ function renderWorks(){
         w.img = p;
         if (!w.images || !w.images.length) w.images = [p];
         else w.images[0] = p;
-        renderWorks();
+        renderAllWorks();
       }.bind(this);
       inp.click();
     });
@@ -633,7 +645,7 @@ function renderWorks(){
           newImages[p] = f;
           w.images.push(p);
         });
-        renderWorks();
+        renderAllWorks();
       };
       inp.click();
     });
@@ -649,7 +661,7 @@ function renderWorks(){
       imgs.splice(ri, 1);
       if (ri === 0) w.img = imgs[0];
       w.images = imgs;
-      renderWorks();
+      renderAllWorks();
     });
   });
 }
@@ -766,7 +778,7 @@ $('btn-add-cat').addEventListener('click', function(){
   var label = $('f-new-cat').value.trim(); if (!label) return;
   config.categories.push({ id: 'cat-' + Date.now().toString(36), label: label });
   $('f-new-cat').value = '';
-  renderCats(); renderWorks();
+  renderCats(); renderAllWorks();
 });
 function renderCats(){
   var box = $('cat-list');
@@ -782,7 +794,7 @@ function renderCats(){
       b.className = 'small';
       b.style.cssText = 'border-color:#ff5c5c;color:#ff5c5c';
       b.textContent = '删除';
-      b.onclick = function(){ config.categories = config.categories.filter(function(x){ return x.id !== c.id; }); renderCats(); renderWorks(); };
+      b.onclick = function(){ config.categories = config.categories.filter(function(x){ return x.id !== c.id; }); renderCats(); renderAllWorks(); };
       row.appendChild(b);
     }
     box.appendChild(row);
