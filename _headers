@@ -28,3 +28,6 @@
 # HTML：no-cache（配合 ETag 校验）
 /index.html
   Cache-Control: no-cache
+
+/console/index.html
+  Cache-Control: no-cache
