@@ -16,7 +16,7 @@ window.SITE_CONFIG = {
   siteName: 'refusal· 的宝藏仓库',
   contactEmail: 'hello@refusal.site',
   hero: {
-    kicker: "HELLO,I'M\nrefusal·",
+    kicker: "HELLO, I'M refusal·",
     status: '正在收集新灵感',
     tags: '手工制作 · 剪纸 · 绘画 · 创意',
     slogan: '做喜欢的东西\n记录灵感的赛博仓库',
@@ -36,7 +36,7 @@ window.SITE_CONFIG = {
     { id: 'music', label: '我的音乐', icon: '🎵' },
     { id: 'about', label: '关于我', icon: '👤' },
     { id: 'contact', label: '联系方式', icon: '✉️' },
-    { id: 'home', label: '小游戏', icon: '🎮' }
+    { id: 'game', label: '小游戏', icon: '🎮' }
   ],
 
   /* -------- 首页模块（配置化：moments=最新动态 / works=作品 / pet=宠物 / photo=摄影 / note=便签） -------- */

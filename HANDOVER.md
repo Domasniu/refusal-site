@@ -119,7 +119,7 @@
 
 ---
 
-## 〇-9、2026-08-22 九次更新（全站最新在前 + 卡片轮播 + 后台 UI 重构 + 顶栏/欢迎区美化）★ 最新形态
+## 〇-9、2026-08-22 九次更新（全站最新在前 + 卡片轮播 + 后台 UI 重构 + 顶栏/欢迎区美化）
 
 ### 1. 全站「最新在前」统一
 - 首页四模块（生活动态/最新作品/宠物日常/摄影）、作品/宠物/摄影分区、LIFE 动态，统一按"最新在前"排序：动态按日期倒序（同天按添加倒序），作品按添加顺序倒序。
@@ -145,7 +145,30 @@
 
 ### 已知限制 / 待办（新增）
 - 旧版控制台保存会整体重写 site.json，可能丢失 homeCardSize/homeCarousel 等新字段（前端已做默认值兜底，新版后台保存会补回）。
-- moments.json 有两条重复 id（M-003），不影响展示，建议后台清理。
+- ~~moments.json 有两条重复 id（M-003）~~ 已在 〇-10 修复。
+
+---
+
+## 〇-10、2026-08-22 十次更新（欢迎区 kicker 修复 / 小游戏面板 / 灯箱视频轮播 / 数据与死代码清理）★ 最新形态
+
+### 1. 欢迎区 kicker 修复
+- `index.html` 里 `id="hero-kicker"` 出现两次（侧栏 + 欢迎区），`getElementById` 只取到第一个，导致**欢迎区顶部的 "HELLO, I'M refusal·" 一直空白**。已把欢迎区元素改为 `id="wm-kicker"`，`main.js` 的 `renderHero()` 同时填充两处。
+- `site.json` / `site-config.js` 的 kicker 原文 `HELLO,I'Mrefusal·` 缺空格，已统一改为 `HELLO, I'M refusal·`。
+
+### 2. 新增「小游戏」面板（贪吃蛇）
+- 新增 `#game` 面板：canvas 贪吃蛇 + 得分/最高分（localStorage 记忆 `refusal-snake-best`）+ 方向按钮（移动端）+ 键盘（方向键 / WASD 移动，空格暂停）。
+- 侧栏导航"小游戏"由错误的 `id:home`（和"我的主页"重复）改为 `id:game`。
+- 后台 console 的 `NAV_TARGETS`、`SEC_TITLE_KEYS` 补上"小游戏"，可在后台编辑。
+- 离开小游戏面板自动暂停（`showSection` 里 `snPause()`）。
+
+### 3. 灯箱自动播放对视频
+- 修复"自动播放对视频也是 3 秒切一张（把视频切断）"：现在视频**静音播放、播完再切下一张**；播放失败或 3 秒内没播起来则跳过。图片仍 3 秒切换。
+
+### 4. 数据清理
+- `moments.json` 两条重复 id（M-003）已重排为 M-001~M-005（后台按序号编辑，不受影响）。
+
+### 5. 死代码清理
+- 删除未使用代码：`renderHomeStats`（无 `#home-stats` 元素）、`renderLatestWorks`、`buildHomeMomentCard`、`momentTypeLabel`、`CAT_ICONS`/`catIcon`。
 
 ---
 

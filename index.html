@@ -123,7 +123,7 @@
     <section id="home" class="panel active">
       <div class="home-welcome">
         <div class="home-welcome-main">
-          <p id="hero-kicker" class="wm-kicker"></p>
+          <p id="wm-kicker" class="wm-kicker"></p>
           <p id="hero-slogan" class="hero-slogan"></p>
           <p id="hero-desc" class="hero-desc"></p>
           <p id="hero-hashtags" class="hero-hashtags"></p>
@@ -202,6 +202,34 @@
         <div class="player-list-wrap">
           <h3 class="p-list-title"><span class="tick">▸</span> 播放列表 / PLAYLIST</h3>
           <ul class="p-list" id="p-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== GAME 小游戏 ====== -->
+    <section id="game" class="panel">
+      <h2 class="sec-title" id="sec-title-game"><span class="tick">▸</span> 小游戏 / MINI GAME</h2>
+      <div class="game-wrap">
+        <div class="game-board">
+          <canvas id="game-canvas" width="360" height="360"></canvas>
+          <div id="game-overlay" class="game-overlay">
+            <div class="go-title" id="go-title">🐍 贪吃蛇 SNAKE</div>
+            <div class="go-hint" id="go-hint">方向键 / WASD 移动 · 空格暂停<br>吃掉粉色方块，别撞墙也别咬到自己</div>
+            <button id="game-start" class="go-btn">▶ 开始游戏</button>
+          </div>
+        </div>
+        <div class="game-side">
+          <div class="game-stat">得分 <span id="game-score">0</span></div>
+          <div class="game-stat">最高 <span id="game-best">0</span></div>
+          <div class="game-dpad">
+            <button class="dpad-btn" data-dir="up">▲</button>
+            <div class="dpad-row">
+              <button class="dpad-btn" data-dir="left">◀</button>
+              <button class="dpad-btn" data-dir="down">▼</button>
+              <button class="dpad-btn" data-dir="right">▶</button>
+            </div>
+          </div>
+          <p class="game-tip">PC：方向键 / WASD · 空格暂停<br>手机：下方方向按钮</p>
         </div>
       </div>
     </section>
