@@ -12,11 +12,48 @@ window.SITE_CONFIG = {
   /* -------- 主题 -------- */
   theme: 'cyber-cyan',
 
-  /* -------- 主页文字 -------- */
+  /* -------- 站点名 / 主页文字 -------- */
+  siteName: 'refusal· 的宝藏仓库',
   hero: {
-    tags: 'HANDMADE · PAPER-CUT · DRAWING · CREATIVE',
-    slogan: 'BUILDING WITH HANDS, THINKING WITH STORIES',
-    desc: '用手作、剪纸与画笔记录灵感的赛博仓库。'
+    kicker: "HELLO, I'M refusal·",
+    status: '正在收集新灵感',
+    tags: '手工制作 · 剪纸 · 绘画 · 创意',
+    slogan: '做喜欢的东西 记录灵感的赛博仓库',
+    desc: '这里收录了我的手作、剪纸、视觉、3D、画画等灵感。',
+    hashTags: '#手工 #视觉设计 #美少女 #游戏天才'
+  },
+
+  /* -------- 侧栏导航（配置化，cat 可选：跳转作品区并筛选分类） -------- */
+  nav: [
+    { id: 'home', label: '我的主页', icon: '🏠' },
+    { id: 'life', label: '我的动态', icon: '💬' },
+    { id: 'works', label: '我的作品', icon: '🎨' },
+    { id: 'works', label: '宠物日常', icon: '🐾', cat: 'pet' },
+    { id: 'works', label: '我的摄影', icon: '📷', cat: 'photo' },
+    { id: 'video', label: '我的视频', icon: '🎬' },
+    { id: 'music', label: '我的音乐', icon: '🎵' },
+    { id: 'about', label: '关于我', icon: '👤' },
+    { id: 'contact', label: '联系方式', icon: '✉️' }
+  ],
+
+  /* -------- 首页模块（配置化：moments=最新动态 / works=作品 / note=便签） -------- */
+  homeModules: [
+    { type: 'moments', title: '最新动态', sub: '记录日常，分享心情', sec: 'life' },
+    { type: 'works', title: '最新作品', sub: '手作 · 剪纸 · 绘画', sec: 'works' },
+    { type: 'works', title: '宠物日常', sub: '毛孩子的可爱瞬间', cat: 'pet', sec: 'works' },
+    { type: 'works', title: '摄影', sub: '随手拍下的风景', cat: 'photo', sec: 'works' },
+    { type: 'note', title: 'A LITTLE NOTE', sub: '希望记录自己，留下回忆。' }
+  ],
+  note: '希望记录自己，留下回忆。',
+
+  /* -------- 面板标题（配置化） -------- */
+  secTitles: {
+    works: '我的作品 / WORKS',
+    video: '我的视频 / VIDEO',
+    music: '我的音乐 / MUSIC',
+    life: '我的动态 / LIFE',
+    about: '关于我 / ABOUT',
+    contact: '联系方式 / CONTACT'
   },
 
   /* -------- 自我介绍 / 联系 -------- */

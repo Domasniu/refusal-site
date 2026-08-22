@@ -105,13 +105,23 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>③ 主页文字</h2>
-    <label>标语标签（英文，用 · 分隔）</label>
+    <h2>③ 主页文字 / 首页配置</h2>
+    <label>站点名称（顶栏显示）</label>
+    <input type="text" id="f-sitename" placeholder="refusal· 的宝藏仓库">
+    <label>欢迎语（HELLO 上方小字）</label>
+    <input type="text" id="f-kicker" placeholder="HELLO, I'M refusal·">
+    <label>侧栏状态（名字下方）</label>
+    <input type="text" id="f-status" placeholder="正在收集新灵感">
+    <label>标语标签（用 · 分隔）</label>
     <input type="text" id="f-tags">
     <label>一句话标语</label>
     <input type="text" id="f-slogan">
     <label>主页介绍</label>
     <textarea id="f-desc"></textarea>
+    <label>话题标签（# 分隔）</label>
+    <input type="text" id="f-hashtags" placeholder="#手工 #视觉设计">
+    <label>首页小纸条（A LITTLE NOTE 内容）</label>
+    <input type="text" id="f-note" placeholder="希望记录自己，留下回忆。">
   </div>
 
   <div class="card">
@@ -298,9 +308,14 @@ function imgSrc(p){
 }
 function fillForm(){
   $('avatar-prev').src = imgSrc(config.avatar || 'assets/avatar.jpg');
+  $('f-sitename').value = config.siteName || '';
+  $('f-kicker').value = (config.hero && config.hero.kicker) || '';
+  $('f-status').value = (config.hero && config.hero.status) || '';
   $('f-tags').value = (config.hero && config.hero.tags) || '';
   $('f-slogan').value = (config.hero && config.hero.slogan) || '';
   $('f-desc').value = (config.hero && config.hero.desc) || '';
+  $('f-hashtags').value = (config.hero && config.hero.hashTags) || '';
+  $('f-note').value = config.note || '';
   $('f-about').value = config.about || '';
   $('f-contact').value = config.contact || '';
   $('f-douyin').value = (config.video && config.video.douyin) || '';
@@ -311,7 +326,16 @@ function fillForm(){
 
 function collect(){
   config.theme = currentTheme;
-  config.hero = { tags: $('f-tags').value.trim(), slogan: $('f-slogan').value.trim(), desc: $('f-desc').value.trim() };
+  config.siteName = $('f-sitename').value.trim();
+  config.hero = {
+    kicker: $('f-kicker').value.trim(),
+    status: $('f-status').value.trim(),
+    tags: $('f-tags').value.trim(),
+    slogan: $('f-slogan').value.trim(),
+    desc: $('f-desc').value.trim(),
+    hashTags: $('f-hashtags').value.trim()
+  };
+  config.note = $('f-note').value.trim();
   config.about = $('f-about').value;
   config.contact = $('f-contact').value;
   config.video = { douyin: $('f-douyin').value.trim(), bilibili: $('f-bilibili').value.trim(), youtube: $('f-youtube').value.trim() };
@@ -678,7 +702,12 @@ $('btn-save').addEventListener('click', async function(){
     var site = {
       avatar: config.avatar || 'assets/avatar.jpg',
       theme: config.theme,
+      siteName: config.siteName || '',
       hero: config.hero,
+      nav: config.nav,
+      homeModules: config.homeModules,
+      secTitles: config.secTitles,
+      note: config.note,
       about: config.about,
       contact: config.contact,
       video: config.video,

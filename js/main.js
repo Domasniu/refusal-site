@@ -103,11 +103,64 @@
   /* ---------- 渲染主页文字 ---------- */
   function renderHero() {
     var h = CFG.hero || {};
-    document.getElementById('hero-tags').textContent = h.tags || '';
-    document.getElementById('hero-slogan').textContent = h.slogan || '';
-    document.getElementById('hero-desc').textContent = h.desc || '';
+    var el;
+    if ((el = document.getElementById('hero-kicker'))) el.textContent = h.kicker || 'HELLO, I\'M refusal·';
+    if ((el = document.getElementById('hero-slogan'))) el.textContent = h.slogan || '';
+    if ((el = document.getElementById('hero-desc'))) el.textContent = h.desc || '';
+    if ((el = document.getElementById('hero-hashtags'))) el.textContent = h.hashTags || '';
+    if ((el = document.getElementById('side-status'))) el.textContent = h.status || '';
+    if ((el = document.getElementById('home-note-text'))) el.textContent = CFG.note || '希望记录自己，留下回忆。';
+    // 站点名
+    if (CFG.siteName) {
+      var logo = document.querySelector('.os-logo');
+      if (logo && !logo.dataset.custom) { logo.textContent = '💠 ' + CFG.siteName; logo.dataset.custom = '1'; }
+      document.title = CFG.siteName + ' | REFUSAL OS';
+    }
     var av = document.getElementById('avatar-img');
     if (av && CFG.avatar) av.src = CFG.avatar;
+  }
+
+  /* ---------- 渲染全局侧栏导航（配置化） ---------- */
+  function renderNav() {
+    var box = document.getElementById('side-nav');
+    if (!box) return;
+    var nav = (CFG.nav && CFG.nav.length) ? CFG.nav : [
+      { id: 'home', label: '我的主页', icon: '🏠' },
+      { id: 'life', label: '我的动态', icon: '💬' },
+      { id: 'works', label: '我的作品', icon: '🎨' },
+      { id: 'video', label: '我的视频', icon: '🎬' },
+      { id: 'music', label: '我的音乐', icon: '🎵' },
+      { id: 'about', label: '关于我', icon: '👤' },
+      { id: 'contact', label: '联系方式', icon: '✉️' }
+    ];
+    box.innerHTML = '';
+    nav.forEach(function (n) {
+      var a = document.createElement('a');
+      a.className = 'side-nav-link';
+      a.href = '#' + n.id;
+      a.dataset.sec = n.id;
+      if (n.cat) a.dataset.cat = n.cat;
+      a.innerHTML = '<span class="sn-ico">' + (n.icon || '▸') + '</span><span class="sn-label">' + escHtml(n.label) + '</span>';
+      box.appendChild(a);
+    });
+    // 重新绑定面板切换（统一由 showSection 处理，避免重复绑定）
+    box.querySelectorAll('[data-sec]').forEach(function (l) {
+      l.addEventListener('click', function (e) {
+        e.preventDefault();
+        currentFilter = l.dataset.cat || 'all';
+        showSection(l.dataset.sec);
+        history.replaceState(null, '', '#' + l.dataset.sec);
+      });
+    });
+    // 激活态同步
+    function syncActive() {
+      var cur = location.hash.slice(1) || 'home';
+      box.querySelectorAll('[data-sec]').forEach(function (l) {
+        l.classList.toggle('active', l.dataset.sec === cur);
+      });
+    }
+    window.addEventListener('hashchange', syncActive);
+    syncActive();
   }
 
   /* ---------- 渲染关于 / 联系 ---------- */
@@ -303,8 +356,10 @@
   var currentFilter = 'all';
   function showSection(id) {
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === id); });
-    document.querySelectorAll('.nav-link').forEach(function (l) { l.classList.toggle('active', l.dataset.sec === id); });
-    if (id === 'works') renderWorks(currentFilter);
+    document.querySelectorAll('.side-nav-link, .nav-link').forEach(function (l) {
+      l.classList.toggle('active', l.dataset.sec === id);
+    });
+    if (id === 'works') { renderFilters(); renderWorks(currentFilter); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -434,117 +489,127 @@
     // 旧版"最新作品"网格已被首页分类模块轮播替代
   }
 
-  /* ---------- 首页分类模块轮播（幻灯片：自动播放 + 指示器 + 箭头） ---------- */
-  function renderHomeCats() {
-    var box = document.getElementById('home-cats');
+  /* ---------- 首页模块（配置化：homeModules 数组驱动） ---------- */
+  function renderHomeModules() {
+    var box = document.getElementById('home-modules');
     if (!box) return;
     box.innerHTML = '';
-    var cats = CFG.categories || [];
-    cats.forEach(function (c) {
-      var list = (CFG.works || []).filter(function (w) { return w.cat === c.id; });
-      if (!list.length) return; // 空分类不显示
+    var modules = (CFG.homeModules && CFG.homeModules.length) ? CFG.homeModules : [
+      { type: 'moments', title: '最新动态', sub: '记录日常，分享心情', sec: 'life' },
+      { type: 'works', title: '最新作品', sub: '手作 · 剪纸 · 绘画', sec: 'works' }
+    ];
+    modules.forEach(function (mod, mi) {
       var sec = document.createElement('div');
-      sec.className = 'home-cat-sec';
+      sec.className = 'home-module';
+      // 头部（标题 + 副标题 + 查看全部）
       var head = document.createElement('div');
       head.className = 'home-cat-head';
       head.innerHTML =
-        '<span class="home-cat-ico">' + catIcon(c.id) + '</span>' +
-        '<span class="home-cat-name">' + escHtml(c.label) + '</span>' +
-        '<span class="home-cat-count">' + list.length + ' 件</span>' +
-        '<a href="#works" data-sec="works" data-cat="' + escHtml(c.id) + '" class="home-cat-more">查看全部 →</a>';
+        '<span class="home-cat-name">' + escHtml(mod.title || '') + '</span>' +
+        (mod.sub ? '<span class="home-module-sub">' + escHtml(mod.sub) + '</span>' : '') +
+        (mod.sec ? '<a href="#' + escHtml(mod.sec) + '" data-sec="' + escHtml(mod.sec) + '" data-cat="' + escHtml(mod.cat || '') + '" class="home-cat-more">查看全部 →</a>' : '');
       sec.appendChild(head);
-      // 淘宝式紧凑卡片网格（一屏多张，节省空间）
-      var grid = document.createElement('div');
-      grid.className = 'cat-grid';
-      list.forEach(function (w, wi) {
-        var card = document.createElement('div');
-        card.className = 'work-card compact';
-        // 第一张 eager（首屏优先），其余 lazy 加速加载
-        var lazyAttr = wi === 0 ? '' : ' loading="lazy"';
-        card.innerHTML =
-          '<span class="work-id">' + escHtml(w.id) + '</span>' +
-          '<div class="compact-thumb"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '"' + lazyAttr + ' decoding="async"></div>' +
-          '<div class="compact-info">' +
-            '<span class="work-name">' + escHtml(w.title) + '</span>' +
-            '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span>' +
-          '</div>' +
-          '<div class="cat-bar"></div>';
-        card.addEventListener('click', function () { openLightbox(w); });
-        grid.appendChild(card);
-      });
-      sec.appendChild(grid);
+
+      if (mod.type === 'moments') {
+        var grid = document.createElement('div');
+        grid.className = 'home-moments-grid';
+        var list = MOMENTS.filter(function (m) { return !isEmptyMoment(m); }).slice().reverse().slice(0, 4);
+        list.forEach(function (m) { grid.appendChild(buildHomeMomentCard(m)); });
+        if (!list.length) {
+          head.style.display = 'none';
+        } else {
+          sec.appendChild(grid);
+        }
+      } else if (mod.type === 'works') {
+        var list2 = (CFG.works || []).filter(function (w) {
+          return !mod.cat || w.cat === mod.cat;
+        }).slice(0, 6);
+        if (!list2.length) { head.style.display = 'none'; }
+        else {
+          var g2 = document.createElement('div');
+          g2.className = 'cat-grid';
+          list2.forEach(function (w, wi) {
+            var card = document.createElement('div');
+            card.className = 'work-card compact';
+            var lazyAttr = wi === 0 ? '' : ' loading="lazy"';
+            card.innerHTML =
+              '<span class="work-id">' + escHtml(w.id) + '</span>' +
+              '<div class="compact-thumb"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '"' + lazyAttr + ' decoding="async"></div>' +
+              '<div class="compact-info">' +
+                '<span class="work-name">' + escHtml(w.title) + '</span>' +
+                '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span>' +
+              '</div>' +
+              '<div class="cat-bar"></div>';
+            card.addEventListener('click', function () { openLightbox(w); });
+            g2.appendChild(card);
+          });
+          sec.appendChild(g2);
+        }
+      } else if (mod.type === 'note') {
+        var note = document.createElement('div');
+        note.className = 'home-module-note';
+        note.innerHTML = '<span class="tick">✦</span> ' + escHtml(mod.sub || mod.title || '');
+        sec.appendChild(note);
+      }
       box.appendChild(sec);
     });
-    // 分类"查看全部"跳转到作品区并应用筛选
+    // "查看全部"跳转
     box.querySelectorAll('.home-cat-more').forEach(function (a) {
       a.addEventListener('click', function (e) {
         e.preventDefault();
         currentFilter = a.dataset.cat || 'all';
-        showSection('works');
-        renderFilters();
-        renderWorks(currentFilter);
-        history.replaceState(null, '', '#works');
+        showSection(a.dataset.sec);
+        if (a.dataset.sec === 'works') { renderFilters(); renderWorks(currentFilter); }
+        history.replaceState(null, '', '#' + a.dataset.sec);
       });
     });
   }
 
-  /* ---------- 首页最新动态（小红书风格卡片） ---------- */
+  function buildHomeMomentCard(m) {
+    var card = document.createElement('div');
+    card.className = 'home-moment-card' + (m.images && m.images.length ? ' has-img' : ' text-only');
+    var media = '';
+    if (m.video) {
+      media = '<div class="hm-moment-media"><video src="' + escHtml(m.video) + '" preload="metadata" muted></video><span class="hm-play-badge">▶</span></div>';
+    } else if (m.images && m.images.length) {
+      var first = m.images[0];
+      media = '<div class="hm-moment-media"><img src="' + escHtml(first) + '" alt="" loading="lazy" decoding="async">' +
+        (m.images.length > 1 ? '<span class="hm-moment-count">' + m.images.length + '</span>' : '') +
+        '</div>';
+    }
+    card.innerHTML =
+      media +
+      '<div class="hm-moment-body">' +
+        '<p class="hm-moment-text">' + escHtml(m.text || '') + '</p>' +
+        '<div class="hm-moment-foot">' +
+          '<span class="hm-moment-type">' + momentTypeLabel(m) + '</span>' +
+          '<span class="hm-moment-date">' + escHtml(m.date || '') + '</span>' +
+        '</div>' +
+      '</div>';
+    card.addEventListener('click', function () {
+      if (m.images && m.images.length) {
+        lbImages = m.images.slice();
+        lbIndex = 0;
+        lbCaption = m.date + ' · 动态';
+        lbDesc = m.text || '';
+        document.getElementById('lb-caption').textContent = lbCaption;
+        var descEl = document.getElementById('lb-desc');
+        if (lbDesc) { descEl.textContent = lbDesc; descEl.classList.remove('hidden'); }
+        else { descEl.textContent = ''; descEl.classList.add('hidden'); }
+        showLbImage(0);
+        lb.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      } else {
+        var link = document.querySelector('[data-sec="life"]');
+        if (link) link.click();
+      }
+    });
+    return card;
+  }
+
+  /* ---------- 空动态判断（renderHomeModules / renderMoments 共用） ---------- */
   function isEmptyMoment(m) {
     return !(m.text || (m.images && m.images.length) || m.video);
-  }
-  function renderHomeMoments() {
-    var grid = document.getElementById('home-moments-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    var list = MOMENTS.filter(function (m) { return !isEmptyMoment(m); });
-    if (!list.length) {
-      document.querySelector('.home-moments').style.display = 'none';
-      return;
-    }
-    document.querySelector('.home-moments').style.display = '';
-    var recent = list.slice().reverse().slice(0, 4); // 最新 4 条
-    recent.forEach(function (m) {
-      var card = document.createElement('div');
-      card.className = 'home-moment-card' + (m.images && m.images.length ? ' has-img' : ' text-only');
-      var media = '';
-      if (m.video) {
-        media = '<div class="hm-moment-media"><video src="' + escHtml(m.video) + '" preload="metadata" muted></video><span class="hm-play-badge">▶</span></div>';
-      } else if (m.images && m.images.length) {
-        var first = m.images[0];
-        media = '<div class="hm-moment-media"><img src="' + escHtml(first) + '" alt="" loading="lazy" decoding="async">' +
-          (m.images.length > 1 ? '<span class="hm-moment-count">' + m.images.length + '</span>' : '') +
-          '</div>';
-      }
-      card.innerHTML =
-        media +
-        '<div class="hm-moment-body">' +
-          '<p class="hm-moment-text">' + escHtml(m.text || '') + '</p>' +
-          '<div class="hm-moment-foot">' +
-            '<span class="hm-moment-type">' + momentTypeLabel(m) + '</span>' +
-            '<span class="hm-moment-date">' + escHtml(m.date || '') + '</span>' +
-          '</div>' +
-        '</div>';
-      // 点击：有图打开灯箱，否则跳 LIFE
-      card.addEventListener('click', function () {
-        if (m.images && m.images.length) {
-          lbImages = m.images.slice();
-          lbIndex = 0;
-          lbCaption = m.date + ' · 动态';
-          lbDesc = m.text || '';
-          document.getElementById('lb-caption').textContent = lbCaption;
-          var descEl = document.getElementById('lb-desc');
-          if (lbDesc) { descEl.textContent = lbDesc; descEl.classList.remove('hidden'); }
-          else { descEl.textContent = ''; descEl.classList.add('hidden'); }
-          showLbImage(0);
-          lb.classList.remove('hidden');
-          document.body.style.overflow = 'hidden';
-        } else {
-          var link = document.querySelector('[data-sec="life"]');
-          if (link) link.click();
-        }
-      });
-      grid.appendChild(card);
-    });
   }
 
   /* ---------- 生活动态（说说） ---------- */
@@ -749,19 +814,38 @@
     });
   }
 
+  /* ---------- 面板标题配置化 ---------- */
+  var SEC_TITLES = {
+    works: '我的作品 / WORKS',
+    video: '我的视频 / VIDEO',
+    music: '我的音乐 / MUSIC',
+    life: '我的动态 / LIFE',
+    about: '关于我 / ABOUT',
+    contact: '联系方式 / CONTACT'
+  };
+  function renderSecTitles() {
+    Object.keys(SEC_TITLES).forEach(function (id) {
+      var el = document.getElementById('sec-title-' + id);
+      if (!el) return;
+      var t = (CFG.secTitles && CFG.secTitles[id]) || SEC_TITLES[id];
+      el.innerHTML = '<span class="tick">▸</span> ' + escHtml(t);
+    });
+  }
+
   /* ---------- 初始化 ---------- */
   function init() {
     applyTheme();
     applyVisitorTheme();
     renderHero();
+    renderNav();
+    renderSecTitles();
     renderText();
     renderVideo();
     initMusicPlayer();
     renderFilters();
     renderWorks('all');
     renderHomeStats();
-    renderHomeCats();
-    renderHomeMoments();
+    renderHomeModules();
     renderMoments();
     initImgFade();
     initThemeToggle();
@@ -780,8 +864,10 @@
     tick();
 
     document.querySelectorAll('[data-sec]').forEach(function (l) {
+      if (l.closest('#side-nav')) return; // 侧栏导航已在 renderNav 绑定
       l.addEventListener('click', function (e) {
         e.preventDefault();
+        currentFilter = l.dataset.cat || 'all';
         showSection(l.dataset.sec);
         history.replaceState(null, '', '#' + l.dataset.sec);
       });
