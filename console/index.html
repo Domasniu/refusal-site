@@ -83,10 +83,10 @@ button.small{padding:4px 10px;font-size:12px}
 .mr-artist{font-size:12px;color:var(--dim)}
 .mr-fields{display:flex;gap:8px;margin-bottom:8px}
 .mr-fields input{flex:1}
-#status{display:none;margin-top:14px;padding:10px 14px;border-radius:6px;font-size:13px;line-height:1.7}
-#status.ok{display:block;background:rgba(61,255,143,.1);border:1px solid var(--ok);color:var(--ok)}
-#status.err{display:block;background:rgba(255,92,92,.1);border:1px solid #ff5c5c;color:#ff8a8a}
-#status.busy{display:block;background:rgba(0,240,255,.08);border:1px solid var(--line);color:var(--cyan)}
+#status{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:1000;max-width:560px;width:calc(100% - 40px);padding:12px 18px;border-radius:8px;font-size:13px;line-height:1.7;box-shadow:0 8px 28px rgba(0,0,0,.55);display:none;backdrop-filter:blur(6px);text-align:center}
+#status.ok{display:block;background:rgba(61,255,143,.14);border:1px solid var(--ok);color:var(--ok)}
+#status.err{display:block;background:rgba(255,92,92,.14);border:1px solid #ff5c5c;color:#ff8a8a}
+#status.busy{display:block;background:rgba(0,240,255,.1);border:1px solid var(--line);color:var(--cyan)}
 .toolbar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
 .savebar{position:sticky;bottom:0;background:rgba(5,8,16,.96);border-top:1px solid var(--line);padding:12px 20px;display:flex;justify-content:center;gap:14px;backdrop-filter:blur(6px);z-index:10}
 #btn-save{font-size:15px;padding:11px 40px}
@@ -287,7 +287,16 @@ var PALETTES = [
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function setStatus(msg, cls){ var s=$('status'); s.className=cls; s.textContent=msg; }
+var statusTimer = null;
+function setStatus(msg, cls){
+  var s = $('status');
+  s.className = cls;
+  s.textContent = msg;
+  if (statusTimer) { clearTimeout(statusTimer); statusTimer = null; }
+  if (cls === 'ok') {
+    statusTimer = setTimeout(function(){ setStatus('', ''); }, 5000);
+  }
+}
 
 /* ================= 登录（密码） ================= */
 var consoleKey = localStorage.getItem('consoleKey') || '';
