@@ -54,10 +54,11 @@
     var re = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
     String(text).split('\n').forEach(function (raw) {
       var m, found = false;
+      // 用独立正则一次性去掉所有 [xx:xx.xx] 标签，避免与 re 共用 lastIndex 造成死循环
+      var txt = raw.replace(/\[[^\]]*\]/g, '').trim();
       re.lastIndex = 0;
       while ((m = re.exec(raw)) !== null) {
         var t = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + (parseInt(m[3] || '0', 10) / 1000);
-        var txt = raw.replace(re, '').trim();
         if (txt) { lines.push({ time: t, text: txt }); found = true; }
       }
       if (!found && raw.trim()) {
