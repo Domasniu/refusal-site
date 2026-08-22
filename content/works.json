@@ -58,7 +58,8 @@
       "img": "assets/works/work-001.jpg",
       "images": [
         "assets/works/work-001.jpg"
-      ]
+      ],
+      "subcat": "lucky"
     },
     {
       "id": "W-007",
@@ -67,7 +68,8 @@
       "img": "assets/works/work-002.jpg",
       "images": [
         "assets/works/work-002.jpg"
-      ]
+      ],
+      "subcat": "风景"
     },
     {
       "id": "W-008",
@@ -76,16 +78,67 @@
       "img": "assets/works/work-003.jpg",
       "images": [
         "assets/works/work-003.jpg"
-      ]
+      ],
+      "subcat": "风景"
     },
     {
       "id": "W-009",
       "cat": "pet",
-      "title": "新作品",
+      "title": "lucky",
       "img": "assets/works/work-004.jpg",
       "images": [
         "assets/works/work-004.jpg"
-      ]
+      ],
+      "subcat": "lucky"
+    },
+    {
+      "id": "W-010",
+      "cat": "pet",
+      "title": "lucky",
+      "img": "",
+      "images": [],
+      "videos": [
+        "assets/works/video-001.mp4"
+      ],
+      "subcat": "lucky"
+    },
+    {
+      "id": "W-011",
+      "cat": "pet",
+      "title": "lucky",
+      "img": "",
+      "images": [],
+      "videos": [
+        "assets/works/video-002.mp4"
+      ],
+      "subcat": "lucky"
+    },
+    {
+      "id": "W-012",
+      "cat": "pet",
+      "title": "lucky",
+      "img": "assets/works/work-005.jpg",
+      "images": [
+        "assets/works/work-005.jpg"
+      ],
+      "videos": [],
+      "subcat": "lucky"
+    },
+    {
+      "id": "W-013",
+      "cat": "photo",
+      "title": "新作品",
+      "img": "",
+      "images": [],
+      "videos": []
+    },
+    {
+      "id": "W-014",
+      "cat": "photo",
+      "title": "新作品",
+      "img": "",
+      "images": [],
+      "videos": []
     }
   ]
 }
