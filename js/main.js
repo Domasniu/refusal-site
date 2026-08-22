@@ -184,6 +184,8 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  // 缩略图路径：大图 work-001.jpg → 缩略图 work-001-thumb.jpg
+  function thumbPath(p) { return String(p || '').replace(/(\.\w+)$/, '-thumb$1'); }
   function renderText() {
     var about = String(CFG.about || '').split('\n');
     document.getElementById('about-card').innerHTML =
@@ -420,7 +422,7 @@
       card.className = 'work-card';
       card.innerHTML =
         '<span class="work-id">' + escHtml(w.id) + '</span>' +
-        '<img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
+        '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
         '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
         '<span class="work-cat">' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span></div>' +
         (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
@@ -565,7 +567,7 @@
       card.className = 'home-cat-card' + (imgs.length ? '' : ' empty');
       card.innerHTML =
         (imgs.length
-          ? '<div class="hcc-thumb"><img src="' + escHtml(imgs[0]) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>'
+          ? '<div class="hcc-thumb"><img src="' + escHtml(thumbPath(imgs[0])) + '" data-fb="' + escHtml(imgs[0]) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>'
           : '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">🖼️</span></div>') +
         '<div class="hcc-body">' +
           '<span class="hcc-title">' + escHtml(mod.title || '') + '</span>' +
@@ -681,7 +683,7 @@
       } else if (m.images && m.images.length) {
         var first = m.images[0];
         media = '<div class="moment-media">' +
-          '<img src="' + escHtml(first) + '" alt="" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(m.images)) + '">' +
+          '<img src="' + escHtml(thumbPath(first)) + '" data-fb="' + escHtml(first) + '" alt="" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(m.images)) + '">' +
           '<span class="moment-type">图片</span>' +
           (m.images.length > 1 ? '<span class="moment-count">' + m.images.length + '</span>' : '') +
           '</div>';
@@ -831,6 +833,14 @@
       var t = e.target;
       if (t && t.tagName === 'IMG' && t.closest && t.closest(selector)) {
         t.classList.add('loaded');
+      }
+    }, true);
+    // 缩略图加载失败（旧图无缩略图）→ 回退到原图
+    document.addEventListener('error', function (e) {
+      var t = e.target;
+      if (t && t.tagName === 'IMG' && t.dataset.fb && !t.dataset.fellback) {
+        t.dataset.fellback = '1';
+        t.src = t.dataset.fb;
       }
     }, true);
     // 兜底：内容异步渲染，轮询检查已加载/缓存的图片

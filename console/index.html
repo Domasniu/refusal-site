@@ -596,9 +596,9 @@ $('btn-avatar').addEventListener('click', function(){ $('inp-avatar').click(); }
 $('inp-avatar').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
   this.value = '';
-  openImageEditor(f, function(edited){
-    newAvatar = edited;
-    $('avatar-prev').src = URL.createObjectURL(edited);
+  openImageEditor(f, function(fullFile){
+    newAvatar = fullFile;
+    $('avatar-prev').src = URL.createObjectURL(fullFile);
   });
 });
 
@@ -621,9 +621,10 @@ $('btn-add-photo').addEventListener('click', function(){ addWorkScope = 'photo';
 $('inp-work').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
   this.value = '';
-  openImageEditor(f, function(edited){
+  openImageEditor(f, function(fullFile, thumbFile){
     var p = nextWorkImgPath('assets/works/work-');
-    newImages[p] = edited;
+    newImages[p] = fullFile;
+    newImages[thumbPath(p)] = thumbFile;
     var cat = addWorkScope === 'pet' ? 'pet' : addWorkScope === 'photo' ? 'photo' : defaultWorkCat();
     config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
     renderAllWorks(); renderCats();
@@ -710,9 +711,10 @@ function renderWorkList(listId, scope){
       inp.onchange = function(){
         var f = inp.files[0]; if (!f) return;
         var w = config.works[+this.dataset.replace];
-        openImageEditor(f, function(edited){
+        openImageEditor(f, function(fullFile, thumbFile){
           var p = nextWorkImgPath('assets/works/work-');
-          newImages[p] = edited;
+          newImages[p] = fullFile;
+          newImages[thumbPath(p)] = thumbFile;
           w.img = p;
           if (!w.images || !w.images.length) w.images = [p];
           else w.images[0] = p;
@@ -732,9 +734,10 @@ function renderWorkList(listId, scope){
         var w = config.works[idx];
         if (!w.images) w.images = (w.img ? [w.img] : []);
         var files = Array.prototype.slice.call(inp.files);
-        editFilesSequential(files, function(edited){
+        editFilesSequential(files, function(fullFile, thumbFile){
           var p = nextWorkImgPath('assets/works/work-');
-          newImages[p] = edited;
+          newImages[p] = fullFile;
+          newImages[thumbPath(p)] = thumbFile;
           w.images.push(p);
         }, function(){ renderAllWorks(); });
       };
@@ -847,9 +850,10 @@ function renderMomentList(){
         var m = momentList[+this.dataset.maddimg];
         if (!m.images) m.images = [];
         var files = Array.prototype.slice.call(inp.files);
-        editFilesSequential(files, function(edited){
+        editFilesSequential(files, function(fullFile, thumbFile){
           var p = nextMomentImgPath();
-          newMomentImgs[p] = edited;
+          newMomentImgs[p] = fullFile;
+          newMomentImgs[thumbPath(p)] = thumbFile;
           m.images.push(p);
         }, function(){ renderMomentList(); });
       }.bind(this);
@@ -1212,23 +1216,30 @@ function ieRender(){
   ctx.clearRect(0, 0, cv.width, cv.height);
   ctx.drawImage(ieFull, cr.x, cr.y, cr.w, cr.h, 0, 0, cv.width, cv.height);
 }
+function ieMakeCanvas(cr, maxDim){
+  var scale = Math.min(1, maxDim / Math.max(cr.w, cr.h));
+  var c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(cr.w * scale));
+  c.height = Math.max(1, Math.round(cr.h * scale));
+  var ctx = c.getContext('2d');
+  ctx.drawImage(ieFull, cr.x, cr.y, cr.w, cr.h, 0, 0, c.width, c.height);
+  return c;
+}
 function ieExport(){
   ieBuildFull();
   var cr = ieCropRect();
-  var out = document.createElement('canvas');
-  // 限制最大 1600px 并导出 JPEG，大幅减小体积（PNG 对照片体积过大）
-  var maxDim = 1600;
-  var scale = Math.min(1, maxDim / Math.max(cr.w, cr.h));
-  out.width = Math.max(1, Math.round(cr.w * scale));
-  out.height = Math.max(1, Math.round(cr.h * scale));
-  var ctx = out.getContext('2d');
-  ctx.drawImage(ieFull, cr.x, cr.y, cr.w, cr.h, 0, 0, out.width, out.height);
-  out.toBlob(function(blob){
-    var name = (ie.file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg';
-    var edited = new File([blob], name, { type: 'image/jpeg' });
-    var cb = ie.cb;
-    closeImageEditor();
-    if (cb) cb(edited);
+  // 大图 1600px + 缩略图 480px，均导出 JPEG 减小体积
+  var fullCv = ieMakeCanvas(cr, 1600);
+  var thumbCv = ieMakeCanvas(cr, 480);
+  var baseName = (ie.file.name || 'image').replace(/\.[^.]+$/, '');
+  fullCv.toBlob(function(fullBlob){
+    thumbCv.toBlob(function(thumbBlob){
+      var fullFile = new File([fullBlob], baseName + '.jpg', { type: 'image/jpeg' });
+      var thumbFile = new File([thumbBlob], baseName + '-thumb.jpg', { type: 'image/jpeg' });
+      var cb = ie.cb;
+      closeImageEditor();
+      if (cb) cb(fullFile, thumbFile);
+    }, 'image/jpeg', 0.85);
   }, 'image/jpeg', 0.85);
 }
 function closeImageEditor(){
@@ -1240,13 +1251,14 @@ function editFilesSequential(files, onEach, onDone){
   function next(){
     if (i >= files.length) { if (onDone) onDone(); return; }
     var f = files[i]; i++;
-    openImageEditor(f, function(edited){
-      onEach(edited);
+    openImageEditor(f, function(fullFile, thumbFile){
+      onEach(fullFile, thumbFile);
       next();
     });
   }
   next();
 }
+function thumbPath(p){ return String(p || '').replace(/(\.\w+)$/, '-thumb$1'); }
 document.querySelectorAll('.ie-ratio').forEach(function(b){
   b.addEventListener('click', function(){
     ie.ratio = parseFloat(b.dataset.ratio) || 0;
@@ -1304,14 +1316,19 @@ window.addEventListener('mouseup', function(){ ie.dragging = false; });
 function openPreview(src){ $('ip-img').src = src; $('img-preview').classList.remove('hidden'); }
 function closePreview(){ $('img-preview').classList.add('hidden'); }
 function reEditImage(path, store, renderFn){
+  var apply = function(fullFile, thumbFile){
+    store[path] = fullFile;
+    store[thumbPath(path)] = thumbFile;
+    renderFn();
+  };
   if (store[path]) {
-    openImageEditor(store[path], function(edited){ store[path] = edited; renderFn(); });
+    openImageEditor(store[path], apply);
     return;
   }
   var url = imgSrc(path);
   fetch(url).then(function(r){ return r.blob(); }).then(function(blob){
     var f = new File([blob], String(path).split('/').pop(), { type: blob.type || 'image/jpeg' });
-    openImageEditor(f, function(edited){ store[path] = edited; renderFn(); });
+    openImageEditor(f, apply);
   }).catch(function(){ openPreview(url); });
 }
 $('ip-close').addEventListener('click', closePreview);
