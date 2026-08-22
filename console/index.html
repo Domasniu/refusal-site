@@ -12,10 +12,14 @@ header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-betwe
 header h1{font-size:16px;letter-spacing:.12em;color:var(--cyan)}
 header h1 span{color:var(--magenta)}
 #who{font-size:12px;color:var(--dim)}
-main{max-width:760px;margin:0 auto;padding:20px}
+main{max-width:1180px;margin:0 auto;padding:24px 20px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:16px}
 .card h2{font-size:14px;letter-spacing:.14em;color:var(--cyan);margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
 label{display:block;font-size:12px;color:var(--dim);margin:10px 0 4px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 22px;align-items:start}
+.fgrid .fitem{min-width:0}
+.fgrid .fitem-full{grid-column:1/-1}
+@media(max-width:640px){.fgrid{grid-template-columns:1fr}}
 input[type=text],textarea{width:100%;background:#070b16;border:1px solid var(--line);color:var(--text);padding:9px 11px;border-radius:6px;font-size:13px}
 input:focus,textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 8px rgba(0,240,255,.25)}
 textarea{min-height:64px;resize:vertical}
@@ -30,10 +34,6 @@ button.small{padding:4px 10px;font-size:12px}
 .tab-btn{flex:1;min-width:90px;background:transparent;border:1px solid var(--line);color:var(--dim);padding:9px 12px;border-radius:6px;font-size:13px;cursor:pointer;transition:.15s}
 .tab-btn:hover{color:var(--cyan);border-color:var(--cyan)}
 .tab-btn.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
-.work-scope{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.scope-btn{background:transparent;border:1px solid var(--line);color:var(--dim);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;transition:.15s}
-.scope-btn:hover{color:var(--cyan);border-color:var(--cyan)}
-.scope-btn.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
 /* 登录区 */
 #login-box{text-align:center;padding:60px 20px}
 #login-box h2{font-size:20px;color:var(--cyan);letter-spacing:.1em;margin-bottom:24px}
@@ -136,26 +136,18 @@ button.small{padding:4px 10px;font-size:12px}
 
   <div class="card" data-tab="home">
     <h2>③ 主页文字 / 首页配置</h2>
-    <label>站点名称（顶栏显示）</label>
-    <input type="text" id="f-sitename" placeholder="refusal· 的宝藏仓库">
-    <label>欢迎语（HELLO 上方小字）</label>
-    <input type="text" id="f-kicker" placeholder="HELLO, I'M refusal·">
-    <label>侧栏状态（名字下方）</label>
-    <input type="text" id="f-status" placeholder="正在收集新灵感">
-    <label>标语标签（用 · 分隔）</label>
-    <input type="text" id="f-tags">
-    <label>一句话标语</label>
-    <input type="text" id="f-slogan">
-    <label>主页介绍</label>
-    <textarea id="f-desc"></textarea>
-    <label>话题标签（# 分隔）</label>
-    <input type="text" id="f-hashtags" placeholder="#手工 #视觉设计">
-    <label>首页小纸条（A LITTLE NOTE 内容）</label>
-    <input type="text" id="f-note" placeholder="希望记录自己，留下回忆。">
-    <label>联系邮箱（首页底部显示）</label>
-    <input type="text" id="f-email" placeholder="hello@refusal.site">
-    <label>标题字号缩放（1 = 默认，1.2 放大 20%，支持小数）</label>
-    <input type="text" id="f-titlescale" placeholder="1">
+    <div class="fgrid">
+      <div class="fitem"><label>站点名称（顶栏显示）</label><input type="text" id="f-sitename" placeholder="refusal· 的宝藏仓库"></div>
+      <div class="fitem"><label>欢迎语（HELLO 上方小字）</label><input type="text" id="f-kicker" placeholder="HELLO, I'M refusal·"></div>
+      <div class="fitem"><label>侧栏状态（名字下方）</label><input type="text" id="f-status" placeholder="正在收集新灵感"></div>
+      <div class="fitem"><label>标语标签（用 · 分隔）</label><input type="text" id="f-tags"></div>
+      <div class="fitem"><label>一句话标语</label><input type="text" id="f-slogan"></div>
+      <div class="fitem"><label>话题标签（# 分隔）</label><input type="text" id="f-hashtags" placeholder="#手工 #视觉设计"></div>
+      <div class="fitem fitem-full"><label>主页介绍</label><textarea id="f-desc"></textarea></div>
+      <div class="fitem"><label>首页小纸条（A LITTLE NOTE 内容）</label><input type="text" id="f-note" placeholder="希望记录自己，留下回忆。"></div>
+      <div class="fitem"><label>联系邮箱（首页底部显示）</label><input type="text" id="f-email" placeholder="hello@refusal.site"></div>
+      <div class="fitem"><label>标题字号缩放（1 = 默认，1.2 放大 20%，支持小数）</label><input type="text" id="f-titlescale" placeholder="1"></div>
+    </div>
   </div>
 
   <div class="card" data-tab="home">
@@ -184,10 +176,10 @@ button.small{padding:4px 10px;font-size:12px}
 
   <div class="card" data-tab="site">
     <h2>⑦ 自我介绍 / 联系</h2>
-    <label>自我介绍（每行一段）</label>
-    <textarea id="f-about" style="min-height:90px"></textarea>
-    <label>联系信息</label>
-    <textarea id="f-contact"></textarea>
+    <div class="fgrid">
+      <div class="fitem"><label>自我介绍（每行一段）</label><textarea id="f-about" style="min-height:140px"></textarea></div>
+      <div class="fitem"><label>联系信息</label><textarea id="f-contact" style="min-height:140px"></textarea></div>
+    </div>
   </div>
 
   <div class="card" data-tab="music">
@@ -207,12 +199,11 @@ button.small{padding:4px 10px;font-size:12px}
 
   <div class="card" data-tab="video">
     <h2>⑨ 视频链接（留空显示即将上线）</h2>
-    <label>抖音主页</label>
-    <input type="text" id="f-douyin" placeholder="https://v.douyin.com/...">
-    <label>B站主页</label>
-    <input type="text" id="f-bilibili" placeholder="https://space.bilibili.com/...">
-    <label>YouTube 主页</label>
-    <input type="text" id="f-youtube" placeholder="https://www.youtube.com/@...">
+    <div class="fgrid">
+      <div class="fitem"><label>抖音主页</label><input type="text" id="f-douyin" placeholder="https://v.douyin.com/..."></div>
+      <div class="fitem"><label>B站主页</label><input type="text" id="f-bilibili" placeholder="https://space.bilibili.com/..."></div>
+      <div class="fitem"><label>YouTube 主页</label><input type="text" id="f-youtube" placeholder="https://www.youtube.com/@..."></div>
+    </div>
   </div>
 
   <div class="card" data-tab="works">
