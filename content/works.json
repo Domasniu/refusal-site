@@ -68,6 +68,24 @@
       "images": [
         "assets/works/work-002.jpg"
       ]
+    },
+    {
+      "id": "W-008",
+      "cat": "photo",
+      "title": "新作品",
+      "img": "assets/works/work-003.jpg",
+      "images": [
+        "assets/works/work-003.jpg"
+      ]
+    },
+    {
+      "id": "W-009",
+      "cat": "pet",
+      "title": "新作品",
+      "img": "assets/works/work-004.jpg",
+      "images": [
+        "assets/works/work-004.jpg"
+      ]
     }
   ]
 }
