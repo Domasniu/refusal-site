@@ -105,7 +105,15 @@
     var h = CFG.hero || {};
     var el;
     if ((el = document.getElementById('hero-kicker'))) el.textContent = h.kicker || 'HELLO, I\'M refusal·';
-    if ((el = document.getElementById('hero-slogan'))) el.textContent = h.slogan || '';
+    if ((el = document.getElementById('hero-slogan'))) {
+      el.innerHTML = '';
+      String(h.slogan || '').split('\n').filter(function (l) { return l.trim(); }).forEach(function (line, i) {
+        var s = document.createElement('span');
+        s.className = 'hero-slogan-line' + (i === 1 ? ' alt' : '');
+        s.textContent = line;
+        el.appendChild(s);
+      });
+    }
     if ((el = document.getElementById('hero-desc'))) el.textContent = h.desc || '';
     // 话题标签 → 胶囊样式
     if ((el = document.getElementById('hero-hashtags'))) {

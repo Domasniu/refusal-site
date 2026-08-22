@@ -239,15 +239,17 @@ body::after{
 }
 .hero-text{flex:1;min-width:280px}
 /* ============ HOME 右栏内容（欢迎区 + 配置化模块） ============ */
+.home-hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1.4rem;margin-bottom:1.6rem;align-items:stretch}
+@media(max-width:900px){.home-hero{grid-template-columns:1fr}}
 .home-welcome{
-  padding:1.8rem 2rem;position:relative;overflow:hidden;
+  padding:2.2rem 2.2rem;position:relative;overflow:hidden;
   background:
     linear-gradient(rgba(0,240,255,.028) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,240,255,.028) 1px, transparent 1px),
     radial-gradient(ellipse at 20% 0%, rgba(0,240,255,.06), transparent 55%);
   background-size:34px 34px,34px 34px,100% 100%;
-  border:1px solid var(--line);border-radius:14px;
-  margin-bottom:1.6rem;
+  border:1px solid var(--line);border-radius:16px;
+  margin-bottom:0;
 }
 .home-welcome::before,.home-welcome::after{
   content:"";position:absolute;width:44px;height:44px;pointer-events:none;
@@ -258,8 +260,13 @@ body::after{
   font-size:.7rem;letter-spacing:.24em;color:var(--cyan);margin-bottom:.5rem;
   text-shadow:0 0 8px rgba(0,240,255,.5);font-family:Consolas,monospace;
 }
-.home-welcome .hero-slogan{font-size:calc(1.35rem * var(--title-scale,1));margin-top:.3rem;white-space:pre-line;line-height:1.3}
-.home-welcome .hero-desc{max-width:56ch}
+.home-welcome .hero-slogan{
+  font-size:calc(2rem * var(--title-scale,1));margin-top:.5rem;line-height:1.22;font-weight:800;
+}
+.hero-slogan-line{display:block}
+.hero-slogan-line:first-child{color:var(--cyan);text-shadow:0 0 18px rgba(0,240,255,.45)}
+.hero-slogan-line.alt{color:var(--magenta);text-shadow:0 0 18px rgba(255,45,149,.45)}
+.home-welcome .hero-desc{max-width:56ch;font-size:.95rem;line-height:1.85;margin-top:.6rem}
 .hero-hashtags{margin-top:.9rem;display:flex;gap:.55rem;flex-wrap:wrap}
 .hero-tag-pill{
   font-size:.82rem;color:var(--cyan);border:1px solid var(--line);
@@ -342,8 +349,8 @@ body::after{
 
 /* 首页留言卡片（你好，欢迎来到我的作品集…收到啦！） */
 .home-message{
-  margin-top:1.6rem;border:1px solid var(--line);border-radius:12px;overflow:hidden;
-  background:var(--panel);
+  margin-top:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:var(--panel);display:flex;flex-direction:column;
 }
 .hm-msg-head{
   padding:.6rem 1.4rem;font-size:.72rem;letter-spacing:.12em;color:var(--magenta);
