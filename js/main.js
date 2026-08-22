@@ -13,17 +13,22 @@
 
   /* ---------- 异步加载线上内容（失败自动回退默认值） ---------- */
   function tryFetch(url) {
-    return fetch(url, { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
+    return Promise.race([
+      fetch(url, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; }),
+      new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 6000); })
+    ]).catch(function () { return null; });
   }
 
   async function loadContent() {
-    var site = await tryFetch('content/site.json');
-    var works = await tryFetch('content/works.json');
-    var cats = await tryFetch('content/categories.json');
-    var music = await tryFetch('content/music.json');
-    var moments = await tryFetch('content/moments.json');
+    var all = await Promise.all([
+      tryFetch('content/site.json'),
+      tryFetch('content/works.json'),
+      tryFetch('content/categories.json'),
+      tryFetch('content/music.json'),
+      tryFetch('content/moments.json')
+    ]);
+    var site = all[0], works = all[1], cats = all[2], music = all[3], moments = all[4];
     if (site) CFG = Object.assign({}, CFG, site);
     if (works && Array.isArray(works.works)) CFG.works = works.works;
     if (cats) {
@@ -360,6 +365,11 @@
   ];
   var term = document.getElementById('boot-terminal');
   var enterBtn = document.getElementById('boot-enter');
+  // 兜底：即使初始化卡住，也保证「进入系统」按钮可用（4 秒后强制显示）
+  if (enterBtn) {
+    enterBtn.addEventListener('click', function () { markBooted(); enterOS(); });
+    setTimeout(function () { enterBtn.classList.remove('hidden'); }, 4000);
+  }
 
   async function typeLine(text) {
     var line = document.createElement('div');
@@ -1243,7 +1253,6 @@
     initSearch();
     initGame();
 
-    enterBtn.addEventListener('click', function () { markBooted(); enterOS(); });
     if (shouldSkipBoot()) {
       skipBoot();
     } else if (new URLSearchParams(location.search).get('skip') === '1') {
