@@ -688,6 +688,7 @@
       card.innerHTML =
         media +
         (m.text ? '<div class="moment-text">' + escHtml(m.text) + '</div>' : '') +
+        (m.tags ? '<div class="moment-tags">' + String(m.tags).split(/\s+/).filter(Boolean).map(function (t) { return '<span class="moment-tag">' + escHtml(t) + '</span>'; }).join('') + '</div>' : '') +
         '<div class="moment-foot">' +
           '<span class="moment-date">' + escHtml(m.date || '') + '</span>' +
           '<span class="moment-likes">❤ ' + escHtml(m.likes || '999') + '</span>' +

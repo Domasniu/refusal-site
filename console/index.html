@@ -59,6 +59,7 @@ button.small{padding:4px 10px;font-size:12px}
 .wc-thumb-item.main{border-color:var(--cyan)}
 .wc-thumb-item em{position:absolute;left:2px;top:2px;font-style:normal;font-size:9px;color:#001018;background:var(--cyan);padding:0 4px;border-radius:2px}
 .wc-body{padding:9px;display:flex;flex-direction:column;gap:7px}
+.wc-fixed-cat{display:inline-block;font-size:12px;color:var(--magenta);border:1px solid rgba(255,45,149,.35);padding:6px 10px;border-radius:5px;background:rgba(255,45,149,.06)}
 .wc-body input,.wc-body select{width:100%;background:#0a0f1e;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px;box-sizing:border-box}
 .wc-actions{display:flex;gap:6px}
 .wc-actions button{flex:1}
@@ -571,9 +572,12 @@ function renderWorkList(listId, scope){
     shown++;
     var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
     var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
-    var catOpts = config.categories.map(function(c){
+    var catOpts = config.categories.filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; }).map(function(c){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
+    var catField = (scope === 'pet' || scope === 'photo')
+      ? '<span class="wc-fixed-cat">' + (scope === 'pet' ? '🐾 宠物' : '📷 摄影') + '</span>'
+      : '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>';
     var thumbs = imgs.map(function(im, ti){
       var src = newImages[im] ? URL.createObjectURL(newImages[im]) : imgSrc(im);
       return '<span class="wc-thumb-item' + (ti === 0 ? ' main' : '') + '" data-wi="' + idx + '" data-ri="' + ti + '" title="点击移除">' +
@@ -585,7 +589,7 @@ function renderWorkList(listId, scope){
       '<div class="wc-thumbs">' + thumbs + '</div>' +
       '<div class="wc-body">' +
         '<input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title" placeholder="标题">' +
-        '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>' +
+        catField +
         '<textarea data-i="' + idx + '" data-k="desc" placeholder="作品描述（可选）" style="min-height:44px">' + esc(w.desc || '') + '</textarea>' +
         '<div class="wc-actions">' +
           '<button class="small" data-addimg="' + idx + '">＋ 加图</button>' +
@@ -702,6 +706,7 @@ function renderMomentList(){
         '<button class="small" data-mdel="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
       '</div>' +
       '<textarea data-moi="' + idx + '" data-mok="text" placeholder="动态文字内容" style="min-height:56px">' + esc(m.text || '') + '</textarea>' +
+      '<input type="text" value="' + esc(m.tags || '') + '" data-moi="' + idx + '" data-mok="tags" placeholder="话题标签（# 分隔，如 #日常 #手作）">' +
       (thumbs ? '<div class="wc-thumbs">' + thumbs + '</div>' : '') +
       '<div class="toolbar" style="margin-top:6px">' +
         '<button class="small" data-maddimg="' + idx + '">＋ 图片</button>' +

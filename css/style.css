@@ -601,6 +601,8 @@ body::after{
 }
 .moment-date{font-size:.62rem;color:var(--dim);font-family:Consolas,monospace}
 .moment-likes{font-size:.64rem;color:#ff6b9d;letter-spacing:.05em}
+.moment-tags{display:flex;flex-wrap:wrap;gap:.3rem;padding:0 .7rem .3rem}
+.moment-tag{font-size:.58rem;color:var(--cyan);border:1px solid var(--line);padding:.05rem .4rem;border-radius:999px;background:rgba(0,240,255,.06)}
 
 /* ============ 首页最新动态（小红书风格） ============ */
 .home-moments{margin:.4rem 0 2rem}
