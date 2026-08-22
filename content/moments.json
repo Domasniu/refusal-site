@@ -49,6 +49,14 @@
         "assets/moments/img-004.jpg"
       ],
       "video": ""
+    },
+    {
+      "id": "M-006",
+      "type": "text",
+      "date": "2026-08-22",
+      "text": "",
+      "images": [],
+      "video": "assets/moments/video-001.mp4"
     }
   ]
 }
