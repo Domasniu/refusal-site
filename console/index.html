@@ -47,9 +47,9 @@ button.small{padding:4px 10px;font-size:12px}
 .swatch .dots{display:flex;gap:3px;justify-content:center;margin-bottom:6px}
 .swatch .dot{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,.2)}
 .swatch .nm{font-size:11px}
-/* 作品网格（瀑布流：卡片高度自适应，避免单图卡片下方大片空白） */
-.work-grid{columns:320px;column-gap:14px}
-.work-card{background:#070b16;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:14px}
+/* 作品网格（左到右、从上到下；卡片不拉伸，避免单图卡片下方大片空白） */
+.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start}
+.work-card{background:#070b16;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
 .work-card:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,240,255,.14)}
 .wc-main{height:190px;position:relative;background:#0a0f1e;overflow:hidden;border-bottom:1px solid var(--line);cursor:pointer}
 .wc-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
@@ -798,7 +798,7 @@ function renderWorkList(listId, scope){
       '</div>';
     grid.appendChild(card);
   });
-  if (!shown) grid.innerHTML = '<p class="hint" style="column-span:all">该分区暂无作品。</p>';
+  if (!shown) grid.innerHTML = '<p class="hint" style="grid-column:1/-1">该分区暂无作品。</p>';
   box.appendChild(grid);
   box.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){ config.works[+this.dataset.i][this.dataset.k] = this.value; });
