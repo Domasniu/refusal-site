@@ -422,7 +422,7 @@
         '<span class="work-id">' + escHtml(w.id) + '</span>' +
         '<img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
         '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
-        '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span></div>' +
+        '<span class="work-cat">' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span></div>' +
         (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
         '<div class="cat-bar"></div>';
       card.addEventListener('click', function () { openLightbox(w); });

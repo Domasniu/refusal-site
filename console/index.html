@@ -653,12 +653,15 @@ function renderWorkList(listId, scope){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
     var catField = (scope === 'pet' || scope === 'photo')
-      ? '<span class="wc-fixed-cat">' + (scope === 'pet' ? '🐾 宠物' : '📷 摄影') + '</span>'
+      ? '<input type="text" value="' + esc(w.subcat || '') + '" data-i="' + idx + '" data-k="subcat" placeholder="' + (scope === 'pet' ? '宠物标签，如 lucky' : '摄影标签，如 风景') + '">'
       : '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>';
     var thumbs = imgs.map(function(im, ti){
       var src = newImages[im] ? URL.createObjectURL(newImages[im]) : imgSrc(im);
-      return '<span class="wc-thumb-item' + (ti === 0 ? ' main' : '') + '" data-wi="' + idx + '" data-ri="' + ti + '" title="点击移除">' +
-        '<img src="' + src + '" alt="">' + (ti === 0 ? '<em>主</em>' : '') + '</span>';
+      return '<span class="wc-thumb-item' + (ti === 0 ? ' main' : '') + '" data-wi="' + idx + '" data-ri="' + ti + '">' +
+        '<img src="' + src + '" alt="" title="点击编辑">' +
+        (ti === 0 ? '<em>主</em>' : '') +
+        '<em class="wc-thumb-x" data-wx="' + idx + '" data-wxri="' + ti + '" title="移除">✕</em>' +
+        '</span>';
     }).join('');
     var card = document.createElement('div');
     card.className = 'work-card';
@@ -679,7 +682,7 @@ function renderWorkList(listId, scope){
   if (!shown) grid.innerHTML = '<p class="hint" style="grid-column:1/-1">该分区暂无作品。</p>';
   box.appendChild(grid);
   box.querySelectorAll('input[data-k]').forEach(function(inp){
-    inp.addEventListener('input', function(){ config.works[+this.dataset.i].title = this.value; });
+    inp.addEventListener('input', function(){ config.works[+this.dataset.i][this.dataset.k] = this.value; });
   });
   box.querySelectorAll('textarea[data-k]').forEach(function(ta){
     ta.addEventListener('input', function(){ config.works[+this.dataset.i].desc = this.value; });
@@ -733,11 +736,22 @@ function renderWorkList(listId, scope){
       inp.click();
     });
   });
-  // 移除某张图
-  box.querySelectorAll('.wc-thumb-item').forEach(function(el){
-    el.addEventListener('click', function(){
-      var w = config.works[+this.dataset.wi];
-      var ri = +this.dataset.ri;
+  // 点击图片 → 重新编辑；✕ → 移除
+  box.querySelectorAll('.wc-thumb-item img').forEach(function(img){
+    img.addEventListener('click', function(){
+      var el = img.closest('.wc-thumb-item');
+      var w = config.works[+el.dataset.wi];
+      var ri = +el.dataset.ri;
+      var imgs = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
+      var im = imgs[ri];
+      if (im) reEditImage(im, newImages, renderAllWorks);
+    });
+  });
+  box.querySelectorAll('.wc-thumb-x').forEach(function(x){
+    x.addEventListener('click', function(e){
+      e.stopPropagation();
+      var w = config.works[+this.dataset.wx];
+      var ri = +this.dataset.wxri;
       var imgs = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
       if (imgs.length <= 1) return; // 至少保留一张
       delete newImages[imgs[ri]];
@@ -775,7 +789,7 @@ function renderMomentList(){
     var thumbs = (m.images || []).map(function(im){
       var src = newMomentImgs[im] ? URL.createObjectURL(newMomentImgs[im]) : imgSrc(im);
       return '<span class="wc-thumb-item" data-mwi="' + idx + '" data-mri="' + im + '">' +
-        '<img src="' + src + '" alt="" title="点击查看大图">' +
+        '<img src="' + src + '" alt="" title="点击编辑">' +
         '<em class="wc-thumb-x" data-mx="' + idx + '" data-mxri="' + im + '" title="移除">✕</em>' +
         '</span>';
     }).join('');
@@ -847,7 +861,11 @@ function renderMomentList(){
     });
   });
   box.querySelectorAll('.wc-thumb-item[data-mwi] img').forEach(function(img){
-    img.addEventListener('click', function(){ openPreview(img.src); });
+    img.addEventListener('click', function(){
+      var el = img.closest('.wc-thumb-item');
+      var im = el.dataset.mri;
+      reEditImage(im, newMomentImgs, renderMomentList);
+    });
   });
   box.querySelectorAll('.wc-thumb-x').forEach(function(x){
     x.addEventListener('click', function(e){
@@ -1267,6 +1285,17 @@ window.addEventListener('mouseup', function(){ ie.dragging = false; });
 /* ---------- 图片预览 ---------- */
 function openPreview(src){ $('ip-img').src = src; $('img-preview').classList.remove('hidden'); }
 function closePreview(){ $('img-preview').classList.add('hidden'); }
+function reEditImage(path, store, renderFn){
+  if (store[path]) {
+    openImageEditor(store[path], function(edited){ store[path] = edited; renderFn(); });
+    return;
+  }
+  var url = imgSrc(path);
+  fetch(url).then(function(r){ return r.blob(); }).then(function(blob){
+    var f = new File([blob], String(path).split('/').pop(), { type: blob.type || 'image/jpeg' });
+    openImageEditor(f, function(edited){ store[path] = edited; renderFn(); });
+  }).catch(function(){ openPreview(url); });
+}
 $('ip-close').addEventListener('click', closePreview);
 $('img-preview').addEventListener('click', function(e){ if (e.target === this || e.target.id === 'ip-img') closePreview(); });
 
