@@ -87,7 +87,7 @@
   function ensureAudio() {
     if (audio) return audio;
     audio = new Audio();
-    audio.preload = 'auto';
+    audio.preload = 'metadata';
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
     audio.addEventListener('ended', onEnded);

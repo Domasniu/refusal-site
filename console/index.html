@@ -1216,17 +1216,20 @@ function ieExport(){
   ieBuildFull();
   var cr = ieCropRect();
   var out = document.createElement('canvas');
-  out.width = Math.max(1, Math.round(cr.w));
-  out.height = Math.max(1, Math.round(cr.h));
+  // 限制最大 1600px 并导出 JPEG，大幅减小体积（PNG 对照片体积过大）
+  var maxDim = 1600;
+  var scale = Math.min(1, maxDim / Math.max(cr.w, cr.h));
+  out.width = Math.max(1, Math.round(cr.w * scale));
+  out.height = Math.max(1, Math.round(cr.h * scale));
   var ctx = out.getContext('2d');
   ctx.drawImage(ieFull, cr.x, cr.y, cr.w, cr.h, 0, 0, out.width, out.height);
   out.toBlob(function(blob){
-    var name = (ie.file.name || 'image').replace(/\.[^.]+$/, '') + '.png';
-    var edited = new File([blob], name, { type: 'image/png' });
+    var name = (ie.file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg';
+    var edited = new File([blob], name, { type: 'image/jpeg' });
     var cb = ie.cb;
     closeImageEditor();
     if (cb) cb(edited);
-  }, 'image/png', 0.92);
+  }, 'image/jpeg', 0.85);
 }
 function closeImageEditor(){
   $('img-editor').classList.add('hidden');

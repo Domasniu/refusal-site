@@ -18,9 +18,12 @@
 /content/*.json
   Cache-Control: no-store
 
-# 图片资源：头像和作品图会被后台替换，用短期缓存
+# 图片资源：作品/动态图文件名唯一，长缓存；头像会被后台替换，单独短缓存
 /assets/*
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=604800
+
+/assets/avatar.jpg
+  Cache-Control: no-cache
 
 # HTML：no-cache（配合 ETag 校验）
 /index.html
