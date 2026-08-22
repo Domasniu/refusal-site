@@ -179,6 +179,7 @@
 1. **侧栏名字拆分放大**：`hero.kicker` 用换行拆成两段——第一行小字 "HELLO, I'M"（`.sk-hi`），第二行大字 "refusal·"（`.sk-name`，约 2.15rem，随 `hero.titleScale` 缩放）。数据改为 `"HELLO, I'M\nrefusal·"`。
 2. **状态胶囊背景**：`.side-status`（"正在收集新灵感"）改为胶囊 pill —— 圆角背景 + 品红描边 + 前导呼吸小圆点。
 3. **页签标题字号单独配置**：新增 `secTitleScale`（默认 1），通过 CSS 变量 `--sec-title-scale` 控制所有 `.sec-title` / `.home-sec-title`；后台 ③主页配置新增「所有页签标题字号」输入框并已接入保存。
+4. **后台欢迎语改多行输入**：`f-kicker` 由单行 `<input>` 改为 `<textarea>`，可直接回车换行输入"HELLO, I'M / refusal·"两段。
 
 ### 数据格式变化
 - `site.json` 新增顶层字段 `secTitleScale`（数字，默认 1）。
