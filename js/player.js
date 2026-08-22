@@ -97,7 +97,7 @@
     audio.addEventListener('waiting', function () { if (!audio.paused) setStatus('加载中，请稍候…'); });
     audio.addEventListener('stalled', function () { if (!audio.paused) setStatus('网络缓冲中…'); });
     audio.addEventListener('canplay', function () { setStatus(''); });
-    audio.addEventListener('playing', function () { setStatus(''); });
+    audio.addEventListener('playing', function () { errorCount = 0; setStatus(''); });
     audio.addEventListener('error', onAudioError);
     return audio;
   }
@@ -124,7 +124,6 @@
     if (i < 0) i = playlist.length - 1;
     if (i >= playlist.length) i = 0;
     index = i;
-    errorCount = 0;
     var song = playlist[index];
     var src = songUrl(song);
     var a = ensureAudio();

@@ -755,26 +755,10 @@
       play();
     }
     function play() {
-      var s = slides[idx];
-      if (s.tagName === 'VIDEO') {
-        s.muted = true;
-        s.currentTime = 0;
-        var started = false;
-        // 兜底：3 秒内没开始播放（被拦截/加载失败）就跳过
-        var guard = setTimeout(function () { if (!started) next(); }, 3000);
-        s.onended = function () { clearTimeout(guard); next(); };
-        s.onerror = function () { clearTimeout(guard); next(); };
-        var p = s.play();
-        if (p && p.then) {
-          p.then(function () { started = true; clearTimeout(guard); })
-           .catch(function () { clearTimeout(guard); next(); });
-        } else {
-          started = true; clearTimeout(guard);
-        }
-      } else {
-        clearTimer();
-        timer = setTimeout(next, 3000);
-      }
+      // 图片/视频都按 3 秒定时切换；视频不自动播放（省内存、避免同时解码多个视频导致崩溃），
+      // 只显示首帧缩略图，点卡片打开灯箱后再播放
+      clearTimer();
+      timer = setTimeout(next, 3000);
     }
     show(0);
     play();
