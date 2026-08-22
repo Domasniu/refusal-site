@@ -350,7 +350,9 @@
   function tick() {
     var d = new Date();
     var p = function (n) { return String(n).padStart(2, '0'); };
-    document.getElementById('clock').textContent = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    document.getElementById('clock').textContent =
+      d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
   }
 
   /* ---------- 导航 ---------- */
@@ -767,6 +769,13 @@
     var inp = document.getElementById('search-input');
     if (openBtn) openBtn.addEventListener('click', searchPanelOpen);
     if (closeBtn) closeBtn.addEventListener('click', searchPanelClose);
+    // 顶栏搜索框（对齐交互图）
+    var topSearch = document.getElementById('topbar-search');
+    if (topSearch) {
+      topSearch.addEventListener('focus', function(){ document.getElementById('search-panel').classList.remove('hidden'); });
+      topSearch.addEventListener('input', function(){ doSearch(topSearch.value); document.getElementById('search-panel').classList.remove('hidden'); });
+      topSearch.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ searchPanelClose(); topSearch.blur(); } });
+    }
     if (inp) {
       inp.addEventListener('input', function () { doSearch(inp.value); });
       inp.addEventListener('keydown', function (e) {

@@ -66,7 +66,7 @@
       <span class="topbar-tag">v2026.05</span>
     </div>
     <div class="topbar-right">
-      <button id="search-open" class="theme-toggle" title="搜索">🔍</button>
+      <input type="text" id="topbar-search" class="topbar-search" placeholder="搜索作品/动态/分类..." autocomplete="off">
       <button id="theme-toggle" class="theme-toggle" title="切换主题配色">🎨</button>
       <a class="admin-link" href="console/" title="站长登录 · 傻瓜后台">⚙ 管理</a>
       <span class="status-dot"></span><span class="topbar-status">SYSTEM ONLINE</span>
@@ -85,6 +85,12 @@
 
   <!-- 全局左侧个人栏（切换页签时保持不动） -->
   <aside class="side-col" id="side-col">
+    <div class="side-avatar">
+      <div class="avatar-wrap">
+        <span class="avatar-ring"></span>
+        <img id="avatar-img" class="avatar" src="assets/avatar.jpg" alt="refusal·">
+      </div>
+    </div>
     <div class="side-head">
       <p id="hero-kicker" class="side-kicker"></p>
       <p id="side-status" class="side-status"></p>

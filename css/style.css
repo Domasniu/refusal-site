@@ -89,8 +89,8 @@ body::after{
   background:rgba(5,8,16,.92);border-bottom:1px solid var(--line);
   backdrop-filter:blur(8px);font-size:.8rem;letter-spacing:.08em;
 }
-.os-logo{color:var(--cyan);font-weight:800;text-shadow:0 0 8px rgba(0,240,255,.6)}
-.os-logo span{color:var(--magenta)}
+.os-logo{color:var(--magenta);font-weight:800;text-shadow:0 0 8px rgba(255,45,149,.6)}
+.os-logo span{color:var(--cyan)}
 .topbar-tag{color:var(--dim);margin-left:.5rem;font-size:.68rem}
 .topbar-right{display:flex;align-items:center;gap:.6rem}
 .theme-toggle{
@@ -146,6 +146,24 @@ body::after{
 }
 .side-ver{margin-top:auto;padding-top:.8rem;font-size:.56rem;color:var(--dim);letter-spacing:.14em;font-family:Consolas,monospace}
 .menu-toggle{display:none}
+/* 侧栏圆形头像（对齐交互图） */
+.side-avatar{display:flex;justify-content:center;margin:.1rem 0 .3rem}
+.side-avatar .avatar{width:104px;height:104px}
+.side-avatar .avatar-ring{inset:-9px}
+/* 顶栏搜索框 + 粉色头部（对齐交互图） */
+.topbar{border-bottom-color:rgba(255,45,149,.4)}
+.topbar-search{
+  background:#070b16;border:1px solid var(--line);color:var(--text);
+  padding:.38rem .7rem;border-radius:4px;font-size:.72rem;width:180px;
+  outline:none;transition:.2s;letter-spacing:.04em;
+}
+.topbar-search::placeholder{color:var(--dim)}
+.topbar-search:focus{border-color:var(--magenta);box-shadow:0 0 10px rgba(255,45,149,.28)}
+@media(max-width:860px){
+  .topbar-search{width:104px}
+  .side-avatar .avatar{width:60px;height:60px}
+  .side-avatar .avatar-ring{inset:-6px}
+}
 
 .content{
   margin:46px 0 40px 260px;padding:2.4rem 2.6rem;flex:1;
