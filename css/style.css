@@ -284,7 +284,7 @@ body::after{
 }
 /* 首页「最新动态」大标题 + 四个分类卡片（点击进入幻灯片） */
 .home-sec-title{
-  font-size:1.2rem;letter-spacing:.2em;color:var(--text);margin-bottom:1.1rem;
+  font-size:1.2rem;letter-spacing:.2em;color:var(--text);margin-top:1.8rem;margin-bottom:1.1rem;
   padding-bottom:.6rem;border-bottom:1px solid var(--line);
 }
 .home-sec-title .tick{color:var(--magenta);text-shadow:var(--glow-magenta)}
