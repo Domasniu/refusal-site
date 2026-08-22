@@ -312,6 +312,7 @@ button.small{padding:4px 10px;font-size:12px}
       </div>
     </div>
     <div class="ie-foot">
+      <button id="ie-reset" class="small" style="margin-right:auto">↺ 恢复默认</button>
       <button id="ie-cancel" class="small">取消</button>
       <button id="ie-ok" class="primary">✓ 确定</button>
     </div>
@@ -1199,6 +1200,14 @@ $('ie-rot-r').addEventListener('click', function(){ ie.rotation += 90; ieRender(
 });
 $('ie-cancel').addEventListener('click', closeImageEditor);
 $('ie-ok').addEventListener('click', ieExport);
+$('ie-reset').addEventListener('click', function(){
+  ie.rotation = 0; ie.ratio = 0; ie.crop = { x: 0.5, y: 0.5 };
+  ie.bright = 100; ie.contrast = 100; ie.sat = 100; ie.filter = 'none';
+  $('ie-bright').value = 100; $('ie-contrast').value = 100; $('ie-sat').value = 100;
+  document.querySelectorAll('.ie-ratio').forEach(function(b){ b.classList.toggle('active', b.dataset.ratio === '0'); });
+  document.querySelectorAll('.ie-filter').forEach(function(b){ b.classList.toggle('active', b.dataset.filter === 'none'); });
+  ieRender();
+});
 var cvEl = $('ie-canvas');
 cvEl.addEventListener('mousedown', function(e){
   ie.dragging = true;
