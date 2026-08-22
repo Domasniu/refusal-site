@@ -107,6 +107,15 @@ button.small{padding:4px 10px;font-size:12px}
 .ie-ratio:hover,.ie-filter:hover{color:var(--cyan);border-color:var(--cyan)}
 .ie-ratio.active,.ie-filter.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
 .ie-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+/* 图片预览 */
+.img-preview{position:fixed;inset:0;z-index:2100;background:rgba(2,4,10,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+.ip-box{position:relative;max-width:92vw;max-height:90vh}
+.ip-box img{max-width:92vw;max-height:90vh;border:1px solid var(--cyan);box-shadow:0 0 24px rgba(0,240,255,.4);border-radius:6px}
+.ip-close{position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:var(--magenta);color:#fff;border:none;font-size:14px;cursor:pointer}
+.wc-thumb-x{position:absolute;top:2px;right:2px;font-style:normal;font-size:10px;color:#fff;background:rgba(255,60,80,.92);width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;cursor:pointer;display:none;z-index:2}
+.wc-thumb-item:hover .wc-thumb-x{display:block}
+.wc-video-preview{margin-top:6px;display:flex;flex-direction:column;gap:6px}
+.wc-video-preview video{width:100%;max-width:320px;max-height:200px;border:1px solid var(--line);border-radius:6px;background:#000}
 </style>
 </head>
 <body>
@@ -316,6 +325,14 @@ button.small{padding:4px 10px;font-size:12px}
       <button id="ie-cancel" class="small">取消</button>
       <button id="ie-ok" class="primary">✓ 确定</button>
     </div>
+  </div>
+</div>
+
+<!-- 图片预览 -->
+<div id="img-preview" class="img-preview hidden">
+  <div class="ip-box">
+    <img id="ip-img" src="" alt="">
+    <button id="ip-close" class="ip-close">✕</button>
   </div>
 </div>
 
@@ -757,7 +774,10 @@ function renderMomentList(){
   momentList.forEach(function(m, idx){
     var thumbs = (m.images || []).map(function(im){
       var src = newMomentImgs[im] ? URL.createObjectURL(newMomentImgs[im]) : imgSrc(im);
-      return '<span class="wc-thumb-item" data-mwi="' + idx + '" data-mri="' + im + '" title="点击移除"><img src="' + src + '" alt=""></span>';
+      return '<span class="wc-thumb-item" data-mwi="' + idx + '" data-mri="' + im + '">' +
+        '<img src="' + src + '" alt="" title="点击查看大图">' +
+        '<em class="wc-thumb-x" data-mx="' + idx + '" data-mxri="' + im + '" title="移除">✕</em>' +
+        '</span>';
     }).join('');
     var row = document.createElement('div');
     row.className = 'music-row';
@@ -773,7 +793,10 @@ function renderMomentList(){
       '<div class="toolbar" style="margin-top:6px">' +
         '<button class="small" data-maddimg="' + idx + '">＋ 图片</button>' +
         '<button class="small" data-maddvid="' + idx + '">🎬 视频</button>' +
-        (m.video ? '<span class="hint" style="margin:0">' + esc(m.video) + '</span>' : '') +
+        (m.video ? '<div class="wc-video-preview">' +
+          '<video src="' + (newMomentVideos[m.video] ? URL.createObjectURL(newMomentVideos[m.video]) : imgSrc(m.video)) + '" controls preload="metadata"></video>' +
+          '<button class="small" data-mdelvid="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">移除视频</button>' +
+          '</div>' : '') +
       '</div>';
     box.appendChild(row);
   });
@@ -823,12 +846,24 @@ function renderMomentList(){
       inp.click();
     });
   });
-  box.querySelectorAll('.wc-thumb-item[data-mwi]').forEach(function(el){
-    el.addEventListener('click', function(){
-      var m = momentList[+this.dataset.mwi];
-      var im = this.dataset.mri;
+  box.querySelectorAll('.wc-thumb-item[data-mwi] img').forEach(function(img){
+    img.addEventListener('click', function(){ openPreview(img.src); });
+  });
+  box.querySelectorAll('.wc-thumb-x').forEach(function(x){
+    x.addEventListener('click', function(e){
+      e.stopPropagation();
+      var m = momentList[+this.dataset.mx];
+      var im = this.dataset.mxri;
       delete newMomentImgs[im];
-      m.images = (m.images || []).filter(function(x){ return x !== im; });
+      m.images = (m.images || []).filter(function(z){ return z !== im; });
+      renderMomentList();
+    });
+  });
+  box.querySelectorAll('button[data-mdelvid]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var m = momentList[+this.dataset.mdelvid];
+      if (m.video) delete newMomentVideos[m.video];
+      m.video = '';
       renderMomentList();
     });
   });
@@ -1228,6 +1263,12 @@ window.addEventListener('mousemove', function(e){
   ieRender();
 });
 window.addEventListener('mouseup', function(){ ie.dragging = false; });
+
+/* ---------- 图片预览 ---------- */
+function openPreview(src){ $('ip-img').src = src; $('img-preview').classList.remove('hidden'); }
+function closePreview(){ $('img-preview').classList.add('hidden'); }
+$('ip-close').addEventListener('click', closePreview);
+$('img-preview').addEventListener('click', function(e){ if (e.target === this || e.target.id === 'ip-img') closePreview(); });
 
 /* ================= 保存 ================= */
 function fileToBase64(f){
