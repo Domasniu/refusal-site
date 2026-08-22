@@ -114,8 +114,9 @@ button.small{padding:4px 10px;font-size:12px}
 .ip-close{position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:var(--magenta);color:#fff;border:none;font-size:14px;cursor:pointer}
 .wc-thumb-x{position:absolute;top:2px;right:2px;font-style:normal;font-size:10px;color:#fff;background:rgba(255,60,80,.92);width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;cursor:pointer;display:none;z-index:2}
 .wc-thumb-item:hover .wc-thumb-x{display:block}
-.wc-video-preview{margin-top:6px;display:flex;flex-direction:column;gap:6px}
-.wc-video-preview video{width:100%;max-width:320px;max-height:200px;border:1px solid var(--line);border-radius:6px;background:#000}
+.wc-videos{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.wc-video-item{display:flex;align-items:flex-start;gap:8px}
+.wc-video-item video{width:100%;max-width:320px;max-height:200px;border:1px solid var(--line);border-radius:6px;background:#000}
 </style>
 </head>
 <body>
@@ -453,6 +454,10 @@ async function loadContent(){
     if (moments) {
       var moj = JSON.parse(moments.text);
       momentList = (moj && Array.isArray(moj.moments)) ? moj.moments : [];
+      // 迁移：旧 video 单字段 → videos 数组
+      momentList.forEach(function(m){
+        if (m.video && !m.videos) m.videos = [m.video];
+      });
     } else {
       momentList = [];
     }
@@ -773,7 +778,7 @@ function nextMomentImgPath(){
 }
 function nextMomentVideoPath(){
   var n = 1; var used = {};
-  momentList.forEach(function(m){ if (m.video) used[m.video] = true; });
+  momentList.forEach(function(m){ (m.videos || []).forEach(function(v){ used[v] = true; }); });
   var p = '';
   do { p = 'assets/moments/video-' + String(n).padStart(3,'0') + '.mp4'; n++; } while (used[p]);
   return p;
@@ -786,6 +791,7 @@ function renderMomentList(){
     return;
   }
   momentList.forEach(function(m, idx){
+    var videos = m.videos || [];
     var thumbs = (m.images || []).map(function(im){
       var src = newMomentImgs[im] ? URL.createObjectURL(newMomentImgs[im]) : imgSrc(im);
       return '<span class="wc-thumb-item" data-mwi="' + idx + '" data-mri="' + im + '">' +
@@ -793,24 +799,28 @@ function renderMomentList(){
         '<em class="wc-thumb-x" data-mx="' + idx + '" data-mxri="' + im + '" title="移除">✕</em>' +
         '</span>';
     }).join('');
+    var vidPreviews = videos.map(function(v, vi){
+      var vsrc = newMomentVideos[v] ? URL.createObjectURL(newMomentVideos[v]) : imgSrc(v);
+      return '<div class="wc-video-item">' +
+        '<video src="' + vsrc + '" controls preload="metadata"></video>' +
+        '<button class="small" data-mdelvid="' + idx + '" data-mvi="' + vi + '" style="border-color:#ff5c5c;color:#ff5c5c">移除</button>' +
+        '</div>';
+    }).join('');
     var row = document.createElement('div');
     row.className = 'music-row';
     row.innerHTML =
       '<div class="mr-head">' +
-        '<span class="mr-tag">' + (m.video ? '🎬 视频' : (m.images && m.images.length ? '🖼️ 图片' : '💬 文字')) + '</span>' +
+        '<span class="mr-tag">' + (videos.length ? '🎬 视频' : (m.images && m.images.length ? '🖼️ 图片' : '💬 文字')) + '</span>' +
         '<input type="text" value="' + esc(m.date || '') + '" data-moi="' + idx + '" data-mok="date" placeholder="日期，如 2026-08-22" style="width:130px">' +
         '<button class="small" data-mdel="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
       '</div>' +
       '<textarea data-moi="' + idx + '" data-mok="text" placeholder="动态文字内容" style="min-height:56px">' + esc(m.text || '') + '</textarea>' +
       '<input type="text" value="' + esc(m.tags || '') + '" data-moi="' + idx + '" data-mok="tags" placeholder="话题标签（# 分隔，如 #日常 #手作）">' +
       (thumbs ? '<div class="wc-thumbs">' + thumbs + '</div>' : '') +
+      (vidPreviews ? '<div class="wc-videos">' + vidPreviews + '</div>' : '') +
       '<div class="toolbar" style="margin-top:6px">' +
         '<button class="small" data-maddimg="' + idx + '">＋ 图片</button>' +
         '<button class="small" data-maddvid="' + idx + '">🎬 视频</button>' +
-        (m.video ? '<div class="wc-video-preview">' +
-          '<video src="' + (newMomentVideos[m.video] ? URL.createObjectURL(newMomentVideos[m.video]) : imgSrc(m.video)) + '" controls preload="metadata"></video>' +
-          '<button class="small" data-mdelvid="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">移除视频</button>' +
-          '</div>' : '') +
       '</div>';
     box.appendChild(row);
   });
@@ -824,7 +834,7 @@ function renderMomentList(){
     btn.addEventListener('click', function(){
       var m = momentList[+this.dataset.mdel];
       (m.images || []).forEach(function(im){ delete newMomentImgs[im]; });
-      if (m.video) delete newMomentVideos[m.video];
+      (m.videos || []).forEach(function(v){ delete newMomentVideos[v]; });
       momentList.splice(+this.dataset.mdel, 1);
       renderMomentList();
     });
@@ -849,12 +859,15 @@ function renderMomentList(){
   box.querySelectorAll('button[data-maddvid]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var inp = document.createElement('input');
-      inp.type = 'file'; inp.accept = 'video/*';
+      inp.type = 'file'; inp.accept = 'video/*'; inp.multiple = true;
       inp.onchange = function(){
         var m = momentList[+this.dataset.maddvid];
-        var p = nextMomentVideoPath();
-        newMomentVideos[p] = inp.files[0];
-        m.video = p;
+        if (!m.videos) m.videos = [];
+        Array.prototype.forEach.call(inp.files, function(f){
+          var p = nextMomentVideoPath();
+          newMomentVideos[p] = f;
+          m.videos.push(p);
+        });
         renderMomentList();
       }.bind(this);
       inp.click();
@@ -880,8 +893,10 @@ function renderMomentList(){
   box.querySelectorAll('button[data-mdelvid]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var m = momentList[+this.dataset.mdelvid];
-      if (m.video) delete newMomentVideos[m.video];
-      m.video = '';
+      var vi = +this.dataset.mvi;
+      var v = (m.videos || [])[vi];
+      if (v) delete newMomentVideos[v];
+      m.videos = (m.videos || []).filter(function(z, zi){ return zi !== vi; });
       renderMomentList();
     });
   });
@@ -889,7 +904,7 @@ function renderMomentList(){
 $('btn-add-moment').addEventListener('click', function(){
   var d = new Date();
   var p = function(n){ return String(n).padStart(2,'0'); };
-  momentList.push({ id: 'M-' + String(momentList.length + 1).padStart(3,'0'), type: 'text', date: d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()), text: '', images: [], video: '' });
+  momentList.push({ id: 'M-' + String(momentList.length + 1).padStart(3,'0'), type: 'text', date: d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()), text: '', images: [], videos: [] });
   renderMomentList();
 });
 

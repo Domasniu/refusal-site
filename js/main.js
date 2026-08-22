@@ -647,7 +647,7 @@
 
   /* ---------- 空动态判断（renderHomeModules / renderMoments 共用） ---------- */
   function isEmptyMoment(m) {
-    return !(m.text || (m.images && m.images.length) || m.video);
+    return !(m.text || (m.images && m.images.length) || (m.videos && m.videos.length) || m.video);
   }
 
   /* ---------- 生活动态（说说） ---------- */
@@ -666,14 +666,15 @@
       return;
     }
     list.slice().reverse().forEach(function (m, idx) {
-      var hasMedia = !!(m.video || (m.images && m.images.length));
+      var firstVideo = (m.videos && m.videos.length) ? m.videos[0] : (m.video || '');
+      var hasMedia = !!(firstVideo || (m.images && m.images.length));
       var card = document.createElement('div');
       card.className = 'moment-card' + (hasMedia ? ' has-media' : ' text-only');
       card.style.animationDelay = (idx * 40) + 'ms';
       var media = '';
-      if (m.video) {
+      if (firstVideo) {
         media = '<div class="moment-media">' +
-          '<video class="moment-video" src="' + escHtml(m.video) + '" preload="metadata" muted></video>' +
+          '<video class="moment-video" src="' + escHtml(firstVideo) + '" preload="metadata" muted></video>' +
           '<span class="moment-type">视频</span>' +
           '<span class="moment-play">▶</span>' +
           '</div>';
