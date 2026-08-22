@@ -26,7 +26,11 @@
     var moments = await tryFetch('content/moments.json');
     if (site) CFG = Object.assign({}, CFG, site);
     if (works && Array.isArray(works.works)) CFG.works = works.works;
-    if (cats && Array.isArray(cats.categories)) CFG.categories = cats.categories;
+    if (cats) {
+      if (Array.isArray(cats.categories)) CFG.categories = cats.categories;
+      if (Array.isArray(cats.petCategories)) CFG.petCategories = cats.petCategories;
+      if (Array.isArray(cats.photoCategories)) CFG.photoCategories = cats.photoCategories;
+    }
     if (music && Array.isArray(music.playlist)) MUSIC = music.playlist;
     if (moments && Array.isArray(moments.moments)) MOMENTS = moments.moments;
     init();
@@ -405,6 +409,8 @@
 
   /* ---------- 导航 ---------- */
   var currentFilter = 'all';
+  var petFilter = 'all';
+  var photoFilter = 'all';
   function showSection(id) {
     document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === id); });
     document.querySelectorAll('.side-nav-link, .nav-link').forEach(function (l) {
@@ -412,8 +418,8 @@
     });
     if (id !== 'game') snPause(); // 离开小游戏面板自动暂停
     if (id === 'works') { renderFilters(); renderWorks(currentFilter); }
-    else if (id === 'pet') { renderCatPanel('pet'); }
-    else if (id === 'photo') { renderCatPanel('photo'); }
+    else if (id === 'pet') { renderSubcatFilters('pet'); renderCatPanel('pet'); }
+    else if (id === 'photo') { renderSubcatFilters('photo'); renderCatPanel('photo'); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -474,9 +480,41 @@
     if (cat !== 'all') list = list.filter(function (w) { return w.cat === cat; });
     renderWorkList('work-grid', list);
   }
+  function subcatList(cat) {
+    var seen = [];
+    var conf = cat === 'pet' ? (CFG.petCategories || []) : (CFG.photoCategories || []);
+    conf.forEach(function (c) { if (c && c.label && seen.indexOf(c.label) < 0) seen.push(c.label); });
+    (CFG.works || []).forEach(function (w) {
+      if (w.cat === cat && w.subcat && seen.indexOf(w.subcat) < 0) seen.push(w.subcat);
+    });
+    return seen;
+  }
+  function renderSubcatFilters(cat) {
+    var box = document.getElementById(cat + '-filters');
+    if (!box) return;
+    box.innerHTML = '';
+    var cur = (cat === 'pet' ? petFilter : photoFilter) || 'all';
+    var items = [{ id: 'all', label: '全部' }].concat(subcatList(cat).map(function (s) {
+      return { id: s, label: s };
+    }));
+    items.forEach(function (it) {
+      var b = document.createElement('button');
+      b.className = 'filter-btn' + (it.id === cur ? ' active' : '');
+      b.textContent = it.label;
+      b.dataset.cat = it.id;
+      b.addEventListener('click', function () {
+        if (cat === 'pet') petFilter = it.id; else photoFilter = it.id;
+        renderSubcatFilters(cat);
+        renderCatPanel(cat);
+      });
+      box.appendChild(b);
+    });
+  }
   function renderCatPanel(cat) {
     // 最新在前
     var list = (CFG.works || []).slice().reverse().filter(function (w) { return w.cat === cat; });
+    var f = (cat === 'pet' ? petFilter : photoFilter) || 'all';
+    if (f !== 'all') list = list.filter(function (w) { return w.subcat === f; });
     renderWorkList(cat + '-grid', list);
   }
 

@@ -95,6 +95,13 @@ window.SITE_CONFIG = {
     { id: 'people',   label: '人物' },
     { id: 'pet',      label: '宠物' }
   ],
+  /* 宠物/摄影子分类（前台宠物/摄影面板顶部筛选按钮） */
+  petCategories: [],
+  photoCategories: [
+    { id: 'photo-landscape', label: '风景' },
+    { id: 'photo-food', label: '美食' },
+    { id: 'photo-people', label: '人文' }
+  ],
 
   /* -------- 作品列表（images 为多图，第一张与 img 一致） -------- */
   works: [
