@@ -17,14 +17,6 @@
       "label": "摄影"
     },
     {
-      "id": "landscape",
-      "label": "风景"
-    },
-    {
-      "id": "people",
-      "label": "人物"
-    },
-    {
       "id": "pet",
       "label": "宠物"
     }
