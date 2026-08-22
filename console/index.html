@@ -47,9 +47,9 @@ button.small{padding:4px 10px;font-size:12px}
 .swatch .dots{display:flex;gap:3px;justify-content:center;margin-bottom:6px}
 .swatch .dot{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,.2)}
 .swatch .nm{font-size:11px}
-/* 作品网格 */
-.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-.work-card{background:#070b16;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+/* 作品网格（瀑布流：卡片高度自适应，避免单图卡片下方大片空白） */
+.work-grid{columns:320px;column-gap:14px}
+.work-card{background:#070b16;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:14px}
 .work-card:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,240,255,.14)}
 .wc-main{height:190px;position:relative;background:#0a0f1e;overflow:hidden;border-bottom:1px solid var(--line);cursor:pointer}
 .wc-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
@@ -73,7 +73,7 @@ button.small{padding:4px 10px;font-size:12px}
 .wc-body{padding:11px 12px;display:flex;flex-direction:column;gap:8px}
 .wc-fixed-cat{display:inline-block;font-size:12px;color:var(--magenta);border:1px solid rgba(255,45,149,.35);padding:6px 10px;border-radius:5px;background:rgba(255,45,149,.06)}
 .wc-body input,.wc-body select{width:100%;background:#0a0f1e;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px;box-sizing:border-box}
-.wc-actions{display:flex;gap:6px}
+.wc-actions{display:flex;gap:6px;flex-wrap:wrap}
 .wc-actions button{flex:1}
 .toolbar.top{margin-top:0;margin-bottom:12px}
 .avatar-prev{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);display:block;margin-bottom:8px}
@@ -375,6 +375,7 @@ var newMusicFiles = {};                 // 待上传音乐文件 { path: File }
 var momentList = [];                    // 动态
 var newMomentImgs = {};                 // 动态待上传图片 { path: File }
 var newMomentVideos = {};               // 动态待上传视频 { path: File }
+var newWorkVideos = {};                 // 作品/宠物/摄影待上传视频 { path: File }
 var pendingWorkExtra = {};              // 作品追加图片 { workIndex: [File] }
 
 var PALETTES = [
@@ -646,6 +647,13 @@ function nextWorkImgPath(base){
   do { p = base + String(n).padStart(3,'0') + '.jpg'; n++; } while (used[p]);
   return p;
 }
+function nextWorkVideoPath(){
+  var n = 1; var used = {};
+  config.works.forEach(function(w){ (w.videos || []).forEach(function(v){ used[v] = true; }); });
+  var p = '';
+  do { p = 'assets/works/video-' + String(n).padStart(3,'0') + '.mp4'; n++; } while (used[p]);
+  return p;
+}
 var addWorkScope = 'works';
 $('btn-add-work').addEventListener('click', function(){ addWorkScope = 'works'; $('inp-work').click(); });
 $('btn-add-pet').addEventListener('click', function(){ addWorkScope = 'pet'; $('inp-work').click(); });
@@ -705,6 +713,15 @@ function renderWorkList(listId, scope){
         '<em class="wc-thumb-x" data-wx="' + idx + '" data-wxri="' + (ti + 1) + '" title="移除">✕</em>' +
         '</span>';
     }).join('');
+    // 附加视频（作品/宠物/摄影）
+    var workVideos = (w.videos && w.videos.length) ? w.videos : [];
+    var vidPreviews = workVideos.map(function(v, vi){
+      var vsrc = newWorkVideos[v] ? URL.createObjectURL(newWorkVideos[v]) : imgSrc(v);
+      return '<div class="wc-video-item">' +
+        '<video src="' + vsrc + '" controls preload="metadata"></video>' +
+        '<button class="small" data-wdelvid="' + idx + '" data-wvi="' + vi + '" style="border-color:#ff5c5c;color:#ff5c5c">移除</button>' +
+        '</div>';
+    }).join('');
     var card = document.createElement('div');
     card.className = 'work-card';
     card.innerHTML =
@@ -718,15 +735,17 @@ function renderWorkList(listId, scope){
         catField +
         '<textarea data-i="' + idx + '" data-k="desc" placeholder="作品描述（可选）" style="min-height:44px">' + esc(w.desc || '') + '</textarea>' +
         (thumbs ? '<div class="wc-thumbs">' + thumbs + '</div>' : '') +
+        (vidPreviews ? '<div class="wc-videos">' + vidPreviews + '</div>' : '') +
         '<div class="wc-actions">' +
           '<button class="small" data-addimg="' + idx + '">＋ 加图</button>' +
+          '<button class="small" data-addvid="' + idx + '">🎬 视频</button>' +
           '<button class="small" data-replace="' + idx + '">换主图</button>' +
           '<button class="small" data-del="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
         '</div>' +
       '</div>';
     grid.appendChild(card);
   });
-  if (!shown) grid.innerHTML = '<p class="hint" style="grid-column:1/-1">该分区暂无作品。</p>';
+  if (!shown) grid.innerHTML = '<p class="hint" style="column-span:all">该分区暂无作品。</p>';
   box.appendChild(grid);
   box.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){ config.works[+this.dataset.i][this.dataset.k] = this.value; });
@@ -741,6 +760,7 @@ function renderWorkList(listId, scope){
     btn.addEventListener('click', function(){
       var w = config.works[+this.dataset.del];
       delete newImages[w.img];
+      (w.videos || []).forEach(function(v){ delete newWorkVideos[v]; });
       config.works.splice(+this.dataset.del, 1);
       renderAllWorks();
     });
@@ -783,6 +803,36 @@ function renderWorkList(listId, scope){
         }, function(){ renderAllWorks(); });
       };
       inp.click();
+    });
+  });
+  // 追加视频
+  box.querySelectorAll('button[data-addvid]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = +this.dataset.addvid;
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'video/*'; inp.multiple = true;
+      inp.onchange = function(){
+        var w = config.works[idx];
+        if (!w.videos) w.videos = [];
+        Array.prototype.forEach.call(inp.files, function(f){
+          var p = nextWorkVideoPath();
+          newWorkVideos[p] = f;
+          w.videos.push(p);
+        });
+        renderAllWorks();
+      }.bind(this);
+      inp.click();
+    });
+  });
+  // 移除视频
+  box.querySelectorAll('button[data-wdelvid]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var w = config.works[+this.dataset.wdelvid];
+      var vi = +this.dataset.wvi;
+      var v = (w.videos || [])[vi];
+      if (v) delete newWorkVideos[v];
+      w.videos = (w.videos || []).filter(function(z, zi){ return zi !== vi; });
+      renderAllWorks();
     });
   });
   // 点击主图大图 → 重新编辑
@@ -1484,6 +1534,10 @@ $('btn-save').addEventListener('click', async function(){
       var mvb64 = await fileToBase64(newMomentVideos[mv]);
       await contentPut(mv, mvb64, true);
     }
+    for (var wv in newWorkVideos) {
+      var wvb64 = await fileToBase64(newWorkVideos[wv]);
+      await contentPut(wv, wvb64, true);
+    }
     if (newAvatar) {
       var av64 = await fileToBase64(newAvatar);
       await contentPut('assets/avatar.jpg', av64, true);
@@ -1493,6 +1547,7 @@ $('btn-save').addEventListener('click', async function(){
     newMusicFiles = {};
     newMomentImgs = {};
     newMomentVideos = {};
+    newWorkVideos = {};
     setStatus('✅ 保存成功！网站正在自动更新，1-2 分钟后刷新查看。', 'ok');
   } catch (e) {
     setStatus('❌ 保存失败：' + e.message, 'err');

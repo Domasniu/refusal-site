@@ -456,6 +456,7 @@
       card.innerHTML =
         '<span class="work-id">' + escHtml(w.id) + '</span>' +
         '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
+        (w.videos && w.videos.length ? '<span class="work-video-badge">🎬 ' + w.videos.length + '</span>' : '') +
         '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
         '<span class="work-cat">' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span></div>' +
         (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
@@ -589,7 +590,10 @@
   }
   function openLightbox(w) {
     var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
-    showLightbox(imgs, w.id + ' · ' + w.title + ' · ' + catLabel(w.cat), w.desc || '');
+    var vids = (w.videos && w.videos.length) ? w.videos.slice() : [];
+    var items = imgs.map(function (p) { return { type: 'image', src: p }; })
+      .concat(vids.map(function (p) { return { type: 'video', src: p }; }));
+    showLightbox(items, w.id + ' · ' + w.title + ' · ' + catLabel(w.cat), w.desc || '');
   }
   function closeLightbox() {
     lb.classList.add('hidden');
@@ -743,6 +747,7 @@
       works.forEach(function (w) {
         var list = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
         list.forEach(function (im) { items.push({ type: 'image', src: im }); });
+        (w.videos || []).forEach(function (v) { items.push({ type: 'video', src: v }); });
       });
     }
     return items;

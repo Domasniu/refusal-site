@@ -469,6 +469,11 @@ body::after{
   position:absolute;top:.5rem;right:.6rem;font-family:Consolas,monospace;font-size:.6rem;
   color:rgba(0,240,255,.7);background:rgba(0,0,0,.55);padding:.15rem .45rem;border-radius:3px;
 }
+.work-card .work-video-badge{
+  position:absolute;top:.5rem;left:.6rem;font-size:.6rem;color:#fff;
+  background:rgba(255,45,149,.85);padding:.15rem .45rem;border-radius:3px;letter-spacing:.05em;
+  box-shadow:0 0 8px rgba(255,45,149,.5);
+}
 .work-card .cat-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta));opacity:0;transition:.25s}
 .work-card:hover .cat-bar{opacity:1}
 
