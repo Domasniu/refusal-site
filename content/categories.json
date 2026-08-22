@@ -20,5 +20,20 @@
       "id": "pet",
       "label": "宠物"
     }
+  ],
+  "petCategories": [],
+  "photoCategories": [
+    {
+      "id": "photo-landscape",
+      "label": "风景"
+    },
+    {
+      "id": "photo-food",
+      "label": "美食"
+    },
+    {
+      "id": "photo-people",
+      "label": "人文"
+    }
   ]
 }

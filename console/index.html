@@ -260,8 +260,18 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card" data-tab="works">
-    <h2>⑩ 作品（可多图）</h2>
-    <p class="hint">作品区只显示「作品类」（手工发饰/剪纸/绘画/风景/人物）。宠物、摄影请到对应页签管理。</p>
+    <h2>⑩ 作品分类</h2>
+    <p class="hint">作品区（手工发饰/剪纸/绘画/风景/人物）的分类，添加后作品卡可选择；有作品引用的分类不可删。</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="f-new-cat" placeholder="新分类名，如：陶艺" style="flex:1">
+      <button id="btn-add-cat" class="small">添加</button>
+    </div>
+    <div id="cat-list"></div>
+  </div>
+
+  <div class="card" data-tab="works">
+    <h2>⑪ 作品（可多图 + 视频）</h2>
+    <p class="hint">作品区只显示「作品类」。宠物、摄影请到对应页签管理。</p>
     <div class="toolbar top">
       <button id="btn-add-work" class="primary">＋ 添加作品</button>
       <input type="file" id="inp-work" accept="image/*" style="display:none">
@@ -273,6 +283,11 @@ button.small{padding:4px 10px;font-size:12px}
   <div class="card" data-tab="pet">
     <h2>🐾 宠物日常</h2>
     <p class="hint">管理宠物日常的作品（自动归入「宠物」分区）。</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="f-new-petcat" placeholder="宠物名 / 标签，如 lucky" style="flex:1">
+      <button id="btn-add-petcat" class="small">添加</button>
+    </div>
+    <div id="pet-cat-list"></div>
     <div class="toolbar top">
       <button id="btn-add-pet" class="primary">＋ 添加宠物</button>
     </div>
@@ -282,19 +297,15 @@ button.small{padding:4px 10px;font-size:12px}
   <div class="card" data-tab="photo">
     <h2>📷 我的摄影</h2>
     <p class="hint">管理摄影作品（自动归入「摄影」分区）。</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="f-new-photocat" placeholder="摄影标签，如 风景" style="flex:1">
+      <button id="btn-add-photocat" class="small">添加</button>
+    </div>
+    <div id="photo-cat-list"></div>
     <div class="toolbar top">
       <button id="btn-add-photo" class="primary">＋ 添加摄影</button>
     </div>
     <div id="photo-list"></div>
-  </div>
-
-  <div class="card" data-tab="works">
-    <h2>⑪ 作品分类</h2>
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input type="text" id="f-new-cat" placeholder="新分类名，如：陶艺" style="flex:1">
-      <button id="btn-add-cat" class="small">添加</button>
-    </div>
-    <div id="cat-list"></div>
   </div>
 
   <div class="card" data-tab="moments">
@@ -367,7 +378,7 @@ button.small{padding:4px 10px;font-size:12px}
 'use strict';
 /* ================= 状态 ================= */
 var API_URL = '/api';
-var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg', nav: [], homeModules: [], secTitles: {} };
+var config = { works: [], categories: [], petCategories: [], photoCategories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg', nav: [], homeModules: [], secTitles: {} };
 var newImages = {};                     // 待上传图片 { path: File }
 var newAvatar = null;
 var musicList = [];                     // 歌单
@@ -470,7 +481,12 @@ async function loadContent(){
     var moments = await contentGet('content/moments.json');
     if (site) config = Object.assign(config, JSON.parse(site.text));
     if (works) config.works = JSON.parse(works.text).works || [];
-    if (cats) config.categories = JSON.parse(cats.text).categories || [];
+    if (cats) {
+      var cj = JSON.parse(cats.text);
+      config.categories = cj.categories || [];
+      config.petCategories = cj.petCategories || [];
+      config.photoCategories = cj.photoCategories || [];
+    }
     if (music) {
       var mj = JSON.parse(music.text);
       musicList = (mj && Array.isArray(mj.playlist)) ? mj.playlist : [];
@@ -702,8 +718,18 @@ function renderWorkList(listId, scope){
     var catOpts = config.categories.filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; }).map(function(c){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
+    var subcatOpts = '<option value="">（无标签）</option>';
+    if (scope === 'pet') {
+      subcatOpts += (config.petCategories || []).map(function(c){
+        return '<option value="' + esc(c.label) + '"' + (c.label === w.subcat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+      }).join('');
+    } else if (scope === 'photo') {
+      subcatOpts += (config.photoCategories || []).map(function(c){
+        return '<option value="' + esc(c.label) + '"' + (c.label === w.subcat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+      }).join('');
+    }
     var catField = (scope === 'pet' || scope === 'photo')
-      ? '<input type="text" value="' + esc(w.subcat || '') + '" data-i="' + idx + '" data-k="subcat" placeholder="' + (scope === 'pet' ? '宠物标签，如 lucky' : '摄影标签，如 风景') + '">'
+      ? '<select data-i="' + idx + '" data-k="subcat">' + subcatOpts + '</select>'
       : '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>';
     // 附加图片（除主图外）；主图用大图预览展示
     var thumbs = imgs.slice(1).map(function(im, ti){
@@ -754,7 +780,7 @@ function renderWorkList(listId, scope){
     ta.addEventListener('input', function(){ config.works[+this.dataset.i].desc = this.value; });
   });
   box.querySelectorAll('select[data-k]').forEach(function(sel){
-    sel.addEventListener('change', function(){ config.works[+this.dataset.i].cat = this.value; });
+    sel.addEventListener('change', function(){ config.works[+this.dataset.i][this.dataset.k] = this.value; });
   });
   box.querySelectorAll('button[data-del]').forEach(function(btn){
     btn.addEventListener('click', function(){
@@ -1059,31 +1085,75 @@ $('btn-add-moment').addEventListener('click', function(){
 });
 
 /* ================= 分类 ================= */
+function catRow(c, used, onDel){
+  var row = document.createElement('div');
+  row.className = 'cat-row';
+  row.innerHTML = '<span class="nm">' + esc(c.label) + ' <span style="color:var(--dim);font-size:11px">(' + used + ' 件)</span></span>';
+  if (!used) {
+    var b = document.createElement('button');
+    b.className = 'small';
+    b.style.cssText = 'border-color:#ff5c5c;color:#ff5c5c';
+    b.textContent = '删除';
+    b.onclick = onDel;
+    row.appendChild(b);
+  }
+  return row;
+}
 $('btn-add-cat').addEventListener('click', function(){
   var label = $('f-new-cat').value.trim(); if (!label) return;
   config.categories.push({ id: 'cat-' + Date.now().toString(36), label: label });
   $('f-new-cat').value = '';
   renderCats(); renderAllWorks();
 });
+$('btn-add-petcat').addEventListener('click', function(){
+  var label = $('f-new-petcat').value.trim(); if (!label) return;
+  config.petCategories = config.petCategories || [];
+  config.petCategories.push({ id: 'petcat-' + Date.now().toString(36), label: label });
+  $('f-new-petcat').value = '';
+  renderCats(); renderAllWorks();
+});
+$('btn-add-photocat').addEventListener('click', function(){
+  var label = $('f-new-photocat').value.trim(); if (!label) return;
+  config.photoCategories = config.photoCategories || [];
+  config.photoCategories.push({ id: 'photocat-' + Date.now().toString(36), label: label });
+  $('f-new-photocat').value = '';
+  renderCats(); renderAllWorks();
+});
 function renderCats(){
+  // 作品分类（不含宠物/摄影）
   var box = $('cat-list');
   box.innerHTML = '';
-  // 作品分类（可编辑，不含宠物/摄影）
   config.categories.filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; }).forEach(function(c){
     var used = config.works.filter(function(w){ return w.cat === c.id; }).length;
-    var row = document.createElement('div');
-    row.className = 'cat-row';
-    row.innerHTML = '<span class="nm">' + esc(c.label) + ' <span style="color:var(--dim);font-size:11px">(' + used + ' 件)</span></span>';
-    if (!used) {
-      var b = document.createElement('button');
-      b.className = 'small';
-      b.style.cssText = 'border-color:#ff5c5c;color:#ff5c5c';
-      b.textContent = '删除';
-      b.onclick = function(){ config.categories = config.categories.filter(function(x){ return x.id !== c.id; }); renderCats(); renderAllWorks(); };
-      row.appendChild(b);
-    }
-    box.appendChild(row);
+    box.appendChild(catRow(c, used, function(){
+      config.categories = config.categories.filter(function(x){ return x.id !== c.id; });
+      renderCats(); renderAllWorks();
+    }));
   });
+  // 宠物分类（按 subcat 引用计数）
+  var pbox = $('pet-cat-list');
+  if (pbox) {
+    pbox.innerHTML = '';
+    (config.petCategories || []).forEach(function(c){
+      var used = config.works.filter(function(w){ return w.cat === 'pet' && w.subcat === c.label; }).length;
+      pbox.appendChild(catRow(c, used, function(){
+        config.petCategories = (config.petCategories || []).filter(function(x){ return x.id !== c.id; });
+        renderCats(); renderAllWorks();
+      }));
+    });
+  }
+  // 摄影分类
+  var fbox = $('photo-cat-list');
+  if (fbox) {
+    fbox.innerHTML = '';
+    (config.photoCategories || []).forEach(function(c){
+      var used = config.works.filter(function(w){ return w.cat === 'photo' && w.subcat === c.label; }).length;
+      fbox.appendChild(catRow(c, used, function(){
+        config.photoCategories = (config.photoCategories || []).filter(function(x){ return x.id !== c.id; });
+        renderCats(); renderAllWorks();
+      }));
+    });
+  }
 }
 
 /* ================= 侧栏导航（可视化编辑） ================= */
@@ -1515,7 +1585,7 @@ $('btn-save').addEventListener('click', async function(){
     };
     await contentPut('content/site.json', JSON.stringify(site, null, 2));
     await contentPut('content/works.json', JSON.stringify({ works: config.works }, null, 2));
-    await contentPut('content/categories.json', JSON.stringify({ categories: config.categories }, null, 2));
+    await contentPut('content/categories.json', JSON.stringify({ categories: config.categories, petCategories: config.petCategories || [], photoCategories: config.photoCategories || [] }, null, 2));
     await contentPut('content/music.json', JSON.stringify({ playlist: musicList }, null, 2));
     await contentPut('content/moments.json', JSON.stringify({ moments: momentList }, null, 2));
     for (var p in newImages) {
