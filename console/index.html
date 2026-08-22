@@ -186,6 +186,7 @@ button.small{padding:4px 10px;font-size:12px}
       <div class="fitem"><label>首页小纸条（A LITTLE NOTE 内容）</label><input type="text" id="f-note" placeholder="希望记录自己，留下回忆。"></div>
       <div class="fitem"><label>联系邮箱（首页底部显示）</label><input type="text" id="f-email" placeholder="hello@refusal.site"></div>
       <div class="fitem"><label>标题字号缩放（1 = 默认，1.2 放大 20%，支持小数）</label><input type="text" id="f-titlescale" placeholder="1"></div>
+      <div class="fitem"><label>所有页签标题字号（作品/动态/音乐等大标题，1 = 默认）</label><input type="text" id="f-sectitlescale" placeholder="1"></div>
       <div class="fitem"><label>首页卡片尺寸</label>
         <select id="f-cardsize">
           <option value="compact">紧凑（一屏更多）</option>
@@ -510,6 +511,7 @@ function fillForm(){
   $('f-note').value = config.note || '';
   $('f-email').value = config.contactEmail || '';
   $('f-titlescale').value = (config.hero && config.hero.titleScale) || 1;
+  $('f-sectitlescale').value = config.secTitleScale || 1;
   $('f-cardsize').value = config.homeCardSize || 'large';
   $('f-carousel').value = (config.homeCarousel === false) ? '0' : '1';
   $('f-about').value = config.about || '';
@@ -535,6 +537,7 @@ function collect(){
   };
   config.note = $('f-note').value.trim();
   config.contactEmail = $('f-email').value.trim();
+  config.secTitleScale = parseFloat($('f-sectitlescale').value) || 1;
   config.homeCardSize = $('f-cardsize').value || 'large';
   config.homeCarousel = $('f-carousel').value !== '0';
   config.about = $('f-about').value;
@@ -1450,6 +1453,7 @@ $('btn-save').addEventListener('click', async function(){
       nav: config.nav,
       homeModules: config.homeModules,
       secTitles: config.secTitles,
+      secTitleScale: parseFloat(config.secTitleScale) || 1,
       homeCardSize: config.homeCardSize || 'large',
       homeCarousel: config.homeCarousel !== false,
       note: config.note,

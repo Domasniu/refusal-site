@@ -104,8 +104,27 @@
   function renderHero() {
     var h = CFG.hero || {};
     var el;
-    if ((el = document.getElementById('hero-kicker'))) el.textContent = h.kicker || 'HELLO, I\'M refusal·';
-    if ((el = document.getElementById('wm-kicker'))) el.textContent = h.kicker || 'HELLO, I\'M refusal·';
+    // 侧栏名字：按换行拆成「小字 HELLO」+「大字 refusal·」两段
+    var kickerRaw = String(h.kicker || "HELLO, I'M\nrefusal·");
+    var kickerLines = kickerRaw.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    var kickerHi = kickerLines.length > 1 ? kickerLines[0] : '';
+    var kickerName = kickerLines.length > 1 ? kickerLines[1] : (kickerLines[0] || 'refusal·');
+    if ((el = document.getElementById('hero-kicker'))) {
+      el.innerHTML = '';
+      if (kickerHi) {
+        var hi = document.createElement('span');
+        hi.className = 'sk-hi';
+        hi.textContent = kickerHi;
+        el.appendChild(hi);
+      }
+      var nm = document.createElement('span');
+      nm.className = 'sk-name';
+      nm.textContent = kickerName;
+      el.appendChild(nm);
+    }
+    if ((el = document.getElementById('wm-kicker'))) {
+      el.textContent = (kickerHi ? kickerHi + ' ' : '') + kickerName;
+    }
     if ((el = document.getElementById('hero-slogan'))) {
       el.innerHTML = '';
       String(h.slogan || '').split('\n').filter(function (l) { return l.trim(); }).forEach(function (line, i) {
@@ -133,6 +152,10 @@
     var ts = parseFloat(h.titleScale);
     if (!isFinite(ts) || ts <= 0) ts = 1;
     document.documentElement.style.setProperty('--title-scale', ts);
+    // 所有页签标题字号（单独配置缩放）
+    var sts = parseFloat(CFG.secTitleScale);
+    if (!isFinite(sts) || sts <= 0) sts = 1;
+    document.documentElement.style.setProperty('--sec-title-scale', sts);
     // 站点名
     if (CFG.siteName) {
       var logo = document.querySelector('.os-logo');

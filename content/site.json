@@ -3,7 +3,7 @@
   "theme": "cyber-cyan",
   "siteName": "refusal· 的宝藏仓库",
   "hero": {
-    "kicker": "HELLO, I'M refusal·",
+    "kicker": "HELLO, I'M\nrefusal·",
     "status": "正在收集新灵感",
     "tags": "手工制作 · 剪纸 · 绘画 · 创意",
     "slogan": "做喜欢的东西\n记录灵感的赛博仓库",
@@ -90,6 +90,7 @@
     }
   ],
   "secTitles": {},
+  "secTitleScale": 1,
   "homeCardSize": "large",
   "homeCarousel": true,
   "note": "希望记录自己，留下回忆。",

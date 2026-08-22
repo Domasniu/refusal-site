@@ -16,7 +16,7 @@ window.SITE_CONFIG = {
   siteName: 'refusal· 的宝藏仓库',
   contactEmail: 'hello@refusal.site',
   hero: {
-    kicker: "HELLO, I'M refusal·",
+    kicker: "HELLO, I'M\nrefusal·",
     status: '正在收集新灵感',
     tags: '手工制作 · 剪纸 · 绘画 · 创意',
     slogan: '做喜欢的东西\n记录灵感的赛博仓库',
@@ -49,6 +49,8 @@ window.SITE_CONFIG = {
   /* 首页卡片：尺寸（compact/normal/large）+ 自动轮播开关 */
   homeCardSize: 'large',
   homeCarousel: true,
+  /* 所有页签标题字号（1 = 默认，1.2 = 放大 20%） */
+  secTitleScale: 1,
   note: '希望记录自己，留下回忆。',
 
   /* -------- 面板标题（配置化） -------- */

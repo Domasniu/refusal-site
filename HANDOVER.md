@@ -172,6 +172,20 @@
 
 ---
 
+## 〇-11、2026-08-22 十一次更新（侧栏名字放大 + 状态胶囊 + 页签标题字号配置）★ 最新形态
+
+按参考交互图微调：
+
+1. **侧栏名字拆分放大**：`hero.kicker` 用换行拆成两段——第一行小字 "HELLO, I'M"（`.sk-hi`），第二行大字 "refusal·"（`.sk-name`，约 2.15rem，随 `hero.titleScale` 缩放）。数据改为 `"HELLO, I'M\nrefusal·"`。
+2. **状态胶囊背景**：`.side-status`（"正在收集新灵感"）改为胶囊 pill —— 圆角背景 + 品红描边 + 前导呼吸小圆点。
+3. **页签标题字号单独配置**：新增 `secTitleScale`（默认 1），通过 CSS 变量 `--sec-title-scale` 控制所有 `.sec-title` / `.home-sec-title`；后台 ③主页配置新增「所有页签标题字号」输入框并已接入保存。
+
+### 数据格式变化
+- `site.json` 新增顶层字段 `secTitleScale`（数字，默认 1）。
+- `hero.kicker` 恢复为 `\n` 两段式：`HELLO, I'M` / `refusal·`。
+
+---
+
 ## 一、项目概述
 
 「REFUSAL OS」是 refusal· 的个人作品集网站，采用 **赛博朋克 OS 系统界面** 风格：
