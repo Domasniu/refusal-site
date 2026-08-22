@@ -738,6 +738,7 @@
         (hasMedia ? '<div class="hcc-likes">❤ ' + escHtml(mod.likes || '999') + '</div>' : '');
       if (carouselOn && media.length > 1) initCardCarousel(card);
       card.addEventListener('click', function () {
+        if (card.dataset.swiping === '1') return; // 刚滑动/点过圆点，忽略这次点击
         if (hasMedia) {
           showLightbox(media, mod.title || '', mod.sub || '');
         } else if (mod.sec) {
@@ -752,7 +753,7 @@
     box.appendChild(grid);
   }
 
-  /* 首页卡片自动轮播：图片定时切换；视频静音播放，播完自动切下一张 */
+  /* 首页卡片自动轮播：自动定时切换 + 手动滑动/点击圆点切换 */
   function initCardCarousel(card) {
     var root = card.querySelector('.hcc-carousel');
     if (!root) return;
@@ -760,6 +761,7 @@
     var dots = card.querySelectorAll('.hcc-dots i');
     var idx = 0;
     var timer = null;
+    var startX = null, startY = null, dragging = false;
     function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
     function pauseVideos() {
       slides.forEach(function (s) {
@@ -771,17 +773,53 @@
       slides.forEach(function (s, k) { s.classList.toggle('on', k === idx); });
       if (dots.length) dots.forEach(function (d, k) { d.classList.toggle('on', k === idx); });
     }
-    function next() {
-      clearTimer();
-      pauseVideos();
-      show(idx + 1);
-      play();
-    }
+    function next() { clearTimer(); pauseVideos(); show(idx + 1); play(); }
+    function prev() { clearTimer(); pauseVideos(); show(idx - 1); play(); }
     function play() {
-      // 图片/视频都按 3 秒定时切换；视频不自动播放（省内存、避免同时解码多个视频导致崩溃），
-      // 只显示首帧缩略图，点卡片打开灯箱后再播放
+      // 图片/视频都按 3 秒定时切换；视频不自动播放（省内存），点卡片打开灯箱后再播放
       clearTimer();
       timer = setTimeout(next, 3000);
+    }
+    function markSwiped() {
+      // 标记刚滑动/点过圆点，忽略紧随其后的 click，避免误开灯箱
+      card.dataset.swiping = '1';
+      setTimeout(function () { delete card.dataset.swiping; }, 120);
+    }
+    function onSwipe(dx, dy) {
+      if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+        markSwiped();
+        if (dx < 0) next(); else prev();
+      }
+    }
+    // 触摸滑动（手机）
+    root.addEventListener('touchstart', function (e) {
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY; dragging = true;
+    }, { passive: true });
+    root.addEventListener('touchend', function (e) {
+      if (!dragging) return;
+      dragging = false;
+      onSwipe(e.changedTouches[0].clientX - startX, e.changedTouches[0].clientY - startY);
+    });
+    // 鼠标拖拽滑动（桌面）
+    root.addEventListener('mousedown', function (e) {
+      startX = e.clientX; startY = e.clientY; dragging = true;
+      e.preventDefault();
+    });
+    root.addEventListener('mouseup', function (e) {
+      if (!dragging) return;
+      dragging = false;
+      onSwipe(e.clientX - startX, e.clientY - startY);
+    });
+    root.addEventListener('mouseleave', function () { dragging = false; });
+    // 圆点点击切换
+    if (dots.length) {
+      dots.forEach(function (d, k) {
+        d.addEventListener('click', function (e) {
+          e.stopPropagation();
+          markSwiped();
+          clearTimer(); pauseVideos(); show(k); play();
+        });
+      });
     }
     show(0);
     play();

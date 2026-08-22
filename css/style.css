@@ -337,7 +337,7 @@ body::after{
 .hcc-empty-ico{font-size:2rem;opacity:.45}
 .home-cat-card:hover .hcc-thumb > img{transform:scale(1.05)}
 /* 首页卡片自动轮播 */
-.hcc-carousel{position:absolute;inset:0}
+.hcc-carousel{position:absolute;inset:0;touch-action:pan-y;cursor:grab}
 .hcc-slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .55s;background:rgba(0,0,0,.25)}
 .hcc-slide.on{opacity:1}
 .hcc-dots{position:absolute;bottom:.55rem;left:50%;transform:translateX(-50%);display:flex;gap:.32rem;z-index:3}
