@@ -91,6 +91,21 @@ button.small{padding:4px 10px;font-size:12px}
 .toolbar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
 .savebar{position:sticky;bottom:0;background:rgba(5,8,16,.96);border-top:1px solid var(--line);padding:12px 20px;display:flex;justify-content:center;gap:14px;backdrop-filter:blur(6px);z-index:10}
 #btn-save{font-size:15px;padding:11px 40px}
+/* 图片编辑器 */
+.img-editor{position:fixed;inset:0;z-index:2000;background:rgba(2,4,10,.88);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.ie-box{background:var(--panel);border:1px solid var(--cyan);border-radius:12px;max-width:min(760px,96vw);max-height:92vh;overflow:auto;display:flex;flex-direction:column}
+.ie-head{padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;color:var(--cyan);letter-spacing:.1em}
+.ie-stage{padding:16px;display:flex;justify-content:center;background:rgba(0,0,0,.3);min-height:200px}
+.ie-stage canvas{max-width:100%;max-height:46vh;border:1px solid var(--line);background:repeating-conic-gradient(#141414 0 25%,#1e1e1e 0 50%) 0 0/16px 16px;touch-action:none;cursor:grab}
+.ie-stage canvas:active{cursor:grabbing}
+.ie-tools{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.ie-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ie-lbl{font-size:12px;color:var(--dim);width:34px;flex-shrink:0}
+.ie-row input[type=range]{flex:1;min-width:120px;accent-color:var(--cyan)}
+.ie-ratio,.ie-filter{background:transparent;border:1px solid var(--line);color:var(--dim);padding:5px 12px;border-radius:5px;font-size:12px;cursor:pointer;transition:.15s}
+.ie-ratio:hover,.ie-filter:hover{color:var(--cyan);border-color:var(--cyan)}
+.ie-ratio.active,.ie-filter.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
+.ie-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
 </style>
 </head>
 <body>
@@ -262,6 +277,45 @@ button.small{padding:4px 10px;font-size:12px}
   <button id="btn-save" class="primary">💾 保存并发布</button>
 </div>
 <div id="status"></div>
+
+<!-- 图片编辑器 -->
+<div id="img-editor" class="img-editor hidden">
+  <div class="ie-box">
+    <div class="ie-head">🖼️ 图片编辑</div>
+    <div class="ie-stage"><canvas id="ie-canvas"></canvas></div>
+    <div class="ie-tools">
+      <div class="ie-row">
+        <span class="ie-lbl">比例</span>
+        <button class="ie-ratio active" data-ratio="0">自由</button>
+        <button class="ie-ratio" data-ratio="1">1:1</button>
+        <button class="ie-ratio" data-ratio="0.75">3:4</button>
+        <button class="ie-ratio" data-ratio="1.3333">4:3</button>
+        <button class="ie-ratio" data-ratio="1.7778">16:9</button>
+      </div>
+      <div class="ie-row">
+        <span class="ie-lbl">旋转</span>
+        <button id="ie-rot-l" class="small">↺ 左转</button>
+        <button id="ie-rot-r" class="small">↻ 右转</button>
+      </div>
+      <div class="ie-row"><span class="ie-lbl">亮度</span><input type="range" id="ie-bright" min="0" max="200" value="100"></div>
+      <div class="ie-row"><span class="ie-lbl">对比</span><input type="range" id="ie-contrast" min="0" max="200" value="100"></div>
+      <div class="ie-row"><span class="ie-lbl">饱和</span><input type="range" id="ie-sat" min="0" max="200" value="100"></div>
+      <div class="ie-row">
+        <span class="ie-lbl">滤镜</span>
+        <button class="ie-filter active" data-filter="none">原图</button>
+        <button class="ie-filter" data-filter="grayscale">黑白</button>
+        <button class="ie-filter" data-filter="sepia">复古</button>
+        <button class="ie-filter" data-filter="cool">冷色</button>
+        <button class="ie-filter" data-filter="warm">暖色</button>
+        <button class="ie-filter" data-filter="vivid">鲜艳</button>
+      </div>
+    </div>
+    <div class="ie-foot">
+      <button id="ie-cancel" class="small">取消</button>
+      <button id="ie-ok" class="primary">✓ 确定</button>
+    </div>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -517,9 +571,11 @@ function renderThemes(){
 $('btn-avatar').addEventListener('click', function(){ $('inp-avatar').click(); });
 $('inp-avatar').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
-  newAvatar = f;
-  $('avatar-prev').src = URL.createObjectURL(f);
   this.value = '';
+  openImageEditor(f, function(edited){
+    newAvatar = edited;
+    $('avatar-prev').src = URL.createObjectURL(edited);
+  });
 });
 
 /* ================= 作品（支持多图） ================= */
@@ -540,12 +596,14 @@ $('btn-add-pet').addEventListener('click', function(){ addWorkScope = 'pet'; $('
 $('btn-add-photo').addEventListener('click', function(){ addWorkScope = 'photo'; $('inp-work').click(); });
 $('inp-work').addEventListener('change', function(){
   var f = this.files[0]; if (!f) return;
-  var p = nextWorkImgPath('assets/works/work-');
-  newImages[p] = f;
-  var cat = addWorkScope === 'pet' ? 'pet' : addWorkScope === 'photo' ? 'photo' : defaultWorkCat();
-  config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
-  renderAllWorks(); renderCats();
   this.value = '';
+  openImageEditor(f, function(edited){
+    var p = nextWorkImgPath('assets/works/work-');
+    newImages[p] = edited;
+    var cat = addWorkScope === 'pet' ? 'pet' : addWorkScope === 'photo' ? 'photo' : defaultWorkCat();
+    config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
+    renderAllWorks(); renderCats();
+  });
 });
 /* ================= 作品分区（作品/宠物/摄影各自页签） ================= */
 function workInScope(w, scope){
@@ -625,12 +683,14 @@ function renderWorkList(listId, scope){
       inp.onchange = function(){
         var f = inp.files[0]; if (!f) return;
         var w = config.works[+this.dataset.replace];
-        var p = nextWorkImgPath('assets/works/work-');
-        newImages[p] = f;
-        w.img = p;
-        if (!w.images || !w.images.length) w.images = [p];
-        else w.images[0] = p;
-        renderAllWorks();
+        openImageEditor(f, function(edited){
+          var p = nextWorkImgPath('assets/works/work-');
+          newImages[p] = edited;
+          w.img = p;
+          if (!w.images || !w.images.length) w.images = [p];
+          else w.images[0] = p;
+          renderAllWorks();
+        });
       }.bind(this);
       inp.click();
     });
@@ -644,12 +704,12 @@ function renderWorkList(listId, scope){
       inp.onchange = function(){
         var w = config.works[idx];
         if (!w.images) w.images = (w.img ? [w.img] : []);
-        Array.prototype.forEach.call(inp.files, function(f){
+        var files = Array.prototype.slice.call(inp.files);
+        editFilesSequential(files, function(edited){
           var p = nextWorkImgPath('assets/works/work-');
-          newImages[p] = f;
+          newImages[p] = edited;
           w.images.push(p);
-        });
-        renderAllWorks();
+        }, function(){ renderAllWorks(); });
       };
       inp.click();
     });
@@ -737,12 +797,12 @@ function renderMomentList(){
       inp.onchange = function(){
         var m = momentList[+this.dataset.maddimg];
         if (!m.images) m.images = [];
-        Array.prototype.forEach.call(inp.files, function(f){
+        var files = Array.prototype.slice.call(inp.files);
+        editFilesSequential(files, function(edited){
           var p = nextMomentImgPath();
-          newMomentImgs[p] = f;
+          newMomentImgs[p] = edited;
           m.images.push(p);
-        });
-        renderMomentList();
+        }, function(){ renderMomentList(); });
       }.bind(this);
       inp.click();
     });
@@ -1017,6 +1077,147 @@ function renderSecTitles(){
     inp.addEventListener('input', function(){ config.secTitles[this.dataset.st] = this.value; });
   });
 }
+
+/* ================= 图片编辑器 ================= */
+var ie = { file: null, img: null, cb: null, rotation: 0, ratio: 0, crop: { x: 0.5, y: 0.5 }, bright: 100, contrast: 100, sat: 100, filter: 'none', dragging: false };
+var ieFull = null, ieDragStart = null;
+function openImageEditor(file, cb){
+  ie.file = file; ie.cb = cb;
+  ie.rotation = 0; ie.ratio = 0; ie.crop = { x: 0.5, y: 0.5 };
+  ie.bright = 100; ie.contrast = 100; ie.sat = 100; ie.filter = 'none';
+  $('ie-bright').value = 100; $('ie-contrast').value = 100; $('ie-sat').value = 100;
+  document.querySelectorAll('.ie-ratio').forEach(function(b){ b.classList.toggle('active', b.dataset.ratio === '0'); });
+  document.querySelectorAll('.ie-filter').forEach(function(b){ b.classList.toggle('active', b.dataset.filter === 'none'); });
+  var u = URL.createObjectURL(file);
+  var im = new Image();
+  im.onload = function(){ ie.img = im; URL.revokeObjectURL(u); $('img-editor').classList.remove('hidden'); ieRender(); };
+  im.src = u;
+}
+function ieRotSize(){
+  var W = ie.img.naturalWidth, H = ie.img.naturalHeight;
+  var r = ((ie.rotation % 360) + 360) % 360;
+  return (r === 90 || r === 270) ? { w: H, h: W } : { w: W, h: H };
+}
+function ieCropRect(){
+  var s = ieRotSize(), cw = s.w, ch = s.h, w, h;
+  if (ie.ratio > 0) {
+    var tr = ie.ratio;
+    if (cw / ch > tr) { h = ch; w = ch * tr; } else { w = cw; h = cw / tr; }
+  } else { w = cw; h = ch; }
+  var x = (cw - w) * ie.crop.x, y = (ch - h) * ie.crop.y;
+  return { x: x, y: y, w: w, h: h };
+}
+function ieCtxFilter(){
+  var p = ['brightness(' + (ie.bright / 100) + ')', 'contrast(' + (ie.contrast / 100) + ')', 'saturate(' + (ie.sat / 100) + ')'];
+  var f = ie.filter;
+  if (f === 'grayscale') p.push('grayscale(1)');
+  else if (f === 'sepia') p.push('sepia(.7)');
+  else if (f === 'cool') p.push('hue-rotate(180deg) saturate(.85)');
+  else if (f === 'warm') p.push('sepia(.35) saturate(1.35) hue-rotate(-15deg)');
+  else if (f === 'vivid') p.push('saturate(1.6) contrast(1.08)');
+  return p.join(' ');
+}
+function ieBuildFull(){
+  var s = ieRotSize();
+  ieFull = document.createElement('canvas');
+  ieFull.width = s.w; ieFull.height = s.h;
+  var ctx = ieFull.getContext('2d');
+  ctx.save();
+  ctx.filter = ieCtxFilter();
+  var r = ((ie.rotation % 360) + 360) % 360;
+  ctx.translate(s.w / 2, s.h / 2);
+  if (r) ctx.rotate(r * Math.PI / 180);
+  ctx.drawImage(ie.img, -ie.img.naturalWidth / 2, -ie.img.naturalHeight / 2);
+  ctx.restore();
+}
+function ieRender(){
+  if (!ie.img) return;
+  ieBuildFull();
+  var cr = ieCropRect();
+  var cv = $('ie-canvas');
+  var scale = Math.min(1, 520 / Math.max(cr.w, cr.h));
+  cv.width = Math.max(1, Math.round(cr.w * scale));
+  cv.height = Math.max(1, Math.round(cr.h * scale));
+  var ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(ieFull, cr.x, cr.y, cr.w, cr.h, 0, 0, cv.width, cv.height);
+}
+function ieExport(){
+  ieBuildFull();
+  var cr = ieCropRect();
+  var out = document.createElement('canvas');
+  out.width = Math.max(1, Math.round(cr.w));
+  out.height = Math.max(1, Math.round(cr.h));
+  var ctx = out.getContext('2d');
+  ctx.drawImage(ieFull, cr.x, cr.y, cr.w, cr.h, 0, 0, out.width, out.height);
+  out.toBlob(function(blob){
+    var name = (ie.file.name || 'image').replace(/\.[^.]+$/, '') + '.png';
+    var edited = new File([blob], name, { type: 'image/png' });
+    var cb = ie.cb;
+    closeImageEditor();
+    if (cb) cb(edited);
+  }, 'image/png', 0.92);
+}
+function closeImageEditor(){
+  $('img-editor').classList.add('hidden');
+  ie.img = null; ie.file = null; ie.cb = null; ieFull = null;
+}
+function editFilesSequential(files, onEach, onDone){
+  var i = 0;
+  function next(){
+    if (i >= files.length) { if (onDone) onDone(); return; }
+    var f = files[i]; i++;
+    openImageEditor(f, function(edited){
+      onEach(edited);
+      next();
+    });
+  }
+  next();
+}
+document.querySelectorAll('.ie-ratio').forEach(function(b){
+  b.addEventListener('click', function(){
+    ie.ratio = parseFloat(b.dataset.ratio) || 0;
+    document.querySelectorAll('.ie-ratio').forEach(function(x){ x.classList.toggle('active', x === b); });
+    ieRender();
+  });
+});
+document.querySelectorAll('.ie-filter').forEach(function(b){
+  b.addEventListener('click', function(){
+    ie.filter = b.dataset.filter;
+    document.querySelectorAll('.ie-filter').forEach(function(x){ x.classList.toggle('active', x === b); });
+    ieRender();
+  });
+});
+$('ie-rot-l').addEventListener('click', function(){ ie.rotation -= 90; ieRender(); });
+$('ie-rot-r').addEventListener('click', function(){ ie.rotation += 90; ieRender(); });
+['ie-bright', 'ie-contrast', 'ie-sat'].forEach(function(id){
+  $(id).addEventListener('input', function(){
+    ie[id === 'ie-bright' ? 'bright' : id === 'ie-contrast' ? 'contrast' : 'sat'] = parseInt(this.value, 10) || 100;
+    ieRender();
+  });
+});
+$('ie-cancel').addEventListener('click', closeImageEditor);
+$('ie-ok').addEventListener('click', ieExport);
+var cvEl = $('ie-canvas');
+cvEl.addEventListener('mousedown', function(e){
+  ie.dragging = true;
+  ieDragStart = { x: e.clientX, y: e.clientY, cx: ie.crop.x, cy: ie.crop.y };
+  e.preventDefault();
+});
+window.addEventListener('mousemove', function(e){
+  if (!ie.dragging || !ie.img) return;
+  var rect = cvEl.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  var s = ieRotSize();
+  var cr = ieCropRect();
+  var maxX = Math.max(0, s.w - cr.w), maxY = Math.max(0, s.h - cr.h);
+  var dx = (e.clientX - ieDragStart.x) / rect.width * cr.w;
+  var dy = (e.clientY - ieDragStart.y) / rect.height * cr.h;
+  ie.crop.x = maxX > 0 ? Math.min(1, Math.max(0, ieDragStart.cx + dx / maxX)) : 0.5;
+  ie.crop.y = maxY > 0 ? Math.min(1, Math.max(0, ieDragStart.cy + dy / maxY)) : 0.5;
+  ieRender();
+});
+window.addEventListener('mouseup', function(){ ie.dragging = false; });
 
 /* ================= 保存 ================= */
 function fileToBase64(f){
