@@ -103,17 +103,6 @@
       "subcat": "lucky"
     },
     {
-      "id": "W-011",
-      "cat": "pet",
-      "title": "lucky",
-      "img": "",
-      "images": [],
-      "videos": [
-        "assets/works/video-002.mp4"
-      ],
-      "subcat": "lucky"
-    },
-    {
       "id": "W-012",
       "cat": "pet",
       "title": "lucky",
@@ -143,6 +132,16 @@
         "assets/works/work-006.jpg"
       ],
       "videos": []
+    },
+    {
+      "id": "W-014",
+      "cat": "pet",
+      "title": "新作品",
+      "img": "",
+      "images": [],
+      "videos": [
+        "assets/works/video-002.mp4"
+      ]
     }
   ]
 }
