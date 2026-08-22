@@ -47,26 +47,39 @@
     return (song && song.cover) || '';
   }
 
-  /* ---------- 歌词解析（LRC） ---------- */
+  /* ---------- 歌词解析（LRC，双语合并） ---------- */
+  function isCJK(s) { return /[\u4e00-\u9fff]/.test(s); }
   function parseLrc(text) {
-    var lines = [];
-    if (!text) return lines;
+    var raw = [];
+    if (!text) return raw;
     var re = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
-    String(text).split('\n').forEach(function (raw) {
+    String(text).split('\n').forEach(function (line) {
       var m, found = false;
       // 用独立正则一次性去掉所有 [xx:xx.xx] 标签，避免与 re 共用 lastIndex 造成死循环
-      var txt = raw.replace(/\[[^\]]*\]/g, '').trim();
+      var txt = line.replace(/\[[^\]]*\]/g, '').trim();
       re.lastIndex = 0;
-      while ((m = re.exec(raw)) !== null) {
+      while ((m = re.exec(line)) !== null) {
         var t = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + (parseInt(m[3] || '0', 10) / 1000);
-        if (txt) { lines.push({ time: t, text: txt }); found = true; }
+        if (txt) { raw.push({ time: t, text: txt }); found = true; }
       }
-      if (!found && raw.trim()) {
-        // 无时间标签的整段（如标题），放在 0 秒
-        lines.push({ time: 0, text: raw.trim() });
+      if (!found && line.trim()) raw.push({ time: 0, text: line.trim() });
+    });
+    raw.sort(function (a, b) { return a.time - b.time; });
+    // 相邻的不同语言（英文+中文）合并为一行（英文主、中文副），兼容逐行对照/同时间戳两种 LRC
+    var lines = [];
+    raw.forEach(function (l) {
+      var last = lines[lines.length - 1];
+      var curCJK = isCJK(l.text);
+      if (last && last.trans == null && isCJK(last.text) !== curCJK) {
+        if (isCJK(last.text) && !curCJK) {
+          var tmp = last.text; last.text = l.text; last.trans = tmp;
+        } else {
+          last.trans = l.text;
+        }
+      } else {
+        lines.push({ time: l.time, text: l.text, trans: null });
       }
     });
-    lines.sort(function (a, b) { return a.time - b.time; });
     return lines;
   }
 
@@ -241,7 +254,7 @@
     lyricLines.forEach(function (l) {
       var p = document.createElement('p');
       p.className = 'lrc-full-line';
-      p.textContent = l.text;
+      p.innerHTML = esc(l.text) + (l.trans ? '<span class="lrc-full-trans">' + esc(l.trans) + '</span>' : '');
       list.appendChild(p);
     });
   }
@@ -396,7 +409,8 @@
         ui.lrcBox.classList.remove('hidden');
         if (!ui.lrcBox.dataset.built) {
           ui.lrcBox.innerHTML = lyricLines.map(function (l, i) {
-            return '<p class="lrc-line' + (i === 0 ? ' on' : '') + '">' + esc(l.text) + '</p>';
+            return '<p class="lrc-line' + (i === 0 ? ' on' : '') + '">' + esc(l.text) +
+              (l.trans ? '<span class="lrc-trans">' + esc(l.trans) + '</span>' : '') + '</p>';
           }).join('');
           ui.lrcBox.dataset.built = '1';
         }
@@ -409,6 +423,8 @@
   function renderList() {
     if (!ui.list) return;
     ui.list.innerHTML = '';
+    var cnt = document.getElementById('p-list-count');
+    if (cnt) cnt.textContent = '(' + playlist.length + ')';
     playlist.forEach(function (s, i) {
       var li = document.createElement('li');
       li.className = 'p-item' + (i === index ? ' on' : '');
@@ -416,7 +432,9 @@
       var dur = durations[i] ? fmt(durations[i]) : '';
       li.innerHTML =
         '<span class="p-item-cover">' + (cv ? '<img src="' + esc(cv) + '" alt="">' : '🎵') + '</span>' +
-        '<span class="p-idx">' + String(i + 1).padStart(2, '0') + '</span>' +
+        (i === index
+          ? '<span class="p-eq"><i></i><i></i><i></i></span>'
+          : '<span class="p-idx">' + String(i + 1).padStart(2, '0') + '</span>') +
         '<span class="p-info"><span class="p-title">' + esc(s.title || '未知歌曲') + '</span>' +
         '<span class="p-artist">' + esc(s.artist || '') + '</span></span>' +
         (dur ? '<span class="p-item-dur">' + dur + '</span>' : '') +

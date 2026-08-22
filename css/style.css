@@ -843,9 +843,12 @@ body::after{
 }
 .lrc-line{font-size:.8rem;color:var(--dim);line-height:2;transition:.3s;text-align:center}
 .lrc-line.on{color:var(--cyan);font-weight:700;text-shadow:0 0 10px rgba(0,240,255,.6)}
+.lrc-trans{display:block;font-size:.7rem;color:var(--dim);line-height:1.7;opacity:.75}
+.lrc-line.on .lrc-trans{color:var(--cyan);opacity:.9}
 .player-list-wrap{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.2rem}
 .p-list-title{font-size:.85rem;letter-spacing:.14em;color:var(--text);margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:1px solid var(--line)}
 .p-list-title .tick{color:var(--magenta)}
+.p-list-count{font-size:.68rem;color:var(--dim);letter-spacing:.08em}
 .p-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;max-height:340px;overflow-y:auto}
 .p-item{
   display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;border:1px solid var(--line);
@@ -855,6 +858,12 @@ body::after{
 .p-item.on{border-color:var(--magenta);box-shadow:var(--glow-magenta)}
 .p-idx{font-family:Consolas,monospace;font-size:.66rem;color:var(--dim)}
 .p-item.on .p-idx{color:var(--magenta)}
+.p-eq{display:flex;align-items:flex-end;gap:2px;width:16px;height:16px;flex-shrink:0}
+.p-eq i{flex:1;background:var(--magenta);border-radius:1px;animation:eqBar 1s ease-in-out infinite}
+.p-eq i:nth-child(1){animation-delay:0s}
+.p-eq i:nth-child(2){animation-delay:.2s}
+.p-eq i:nth-child(3){animation-delay:.4s}
+@keyframes eqBar{0%,100%{height:5px}50%{height:16px}}
 .p-info{flex:1;display:flex;flex-direction:column;min-width:0}
 .p-item .p-title{font-size:.82rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p-item.on .p-title{color:var(--magenta)}
@@ -897,6 +906,8 @@ body::after{
   color:var(--cyan);font-size:1.5rem;font-weight:800;
   text-shadow:0 0 18px rgba(0,240,255,.65);
 }
+.lrc-full-trans{display:block;font-size:.72em;color:rgba(215,228,255,.5);line-height:1.5;font-weight:400}
+.lrc-full-line.on .lrc-full-trans{color:var(--cyan);opacity:.85;text-shadow:0 0 10px rgba(0,240,255,.4)}
 @media(max-width:600px){
   .lrc-full-line{font-size:1rem;line-height:2.3}
   .lrc-full-line.on{font-size:1.25rem}
