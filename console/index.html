@@ -102,6 +102,8 @@ button.small{padding:4px 10px;font-size:12px}
 .mr-artist{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mr-fields{display:flex;gap:8px;margin-bottom:8px}
 .mr-fields input{flex:1}
+.mr-lrc-row{display:flex;gap:8px;align-items:flex-start}
+.mr-lrc-row textarea{flex:1;width:auto;min-width:0}
 #status{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:1000;max-width:560px;width:calc(100% - 40px);padding:12px 18px;border-radius:8px;font-size:13px;line-height:1.7;box-shadow:0 8px 28px rgba(0,0,0,.55);display:none;backdrop-filter:blur(6px);text-align:center}
 #status.ok{display:block;background:rgba(61,255,143,.14);border:1px solid var(--ok);color:var(--ok)}
 #status.err{display:block;background:rgba(255,92,92,.14);border:1px solid #ff5c5c;color:#ff8a8a}
@@ -598,7 +600,10 @@ function renderMusicList(){
         '<input type="text" value="' + esc(s.title || '') + '" data-mi="' + idx + '" data-mk="title" placeholder="歌名">' +
         '<input type="text" value="' + esc(s.artist || '') + '" data-mi="' + idx + '" data-mk="artist" placeholder="歌手">' +
       '</div>' +
-      '<textarea data-mi="' + idx + '" data-mk="lrc" placeholder="歌词（可选，LRC 格式）" style="min-height:40px">' + esc(s.lrc || '') + '</textarea>';
+      '<div class="mr-lrc-row">' +
+        '<textarea data-mi="' + idx + '" data-mk="lrc" placeholder="歌词（LRC 格式，可粘贴或上传 .lrc 文件）" style="min-height:40px">' + esc(s.lrc || '') + '</textarea>' +
+        '<button class="small" data-mlrcup="' + idx + '" style="flex-shrink:0">⬆️ 上传 .lrc</button>' +
+      '</div>';
     box.appendChild(row);
   });
   box.querySelectorAll('input[data-mk]').forEach(function(inp){
@@ -640,6 +645,25 @@ function renderMusicList(){
       var s = musicList[+this.dataset.mcovdel];
       if (s.cover) { delete newMusicCovers[s.cover]; s.cover = ''; }
       renderMusicList();
+    });
+  });
+  // 上传歌词文件（.lrc / .txt）
+  box.querySelectorAll('button[data-mlrcup]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = +this.dataset.mlrcup;
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = '.lrc,.txt,text/plain';
+      inp.onchange = function(){
+        var f = inp.files[0]; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function(){
+          musicList[idx].lrc = String(rd.result || '');
+          renderMusicList();
+        };
+        rd.onerror = function(){ setStatus('❌ 读取歌词文件失败', 'err'); };
+        rd.readAsText(f, 'utf-8');
+      };
+      inp.click();
     });
   });
 }
