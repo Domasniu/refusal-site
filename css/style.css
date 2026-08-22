@@ -559,34 +559,48 @@ body::after{
 .compact-info .work-cat{font-size:.58rem;color:var(--magenta);letter-spacing:.08em;text-shadow:0 0 6px rgba(255,45,149,.4)}
 @media(max-width:520px){.cat-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.7rem}}
 
-/* ============ 生活动态（小红书风格双列瀑布流） ============ */
+/* ============ 生活动态（小红书风格：4列 / 3:4 封面 / 点赞） ============ */
 .moment-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;align-items:start;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:start;
 }
+@media(max-width:1200px){.moment-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.moment-grid{grid-template-columns:repeat(2,1fr)}}
 .moment-card{
-  background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;
   display:flex;flex-direction:column;transition:.25s;cursor:pointer;
   animation:cardIn .4s ease both;
 }
 @keyframes cardIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .moment-card:hover{border-color:var(--cyan);box-shadow:var(--glow-cyan);transform:translateY(-4px)}
-.moment-card.text-only{padding-bottom:.4rem}
-.moment-card.has-img .moment-head{order:1}
-.moment-card.has-img .moment-media{order:2}
-.moment-card.has-img .moment-text{order:3;padding:.8rem 1rem .9rem;border-top:1px solid var(--line)}
-.moment-head{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;border-bottom:1px solid var(--line)}
-.moment-type{font-size:.58rem;letter-spacing:.14em;color:var(--cyan);border:1px solid var(--line);padding:.12rem .45rem;border-radius:3px;flex-shrink:0}
-.moment-date{margin-left:auto;font-size:.64rem;color:var(--dim);font-family:Consolas,monospace}
-.moment-text{padding:.9rem 1rem .5rem;font-size:.85rem;line-height:1.9;color:var(--text)}
-.moment-media{position:relative;cursor:zoom-in;background:rgba(0,0,0,.25)}
-.moment-media img{width:100%;height:auto;max-height:440px;object-fit:contain;display:block;opacity:0;transition:opacity .5s ease}
+.moment-card.text-only{justify-content:space-between;min-height:130px;background:linear-gradient(135deg,rgba(0,240,255,.07),rgba(255,45,149,.07))}
+.moment-media{position:relative;aspect-ratio:3/4;overflow:hidden;background:rgba(0,0,0,.25);cursor:zoom-in;flex-shrink:0}
+.moment-media img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s ease,transform .3s}
 .moment-media img.loaded{opacity:1}
-.moment-count{
-  position:absolute;bottom:.6rem;right:.6rem;font-size:.62rem;color:var(--cyan);
-  background:rgba(0,0,0,.65);padding:.2rem .5rem;border-radius:50%;letter-spacing:.02em;min-width:1.5em;text-align:center;
+.moment-card:hover .moment-media img{transform:scale(1.05)}
+.moment-video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.moment-type{
+  position:absolute;top:.5rem;right:.5rem;font-size:.56rem;letter-spacing:.1em;color:var(--cyan);
+  border:1px solid var(--line);padding:.1rem .42rem;border-radius:3px;background:rgba(0,0,0,.55);
 }
-.moment-video{width:100%;display:block;background:#000}
-@media(max-width:760px){.moment-grid{grid-template-columns:1fr}}
+.moment-count{
+  position:absolute;bottom:.5rem;right:.5rem;font-size:.6rem;color:var(--cyan);
+  background:rgba(0,0,0,.65);padding:.12rem .45rem;border-radius:3px;letter-spacing:.05em;
+}
+.moment-play{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:#fff;text-shadow:0 0 12px rgba(0,240,255,.8);pointer-events:none;
+}
+.moment-text{
+  padding:.6rem .7rem .3rem;font-size:.78rem;line-height:1.55;color:var(--text);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.moment-card.text-only .moment-text{-webkit-line-clamp:4;padding:.85rem .8rem .3rem}
+.moment-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  padding:.4rem .7rem .6rem;margin-top:auto;
+}
+.moment-date{font-size:.62rem;color:var(--dim);font-family:Consolas,monospace}
+.moment-likes{font-size:.64rem;color:#ff6b9d;letter-spacing:.05em}
 
 /* ============ 首页最新动态（小红书风格） ============ */
 .home-moments{margin:.4rem 0 2rem}

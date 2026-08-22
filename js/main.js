@@ -666,43 +666,38 @@
       return;
     }
     list.slice().reverse().forEach(function (m, idx) {
+      var hasMedia = !!(m.video || (m.images && m.images.length));
       var card = document.createElement('div');
-      card.className = 'moment-card' + (m.images && m.images.length ? ' has-img' : ' text-only');
-      card.style.animationDelay = (idx * 60) + 'ms';
+      card.className = 'moment-card' + (hasMedia ? ' has-media' : ' text-only');
+      card.style.animationDelay = (idx * 40) + 'ms';
       var media = '';
       if (m.video) {
-        media = '<div class="moment-media"><video class="moment-video" src="' + escHtml(m.video) + '" controls preload="metadata"></video></div>';
+        media = '<div class="moment-media">' +
+          '<video class="moment-video" src="' + escHtml(m.video) + '" preload="metadata" muted></video>' +
+          '<span class="moment-type">视频</span>' +
+          '<span class="moment-play">▶</span>' +
+          '</div>';
       } else if (m.images && m.images.length) {
         var first = m.images[0];
-        media = '<div class="moment-media' + (m.images.length > 1 ? ' multi' : '') + '">' +
+        media = '<div class="moment-media">' +
           '<img src="' + escHtml(first) + '" alt="" loading="lazy" decoding="async" data-imgs="' + escHtml(JSON.stringify(m.images)) + '">' +
+          '<span class="moment-type">图片</span>' +
           (m.images.length > 1 ? '<span class="moment-count">' + m.images.length + '</span>' : '') +
           '</div>';
       }
       card.innerHTML =
-        '<div class="moment-head">' +
-          '<span class="moment-type">' + momentTypeLabel(m) + '</span>' +
-          '<span class="moment-date">' + escHtml(m.date || '') + '</span>' +
-        '</div>' +
+        media +
         (m.text ? '<div class="moment-text">' + escHtml(m.text) + '</div>' : '') +
-        media;
-      // 多图点击 → 灯箱
+        '<div class="moment-foot">' +
+          '<span class="moment-date">' + escHtml(m.date || '') + '</span>' +
+          '<span class="moment-likes">❤ ' + escHtml(m.likes || '999') + '</span>' +
+        '</div>';
       var img = card.querySelector('.moment-media img');
       if (img) {
         img.addEventListener('click', function () {
           var arr = [];
           try { arr = JSON.parse(img.dataset.imgs || '[]'); } catch (e) { arr = [img.src]; }
-          lbImages = arr;
-          lbIndex = 0;
-          lbCaption = m.date + ' · 动态';
-          lbDesc = m.text || '';
-          document.getElementById('lb-caption').textContent = lbCaption;
-          var descEl = document.getElementById('lb-desc');
-          if (lbDesc) { descEl.textContent = lbDesc; descEl.classList.remove('hidden'); }
-          else { descEl.textContent = ''; descEl.classList.add('hidden'); }
-          showLbImage(0);
-          lb.classList.remove('hidden');
-          document.body.style.overflow = 'hidden';
+          showLightbox(arr, m.date + ' · 动态', m.text || '');
         });
       }
       grid.appendChild(card);
