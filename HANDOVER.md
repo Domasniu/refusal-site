@@ -1,6 +1,6 @@
 # REFUSAL OS — 个人网站交接文档
 
-> 最后更新：2026-08-22（至 〇-28）· 仓库：https://github.com/Domasniu/refusal-site
+> 最后更新：2026-08-22（至 〇-29）· 仓库：https://github.com/Domasniu/refusal-site
 > 线上地址：https://refusal-site.pages.dev/ · 站长后台：https://refusal-site.pages.dev/console/
 
 ---
@@ -368,6 +368,17 @@
 
 ### 补充（同轮）
 - 点开灯箱时改为**从当前正在播放的那张开始**（不再总是第一张）：`showLightbox` 支持起始下标，卡片记录当前 `idx`。js 版本号升到 `?v=29`。
+
+---
+
+## 〇-29、2026-08-22 二十九次更新（搜索分区归类 + 视频编码兼容修复）
+
+1. **搜索按分区归类**：`doSearch()` 原来把所有作品（含宠物/摄影）混进同一个「作品」分组，导致搜 `lucky` 时 5 条 `lucky·宠物` 全显示在「作品 (5)」。现已拆成「作品 / 宠物 / 摄影」三组，点击宠物/摄影结果会跳对应分区（`#pet`/`#photo`）并自动筛选到该子分类；纯视频作品的搜索缩略图改用 🎬 占位（不再裂图）。
+2. **视频电脑端无法播放（真凶：编码格式）**：
+   - `assets/works/video-001.mp4`、`video-002.mp4`（宠物）是 **H.265/HEVC**，桌面 Chrome/Edge/Firefox 不支持 HEVC 解码 → 电脑端一直转圈、手机（Safari）能放。已用 ffmpeg 重转 **H.264**。
+   - `assets/moments/video-003.mp4`（动态）是 H.264 但 **moov 在文件末尾**且 16.9MB → 浏览器需下完整文件才出首帧、卡加载。已重转 H.264 + faststart，压缩到 2.8MB。
+3. css/js 版本号升到 `?v=30`。
+4. ⚠️ **维护提醒**：后台上传视频是原样入库（不转码），iPhone 默认拍 HEVC。**上传前请先转成 H.264**（`ffmpeg -i in.mp4 -c:v libx264 -crf 23 -preset medium -pix_fmt yuv420p -movflags +faststart -c:a copy out.mp4`），否则电脑端又会放不了。
 
 ---
 
