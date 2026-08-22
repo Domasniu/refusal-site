@@ -453,9 +453,12 @@
     list.forEach(function (w) {
       var card = document.createElement('div');
       card.className = 'work-card';
+      var hasImg = !!w.img;
       card.innerHTML =
         '<span class="work-id">' + escHtml(w.id) + '</span>' +
-        '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">' +
+        (hasImg
+          ? '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">'
+          : '<div class="work-thumb-empty">🎬</div>') +
         (w.videos && w.videos.length ? '<span class="work-video-badge">🎬 ' + w.videos.length + '</span>' : '') +
         '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
         '<span class="work-cat">' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span></div>' +

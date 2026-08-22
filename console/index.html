@@ -58,6 +58,8 @@ button.small{padding:4px 10px;font-size:12px}
 .wc-main .wc-main-tip{position:absolute;right:10px;bottom:10px;font-size:10px;color:#fff;background:rgba(0,0,0,.6);padding:3px 8px;border-radius:3px;opacity:0;transition:.2s}
 .wc-main:hover .wc-main-tip{opacity:1}
 .wc-main video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.wc-main-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,rgba(0,240,255,.06),rgba(255,45,149,.06)),#0a0f1e}
+.wc-main-empty-ico{font-size:22px;opacity:.75}
 .wc-main .wc-thumb-x{top:8px;right:8px;width:22px;height:22px;line-height:22px;font-size:11px}
 .wc-main:hover .wc-thumb-x{display:block}
 .wc-main-x{position:absolute;top:8px;right:8px;font-style:normal;font-size:11px;color:#fff;background:rgba(255,60,80,.92);width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;cursor:pointer;z-index:2;opacity:0;transition:.2s;border:none;padding:0}
@@ -274,8 +276,6 @@ button.small{padding:4px 10px;font-size:12px}
     <p class="hint">作品区只显示「作品类」。宠物、摄影请到对应页签管理。</p>
     <div class="toolbar top">
       <button id="btn-add-work" class="primary">＋ 添加作品</button>
-      <input type="file" id="inp-work" accept="image/*" style="display:none">
-      <input type="file" id="inp-work-extra" accept="image/*" multiple style="display:none">
     </div>
     <div id="work-list"></div>
   </div>
@@ -670,22 +670,14 @@ function nextWorkVideoPath(){
   do { p = 'assets/works/video-' + String(n).padStart(3,'0') + '.mp4'; n++; } while (used[p]);
   return p;
 }
-var addWorkScope = 'works';
-$('btn-add-work').addEventListener('click', function(){ addWorkScope = 'works'; $('inp-work').click(); });
-$('btn-add-pet').addEventListener('click', function(){ addWorkScope = 'pet'; $('inp-work').click(); });
-$('btn-add-photo').addEventListener('click', function(){ addWorkScope = 'photo'; $('inp-work').click(); });
-$('inp-work').addEventListener('change', function(){
-  var f = this.files[0]; if (!f) return;
-  this.value = '';
-  openImageEditor(f, function(fullFile, thumbFile){
-    var p = nextWorkImgPath('assets/works/work-');
-    newImages[p] = fullFile;
-    newImages[thumbPath(p)] = thumbFile;
-    var cat = addWorkScope === 'pet' ? 'pet' : addWorkScope === 'photo' ? 'photo' : defaultWorkCat();
-    config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: p, images: [p] });
-    renderAllWorks(); renderCats();
-  });
-});
+function addWork(scope){
+  var cat = scope === 'pet' ? 'pet' : scope === 'photo' ? 'photo' : defaultWorkCat();
+  config.works.push({ id: 'W-' + String(config.works.length + 1).padStart(3,'0'), cat: cat, title: '新作品', img: '', images: [], videos: [] });
+  renderAllWorks(); renderCats();
+}
+$('btn-add-work').addEventListener('click', function(){ addWork('works'); });
+$('btn-add-pet').addEventListener('click', function(){ addWork('pet'); });
+$('btn-add-photo').addEventListener('click', function(){ addWork('photo'); });
 /* ================= 作品分区（作品/宠物/摄影各自页签） ================= */
 function workInScope(w, scope){
   if (scope === 'works') return w.cat !== 'pet' && w.cat !== 'photo';
@@ -700,6 +692,23 @@ function renderAllWorks(){
   renderWorkList('pet-list', 'pet');
   renderWorkList('photo-list', 'photo');
 }
+function setWorkMainImage(w){
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = function(){
+    var f = inp.files[0]; if (!f) return;
+    openImageEditor(f, function(fullFile, thumbFile){
+      var p = nextWorkImgPath('assets/works/work-');
+      newImages[p] = fullFile;
+      newImages[thumbPath(p)] = thumbFile;
+      w.img = p;
+      if (!w.images || !w.images.length) w.images = [p];
+      else w.images[0] = p;
+      renderAllWorks();
+    });
+  };
+  inp.click();
+}
 function renderWorkList(listId, scope){
   var box = $(listId);
   box.innerHTML = '';
@@ -713,8 +722,8 @@ function renderWorkList(listId, scope){
   order.forEach(function(idx){
     var w = config.works[idx];
     shown++;
+    var hasImg = !!w.img;
     var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
-    var mainSrc = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
     var catOpts = config.categories.filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; }).map(function(c){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
@@ -739,23 +748,41 @@ function renderWorkList(listId, scope){
         '<em class="wc-thumb-x" data-wx="' + idx + '" data-wxri="' + (ti + 1) + '" title="移除">✕</em>' +
         '</span>';
     }).join('');
-    // 附加视频（作品/宠物/摄影）
+    // 附加视频（作品/宠物/摄影）；无主图时首视频作为大预览，跳过第一个
     var workVideos = (w.videos && w.videos.length) ? w.videos : [];
-    var vidPreviews = workVideos.map(function(v, vi){
+    var addVids = hasImg ? workVideos : workVideos.slice(1);
+    var vidPreviews = addVids.map(function(v, vi){
+      var realVi = hasImg ? vi : (vi + 1);
       var vsrc = newWorkVideos[v] ? URL.createObjectURL(newWorkVideos[v]) : imgSrc(v);
       return '<div class="wc-video-item">' +
         '<video src="' + vsrc + '" controls preload="metadata"></video>' +
-        '<button class="small" data-wdelvid="' + idx + '" data-wvi="' + vi + '" style="border-color:#ff5c5c;color:#ff5c5c">移除</button>' +
+        '<button class="small" data-wdelvid="' + idx + '" data-wvi="' + realVi + '" style="border-color:#ff5c5c;color:#ff5c5c">移除</button>' +
         '</div>';
     }).join('');
     var card = document.createElement('div');
     card.className = 'work-card';
-    card.innerHTML =
-      '<div class="wc-main" data-wmain="' + idx + '" title="点击重新编辑主图">' +
+    var mainHTML;
+    if (hasImg) {
+      var mainSrc = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
+      mainHTML = '<div class="wc-main" data-wmain="' + idx + '" title="点击重新编辑主图">' +
         '<img src="' + mainSrc + '" alt="">' +
         '<span class="wc-main-badge">主图</span>' +
         '<span class="wc-main-tip">点击编辑</span>' +
-      '</div>' +
+        '</div>';
+    } else if (workVideos.length) {
+      var vsrc0 = newWorkVideos[workVideos[0]] ? URL.createObjectURL(newWorkVideos[workVideos[0]]) : imgSrc(workVideos[0]);
+      mainHTML = '<div class="wc-main">' +
+        '<video src="' + vsrc0 + '" controls preload="metadata"></video>' +
+        '<span class="wc-main-badge">视频</span>' +
+        '</div>';
+    } else {
+      mainHTML = '<div class="wc-main wc-main-empty" data-wmain="' + idx + '" title="点击上传主图">' +
+        '<span class="wc-main-empty-ico">🖼️ / 🎬</span>' +
+        '<span class="wc-main-badge">添加图片或视频</span>' +
+        '</div>';
+    }
+    card.innerHTML =
+      mainHTML +
       '<div class="wc-body">' +
         '<input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title" placeholder="标题">' +
         catField +
@@ -793,22 +820,7 @@ function renderWorkList(listId, scope){
   });
   box.querySelectorAll('button[data-replace]').forEach(function(btn){
     btn.addEventListener('click', function(){
-      var inp = document.createElement('input');
-      inp.type = 'file'; inp.accept = 'image/*';
-      inp.onchange = function(){
-        var f = inp.files[0]; if (!f) return;
-        var w = config.works[+this.dataset.replace];
-        openImageEditor(f, function(fullFile, thumbFile){
-          var p = nextWorkImgPath('assets/works/work-');
-          newImages[p] = fullFile;
-          newImages[thumbPath(p)] = thumbFile;
-          w.img = p;
-          if (!w.images || !w.images.length) w.images = [p];
-          else w.images[0] = p;
-          renderAllWorks();
-        });
-      }.bind(this);
-      inp.click();
+      setWorkMainImage(config.works[+this.dataset.replace]);
     });
   });
   // 追加图片
@@ -826,7 +838,10 @@ function renderWorkList(listId, scope){
           newImages[p] = fullFile;
           newImages[thumbPath(p)] = thumbFile;
           w.images.push(p);
-        }, function(){ renderAllWorks(); });
+        }, function(){
+          if (!w.img && w.images && w.images.length) w.img = w.images[0];
+          renderAllWorks();
+        });
       };
       inp.click();
     });
@@ -861,12 +876,13 @@ function renderWorkList(listId, scope){
       renderAllWorks();
     });
   });
-  // 点击主图大图 → 重新编辑
+  // 点击主图大图 → 重新编辑（空作品则选图作为主图）
   box.querySelectorAll('.wc-main').forEach(function(el){
     el.addEventListener('click', function(){
       var w = config.works[+this.dataset.wmain];
       var imgs = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
       if (imgs[0]) reEditImage(imgs[0], newImages, renderAllWorks);
+      else setWorkMainImage(w);
     });
   });
   // 点击图片 → 重新编辑；✕ → 移除

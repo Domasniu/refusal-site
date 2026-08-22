@@ -474,6 +474,11 @@ body::after{
   background:rgba(255,45,149,.85);padding:.15rem .45rem;border-radius:3px;letter-spacing:.05em;
   box-shadow:0 0 8px rgba(255,45,149,.5);
 }
+.work-card .work-thumb-empty{
+  width:100%;height:220px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(0,240,255,.08),rgba(255,45,149,.08)),rgba(0,0,0,.28);
+  font-size:2.6rem;opacity:.9;
+}
 .work-card .cat-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta));opacity:0;transition:.25s}
 .work-card:hover .cat-bar{opacity:1}
 
