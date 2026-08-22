@@ -470,8 +470,9 @@
     list.forEach(function (w) {
       var card = document.createElement('div');
       card.className = 'work-card';
-      var hasImg = !!w.img;
+      var hasImg = !!(w.images && w.images.length) || !!w.img;
       var hasVideo = !!(w.videos && w.videos.length);
+      var singleVideo = !hasImg && hasVideo && w.videos.length === 1;
       var mediaHTML;
       if (hasImg) {
         mediaHTML = '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">';
@@ -489,7 +490,21 @@
         '<span class="work-cat">' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span></div>' +
         (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
         '<div class="cat-bar"></div>';
-      card.addEventListener('click', function () { openLightbox(w); });
+      card.addEventListener('click', function () {
+        // 单视频作品：和「动态」一致，点卡片直接内联播放；多图/多视频则打开灯箱
+        if (singleVideo) {
+          var v = card.querySelector('.work-thumb-video video');
+          if (v) {
+            if (v.paused) {
+              v.muted = false; v.controls = true; v.play();
+              var badge = card.querySelector('.work-video-play');
+              if (badge) badge.style.display = 'none';
+            } else { v.pause(); }
+          }
+        } else {
+          openLightbox(w);
+        }
+      });
       grid.appendChild(card);
     });
   }
