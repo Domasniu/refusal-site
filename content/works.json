@@ -34,7 +34,7 @@
     {
       "id": "W-004",
       "cat": "papercut",
-      "title": "剪纸 · 武将",
+      "title": "剪纸 · 黑神话悟空",
       "img": "assets/works/papercut-1.jpg",
       "images": [
         "assets/works/papercut-1.jpg"
@@ -58,6 +58,15 @@
       "img": "assets/works/work-001.jpg",
       "images": [
         "assets/works/work-001.jpg"
+      ]
+    },
+    {
+      "id": "W-007",
+      "cat": "photo",
+      "title": "新作品",
+      "img": "assets/works/work-002.jpg",
+      "images": [
+        "assets/works/work-002.jpg"
       ]
     }
   ]
