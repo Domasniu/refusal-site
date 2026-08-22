@@ -479,6 +479,9 @@ body::after{
   background:linear-gradient(135deg,rgba(0,240,255,.08),rgba(255,45,149,.08)),rgba(0,0,0,.28);
   font-size:2.6rem;opacity:.9;
 }
+.work-card .work-thumb-video{position:relative;width:100%;aspect-ratio:4/3;background:#000;overflow:hidden}
+.work-card .work-thumb-video video{width:100%;height:100%;object-fit:cover;display:block}
+.work-card .work-video-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;text-shadow:0 0 12px rgba(0,240,255,.85);pointer-events:none}
 .work-card .cat-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta));opacity:0;transition:.25s}
 .work-card:hover .cat-bar{opacity:1}
 
@@ -1041,4 +1044,11 @@ body::after{
   .admin-link{font-size:.6rem;padding:.25rem .5rem}
   .theme-toggle{padding:.25rem .45rem;font-size:.9rem}
   .wm-kicker{font-size:.6rem;letter-spacing:.14em}
+  /* 作品/宠物/摄影网格：手机端两列 */
+  .work-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .work-card .work-meta{padding:.5rem .6rem;flex-direction:column;align-items:flex-start;gap:.2rem}
+  .work-card .work-name{font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .work-card .work-cat{font-size:.56rem}
+  .work-card .work-desc{display:none}
+  .work-card .work-id{font-size:.5rem;top:.35rem;right:.4rem;padding:.1rem .3rem}
 }

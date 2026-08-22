@@ -471,12 +471,20 @@
       var card = document.createElement('div');
       card.className = 'work-card';
       var hasImg = !!w.img;
+      var hasVideo = !!(w.videos && w.videos.length);
+      var mediaHTML;
+      if (hasImg) {
+        mediaHTML = '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">';
+      } else if (hasVideo) {
+        // 纯视频作品：显示视频首帧预览 + 播放角标
+        mediaHTML = '<div class="work-thumb-video"><video src="' + escHtml(w.videos[0]) + '" muted playsinline preload="metadata"></video><span class="work-video-play">▶</span></div>';
+      } else {
+        mediaHTML = '<div class="work-thumb-empty">🎬</div>';
+      }
       card.innerHTML =
         '<span class="work-id">' + escHtml(w.id) + '</span>' +
-        (hasImg
-          ? '<img src="' + escHtml(thumbPath(w.img)) + '" data-fb="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '" loading="lazy" decoding="async">'
-          : '<div class="work-thumb-empty">🎬</div>') +
-        (w.videos && w.videos.length ? '<span class="work-video-badge">🎬 ' + w.videos.length + '</span>' : '') +
+        mediaHTML +
+        (hasVideo ? '<span class="work-video-badge">🎬 ' + w.videos.length + '</span>' : '') +
         '<div class="work-meta"><span class="work-name">' + escHtml(w.title) + '</span>' +
         '<span class="work-cat">' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span></div>' +
         (w.desc ? '<p class="work-desc">' + escHtml(w.desc) + '</p>' : '') +
