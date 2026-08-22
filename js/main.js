@@ -954,13 +954,18 @@
     q = (q || '').trim().toLowerCase();
     if (!q) { results.innerHTML = ''; return; }
     var html = '';
-    // 搜索作品
-    var works = (CFG.works || []).filter(function (w) {
+    function matchWork(w) {
       return (w.title || '').toLowerCase().indexOf(q) >= 0 ||
              (w.desc || '').toLowerCase().indexOf(q) >= 0 ||
              (w.id || '').toLowerCase().indexOf(q) >= 0 ||
+             (w.subcat || '').toLowerCase().indexOf(q) >= 0 ||
              catLabel(w.cat).toLowerCase().indexOf(q) >= 0;
-    });
+    }
+    // 搜索作品：按分区归类（宠物/摄影是独立分区，不应混进「作品」）
+    var allWorks = (CFG.works || []).filter(matchWork);
+    var works = allWorks.filter(function (w) { return w.cat !== 'pet' && w.cat !== 'photo'; });
+    var petWorks = allWorks.filter(function (w) { return w.cat === 'pet'; });
+    var photoWorks = allWorks.filter(function (w) { return w.cat === 'photo'; });
     // 搜索分类
     var cats = (CFG.categories || []).filter(function (c) {
       return (c.label || '').toLowerCase().indexOf(q) >= 0 || (c.id || '').toLowerCase().indexOf(q) >= 0;
@@ -969,7 +974,7 @@
     var moments = MOMENTS.filter(function (m) {
       return (m.text || '').toLowerCase().indexOf(q) >= 0;
     });
-    if (!works.length && !cats.length && !moments.length) {
+    if (!works.length && !petWorks.length && !photoWorks.length && !cats.length && !moments.length) {
       results.innerHTML = '<p class="search-empty">[ 未找到与「' + escHtml(q) + '」相关的内容 ]</p>';
       return;
     }
@@ -980,16 +985,26 @@
       });
       html += '</div>';
     }
-    if (works.length) {
-      html += '<div class="search-group"><div class="search-group-title">作品 (' + works.length + ')</div>';
-      works.slice(0, 8).forEach(function (w) {
-        html += '<div class="search-item search-work" data-id="' + escHtml(w.id) + '">' +
-          '<img src="' + escHtml(w.img) + '" alt="" class="search-thumb">' +
-          '<span class="search-txt">' + escHtml(w.title) + ' · ' + escHtml(catLabel(w.cat)) + '</span>' +
+    function workThumb(w) {
+      if (w.img) return '<img src="' + escHtml(thumbPath(w.img)) + '" alt="" class="search-thumb">';
+      if (w.videos && w.videos.length) return '<span class="search-thumb search-thumb-vid">🎬</span>';
+      return '<span class="search-thumb search-thumb-vid">🖼️</span>';
+    }
+    function workGroup(title, list, sec) {
+      if (!list.length) return '';
+      var h = '<div class="search-group"><div class="search-group-title">' + escHtml(title) + ' (' + list.length + ')</div>';
+      list.slice(0, 8).forEach(function (w) {
+        h += '<div class="search-item search-work" data-id="' + escHtml(w.id) + '" data-sec="' + escHtml(sec) + '">' +
+          workThumb(w) +
+          '<span class="search-txt">' + escHtml(w.title) + ' · ' + escHtml(catLabel(w.cat)) + (w.subcat ? ' · ' + escHtml(w.subcat) : '') + '</span>' +
           '</div>';
       });
-      html += '</div>';
+      h += '</div>';
+      return h;
     }
+    html += workGroup('作品', works, 'works');
+    html += workGroup('宠物', petWorks, 'pet');
+    html += workGroup('摄影', photoWorks, 'photo');
     if (moments.length) {
       html += '<div class="search-group"><div class="search-group-title">动态 (' + moments.length + ')</div>';
       moments.slice(0, 5).forEach(function (m) {
@@ -1003,7 +1018,23 @@
     results.querySelectorAll('.search-work').forEach(function (el) {
       el.addEventListener('click', function () {
         var w = (CFG.works || []).filter(function (x) { return x.id === el.dataset.id; })[0];
-        if (w) { searchPanelClose(); showSection('works'); openLightbox(w); }
+        if (!w) return;
+        searchPanelClose();
+        var sec = el.dataset.sec || 'works';
+        if (sec === 'pet') {
+          petFilter = w.subcat || 'all';
+          showSection('pet');
+          renderSubcatFilters('pet');
+          renderCatPanel('pet');
+        } else if (sec === 'photo') {
+          photoFilter = w.subcat || 'all';
+          showSection('photo');
+          renderSubcatFilters('photo');
+          renderCatPanel('photo');
+        } else {
+          showSection('works');
+        }
+        openLightbox(w);
       });
     });
     results.querySelectorAll('.search-cat').forEach(function (el) {
