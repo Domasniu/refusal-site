@@ -21,7 +21,12 @@
       "label": "宠物"
     }
   ],
-  "petCategories": [],
+  "petCategories": [
+    {
+      "id": "petcat-mt4ew31q",
+      "label": "lucky"
+    }
+  ],
   "photoCategories": [
     {
       "id": "photo-landscape",
