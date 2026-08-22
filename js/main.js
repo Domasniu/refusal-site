@@ -109,7 +109,7 @@
     if ((el = document.getElementById('hero-desc'))) el.textContent = h.desc || '';
     if ((el = document.getElementById('hero-hashtags'))) el.textContent = h.hashTags || '';
     if ((el = document.getElementById('side-status'))) el.textContent = h.status || '';
-    if ((el = document.getElementById('home-note-text'))) el.textContent = CFG.note || '希望记录自己，留下回忆。';
+    if ((el = document.getElementById('home-contact-email'))) el.textContent = CFG.contactEmail || 'hello@refusal.site';
     // 站点名
     if (CFG.siteName) {
       var logo = document.querySelector('.os-logo');
@@ -131,7 +131,8 @@
       { id: 'video', label: '我的视频', icon: '🎬' },
       { id: 'music', label: '我的音乐', icon: '🎵' },
       { id: 'about', label: '关于我', icon: '👤' },
-      { id: 'contact', label: '联系方式', icon: '✉️' }
+      { id: 'contact', label: '联系方式', icon: '✉️' },
+      { id: 'game', label: '小游戏', icon: '🎮' }
     ];
     box.innerHTML = '';
     nav.forEach(function (n) {
@@ -505,8 +506,10 @@
       var head = document.createElement('div');
       head.className = 'home-cat-head';
       head.innerHTML =
-        '<span class="home-cat-name">' + escHtml(mod.title || '') + '</span>' +
-        (mod.sub ? '<span class="home-module-sub">' + escHtml(mod.sub) + '</span>' : '') +
+        '<div class="home-module-titles">' +
+          '<span class="home-cat-name">' + escHtml(mod.title || '') + '</span>' +
+          (mod.sub ? '<span class="home-module-sub">' + escHtml(mod.sub) + '</span>' : '') +
+        '</div>' +
         (mod.sec ? '<a href="#' + escHtml(mod.sec) + '" data-sec="' + escHtml(mod.sec) + '" data-cat="' + escHtml(mod.cat || '') + '" class="home-cat-more">查看全部 →</a>' : '');
       sec.appendChild(head);
 
@@ -550,6 +553,9 @@
         note.className = 'home-module-note';
         note.innerHTML = '<span class="tick">✦</span> ' + escHtml(mod.sub || mod.title || '');
         sec.appendChild(note);
+        // note 模块：隐藏副标题行（sub 已作为内容显示），保留标题
+        var subEl = head.querySelector('.home-module-sub');
+        if (subEl) subEl.style.display = 'none';
       }
       box.appendChild(sec);
     });

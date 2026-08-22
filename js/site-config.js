@@ -14,6 +14,7 @@ window.SITE_CONFIG = {
 
   /* -------- 站点名 / 主页文字 -------- */
   siteName: 'refusal· 的宝藏仓库',
+  contactEmail: 'hello@refusal.site',
   hero: {
     kicker: "HELLO, I'M refusal·",
     status: '正在收集新灵感',
@@ -33,15 +34,16 @@ window.SITE_CONFIG = {
     { id: 'video', label: '我的视频', icon: '🎬' },
     { id: 'music', label: '我的音乐', icon: '🎵' },
     { id: 'about', label: '关于我', icon: '👤' },
-    { id: 'contact', label: '联系方式', icon: '✉️' }
+    { id: 'contact', label: '联系方式', icon: '✉️' },
+    { id: 'home', label: '小游戏', icon: '🎮' }
   ],
 
   /* -------- 首页模块（配置化：moments=最新动态 / works=作品 / note=便签） -------- */
   homeModules: [
     { type: 'moments', title: '最新动态', sub: '记录日常，分享心情', sec: 'life' },
     { type: 'works', title: '最新作品', sub: '手作 · 剪纸 · 绘画', sec: 'works' },
-    { type: 'works', title: '宠物日常', sub: '毛孩子的可爱瞬间', cat: 'pet', sec: 'works' },
-    { type: 'works', title: '摄影', sub: '随手拍下的风景', cat: 'photo', sec: 'works' },
+    { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'works' },
+    { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'works' },
     { type: 'note', title: 'A LITTLE NOTE', sub: '希望记录自己，留下回忆。' }
   ],
   note: '希望记录自己，留下回忆。',

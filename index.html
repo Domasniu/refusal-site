@@ -85,15 +85,10 @@
 
   <!-- 全局左侧个人栏（切换页签时保持不动） -->
   <aside class="side-col" id="side-col">
-    <div class="side-avatar">
-      <div class="avatar-ring"></div>
-      <img id="avatar-img" src="assets/avatar.jpg" alt="refusal· 头像" class="avatar" fetchpriority="high" decoding="async">
-    </div>
-    <div class="side-id">
-      <h1 class="side-name">refusal·</h1>
+    <div class="side-head">
+      <p id="hero-kicker" class="side-kicker"></p>
       <p id="side-status" class="side-status"></p>
     </div>
-    <div class="home-stats" id="home-stats"></div>
     <div class="side-music">
       <div class="home-music-player">
         <div class="player-cover mini-cover" id="hm-cover"><span class="p-cover-fallback">🎵</span></div>
@@ -133,9 +128,14 @@
         </div>
       </div>
       <div id="home-modules" class="home-modules"></div>
+      <div class="home-message">
+        <p class="hm-msg-in">你好，欢迎来到我的作品集<br>今天也在认真做喜欢的东西。</p>
+        <p class="hm-msg-out"><span class="tick">📨</span> 收到啦！</p>
+      </div>
       <div class="home-note">
-        <span class="tick">💌</span> <span id="home-note-text"></span>
-        <a href="#contact" data-sec="contact" class="hm-note-link">去联系页找我 →</a>
+        <span class="tick">✉️</span> <span>联系我</span>
+        <span id="home-contact-email" class="hm-contact-mail"></span>
+        <a href="#contact" data-sec="contact" class="hm-note-link">去联系页 →</a>
       </div>
     </section>
 
