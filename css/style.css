@@ -239,9 +239,8 @@ body::after{
 }
 .hero-text{flex:1;min-width:280px}
 /* ============ HOME 右栏内容（欢迎区 + 配置化模块） ============ */
-.home-hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1.4rem;margin-bottom:1.6rem;align-items:stretch}
-@media(max-width:900px){.home-hero{grid-template-columns:1fr}}
 .home-welcome{
+  display:flex;align-items:center;gap:1.6rem;
   padding:2.2rem 2.2rem;position:relative;overflow:hidden;
   background:
     linear-gradient(rgba(0,240,255,.028) 1px, transparent 1px),
@@ -249,8 +248,10 @@ body::after{
     radial-gradient(ellipse at 20% 0%, rgba(0,240,255,.06), transparent 55%);
   background-size:34px 34px,34px 34px,100% 100%;
   border:1px solid var(--line);border-radius:16px;
-  margin-bottom:0;
+  margin-bottom:1.6rem;
 }
+.home-welcome-main{flex:1;min-width:0}
+@media(max-width:900px){.home-welcome{flex-direction:column;align-items:stretch}}
 .home-welcome::before,.home-welcome::after{
   content:"";position:absolute;width:44px;height:44px;pointer-events:none;
 }
@@ -349,9 +350,11 @@ body::after{
 
 /* 首页留言卡片（你好，欢迎来到我的作品集…收到啦！） */
 .home-message{
-  margin-top:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;
-  background:var(--panel);display:flex;flex-direction:column;
+  width:300px;flex-shrink:0;
+  border:1px solid rgba(0,240,255,.22);border-radius:12px;overflow:hidden;
+  background:rgba(7,11,22,.9);box-shadow:0 8px 24px rgba(0,0,0,.38);
 }
+@media(max-width:900px){.home-message{width:100%}}
 .hm-msg-head{
   padding:.6rem 1.4rem;font-size:.72rem;letter-spacing:.12em;color:var(--magenta);
   border-bottom:1px dashed var(--line);display:flex;align-items:center;gap:.5rem;
