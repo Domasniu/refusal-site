@@ -59,11 +59,23 @@
       "id": "M-006",
       "type": "text",
       "date": "2026-08-22",
-      "text": "",
+      "text": "天外飞仙",
       "images": [],
       "videos": [
         "assets/moments/video-003.mp4"
-      ]
+      ],
+      "tags": "#电视剧"
+    },
+    {
+      "id": "M-007",
+      "type": "text",
+      "date": "2026-08-23",
+      "text": "准备好了没",
+      "images": [],
+      "videos": [
+        "assets/moments/video-004.mp4"
+      ],
+      "tags": "#电影"
     }
   ]
 }
