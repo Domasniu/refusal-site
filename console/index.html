@@ -56,6 +56,16 @@ button.small{padding:4px 10px;font-size:12px}
 .avatar-prev{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);display:block;margin-bottom:8px}
 .cat-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:8px;background:#070b16}
 .cat-row .nm{flex:1}
+/* 导航 / 模块 / 面板标题编辑器 */
+.edit-row{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#070b16}
+.edit-row .er-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.edit-row .grip{color:var(--dim);cursor:grab;font-size:12px;letter-spacing:1px;user-select:none}
+.edit-row .tag{font-size:10px;color:var(--cyan);border:1px solid var(--line);padding:2px 7px;border-radius:3px;letter-spacing:.08em;white-space:nowrap}
+.edit-row input,.edit-row select{background:#0a0f1e;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px}
+.edit-row .er-fields{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.edit-row .grow{flex:1;min-width:110px}
+.edit-row .w-icon{width:64px;flex:none}
+.edit-row .w-cat{min-width:110px;flex:none}
 /* 音乐管理 */
 .music-row{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#070b16}
 .mr-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
@@ -127,7 +137,31 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>④ 自我介绍 / 联系</h2>
+    <h2>④ 侧栏导航（可视化编辑）</h2>
+    <p class="hint">左侧栏导航项，支持增删改排序。图标填 emoji；「跳转」选目标面板；「分类筛选」仅当跳转=作品时有效（点击后进作品区并自动筛选该分类）。</p>
+    <div id="nav-list"></div>
+    <div class="toolbar">
+      <button id="btn-add-nav" class="small">＋ 添加导航项</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⑤ 首页模块（可视化编辑）</h2>
+    <p class="hint">首页右侧的模块流，按此顺序自上而下展示，支持增删改排序。类型：最新动态 / 作品展示 / 便签。</p>
+    <div id="module-list"></div>
+    <div class="toolbar">
+      <button id="btn-add-module" class="small">＋ 添加模块</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⑥ 面板标题（各页签大标题）</h2>
+    <p class="hint">各页签顶部的大标题，留空则用内置默认值。</p>
+    <div id="sectitle-list"></div>
+  </div>
+
+  <div class="card">
+    <h2>⑦ 自我介绍 / 联系</h2>
     <label>自我介绍（每行一段）</label>
     <textarea id="f-about" style="min-height:90px"></textarea>
     <label>联系信息</label>
@@ -135,7 +169,7 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑤ 音乐（歌单）</h2>
+    <h2>⑧ 音乐（歌单）</h2>
     <p class="hint">两种添加方式：<br>
       <b>网易云歌曲</b>：填歌曲 ID（网易云网页版歌曲页 URL 里 /song?id= 后面的数字，如 3023862），标题歌手可自动留空后手动补。<br>
       <b>自传音乐</b>：点「上传音乐文件」直接传 mp3 到网站（推荐，稳定不失效）。<br>
@@ -150,7 +184,7 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑥ 视频链接（留空显示即将上线）</h2>
+    <h2>⑨ 视频链接（留空显示即将上线）</h2>
     <label>抖音主页</label>
     <input type="text" id="f-douyin" placeholder="https://v.douyin.com/...">
     <label>B站主页</label>
@@ -160,7 +194,7 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑦ 作品（可多图）</h2>
+    <h2>⑩ 作品（可多图）</h2>
     <p class="hint">每件作品可上传多张照片：点「添加图片」给当前作品追加图片，第一张为主图。点图片可删除。</p>
     <div id="work-list"></div>
     <div class="toolbar">
@@ -171,7 +205,7 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑧ 作品分类</h2>
+    <h2>⑪ 作品分类</h2>
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <input type="text" id="f-new-cat" placeholder="新分类名，如：陶艺" style="flex:1">
       <button id="btn-add-cat" class="small">添加</button>
@@ -180,7 +214,7 @@ button.small{padding:4px 10px;font-size:12px}
   </div>
 
   <div class="card">
-    <h2>⑨ 生活动态（说说）</h2>
+    <h2>⑫ 生活动态（说说）</h2>
     <p class="hint">分享文字 / 图片 / 视频。类型自动判断：填了视频地址→视频，传了图片→图片，只有文字→文字。</p>
     <div id="moment-list"></div>
     <div class="toolbar">
@@ -201,7 +235,7 @@ button.small{padding:4px 10px;font-size:12px}
 'use strict';
 /* ================= 状态 ================= */
 var API_URL = '/api';
-var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg' };
+var config = { works: [], categories: [], theme: 'cyber-cyan', hero: {}, about: '', contact: '', video: {}, music: {}, avatar: 'assets/avatar.jpg', nav: [], homeModules: [], secTitles: {} };
 var newImages = {};                     // 待上传图片 { path: File }
 var newAvatar = null;
 var musicList = [];                     // 歌单
@@ -325,6 +359,7 @@ function fillForm(){
   $('f-bilibili').value = (config.video && config.video.bilibili) || '';
   $('f-youtube').value = (config.video && config.video.youtube) || '';
   renderThemes(); renderWorks(); renderCats(); renderMusicList(); renderMomentList();
+  renderNav(); renderHomeModules(); renderSecTitles();
 }
 
 function collect(){
@@ -687,6 +722,211 @@ function renderCats(){
       row.appendChild(b);
     }
     box.appendChild(row);
+  });
+}
+
+/* ================= 侧栏导航（可视化编辑） ================= */
+var NAV_TARGETS = [
+  { id: 'home', label: '主页' },
+  { id: 'works', label: '作品' },
+  { id: 'video', label: '视频' },
+  { id: 'music', label: '音乐' },
+  { id: 'life', label: '动态' },
+  { id: 'about', label: '关于' },
+  { id: 'contact', label: '联系' }
+];
+function catSelectOptions(selected){
+  var opts = '<option value="">（无分类）</option>';
+  (config.categories || []).forEach(function(c){
+    opts += '<option value="' + esc(c.id) + '"' + (c.id === selected ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+  });
+  return opts;
+}
+function targetSelectOptions(selected){
+  var opts = '';
+  NAV_TARGETS.forEach(function(t){
+    opts += '<option value="' + t.id + '"' + (t.id === selected ? ' selected' : '') + '>' + t.label + '</option>';
+  });
+  return opts;
+}
+function renderNav(){
+  var box = $('nav-list');
+  box.innerHTML = '';
+  if (!config.nav || !config.nav.length) {
+    box.innerHTML = '<p class="hint">暂无导航项 — 点「添加导航项」新建。</p>';
+    return;
+  }
+  config.nav.forEach(function(n, idx){
+    var row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML =
+      '<div class="er-top">' +
+        '<span class="grip">⠿</span>' +
+        '<span class="tag">导航 ' + (idx + 1) + '</span>' +
+        '<span style="flex:1"></span>' +
+        '<button class="small" data-nvup="' + idx + '" title="上移">▲</button>' +
+        '<button class="small" data-nvdn="' + idx + '" title="下移">▼</button>' +
+        '<button class="small" data-nvdel="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
+      '</div>' +
+      '<div class="er-fields">' +
+        '<input type="text" class="w-icon" value="' + esc(n.icon || '') + '" data-ni="' + idx + '" data-nk="icon" placeholder="图标">' +
+        '<input type="text" class="grow" value="' + esc(n.label || '') + '" data-ni="' + idx + '" data-nk="label" placeholder="显示文字">' +
+        '<select class="w-cat" data-ni="' + idx + '" data-nk="id">' + targetSelectOptions(n.id) + '</select>' +
+        '<select class="w-cat" data-ni="' + idx + '" data-nk="cat">' + catSelectOptions(n.cat) + '</select>' +
+      '</div>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-nk]').forEach(function(inp){
+    inp.addEventListener('input', function(){ config.nav[+this.dataset.ni][this.dataset.nk] = this.value; });
+  });
+  box.querySelectorAll('select[data-nk="id"]').forEach(function(sel){
+    sel.addEventListener('change', function(){
+      config.nav[+this.dataset.ni].id = this.value;
+      if (this.value !== 'works') config.nav[+this.dataset.ni].cat = '';
+      renderNav();
+    });
+  });
+  box.querySelectorAll('select[data-nk="cat"]').forEach(function(sel){
+    sel.addEventListener('change', function(){ config.nav[+this.dataset.ni].cat = this.value; });
+  });
+  box.querySelectorAll('button[data-nvdel]').forEach(function(btn){
+    btn.addEventListener('click', function(){ config.nav.splice(+this.dataset.nvdel, 1); renderNav(); });
+  });
+  box.querySelectorAll('button[data-nvup]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = +this.dataset.nvup; if (i <= 0) return;
+      var t = config.nav[i-1]; config.nav[i-1] = config.nav[i]; config.nav[i] = t; renderNav();
+    });
+  });
+  box.querySelectorAll('button[data-nvdn]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = +this.dataset.nvdn; if (i >= config.nav.length - 1) return;
+      var t = config.nav[i+1]; config.nav[i+1] = config.nav[i]; config.nav[i] = t; renderNav();
+    });
+  });
+}
+$('btn-add-nav').addEventListener('click', function(){
+  config.nav = config.nav || [];
+  config.nav.push({ id: 'home', label: '新导航', icon: '🔗', cat: '' });
+  renderNav();
+});
+
+/* ================= 首页模块（可视化编辑） ================= */
+var MODULE_TYPES = [
+  { id: 'moments', label: '最新动态' },
+  { id: 'works', label: '作品展示' },
+  { id: 'note', label: '便签' }
+];
+function moduleTypeLabel(t){
+  for (var i = 0; i < MODULE_TYPES.length; i++) if (MODULE_TYPES[i].id === t) return MODULE_TYPES[i].label;
+  return t || '?';
+}
+function moduleTypeOptions(selected){
+  var opts = '';
+  MODULE_TYPES.forEach(function(t){
+    opts += '<option value="' + t.id + '"' + (t.id === selected ? ' selected' : '') + '>' + t.label + '</option>';
+  });
+  return opts;
+}
+function secSelectOptions(selected){
+  var opts = '<option value="">（无 · 不显示查看全部）</option>';
+  NAV_TARGETS.forEach(function(t){
+    opts += '<option value="' + t.id + '"' + (t.id === selected ? ' selected' : '') + '>' + t.label + '</option>';
+  });
+  return opts;
+}
+function renderHomeModules(){
+  var box = $('module-list');
+  box.innerHTML = '';
+  if (!config.homeModules || !config.homeModules.length) {
+    box.innerHTML = '<p class="hint">暂无模块 — 点「添加模块」新建（首页按此顺序自上而下展示）。</p>';
+    return;
+  }
+  config.homeModules.forEach(function(m, idx){
+    var row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML =
+      '<div class="er-top">' +
+        '<span class="grip">⠿</span>' +
+        '<span class="tag">' + moduleTypeLabel(m.type) + '</span>' +
+        '<span style="flex:1"></span>' +
+        '<button class="small" data-mdnup="' + idx + '" title="上移">▲</button>' +
+        '<button class="small" data-mdndn="' + idx + '" title="下移">▼</button>' +
+        '<button class="small" data-mdndel="' + idx + '" style="border-color:#ff5c5c;color:#ff5c5c">删除</button>' +
+      '</div>' +
+      '<div class="er-fields">' +
+        '<select class="w-cat" data-mdi="' + idx + '" data-mdk="type">' + moduleTypeOptions(m.type) + '</select>' +
+        '<input type="text" class="grow" value="' + esc(m.title || '') + '" data-mdi="' + idx + '" data-mdk="title" placeholder="标题">' +
+        '<input type="text" class="grow" value="' + esc(m.sub || '') + '" data-mdi="' + idx + '" data-mdk="sub" placeholder="副标题">' +
+        '<select class="w-cat" data-mdi="' + idx + '" data-mdk="cat">' + catSelectOptions(m.cat) + '</select>' +
+        '<select class="w-cat" data-mdi="' + idx + '" data-mdk="sec">' + secSelectOptions(m.sec) + '</select>' +
+      '</div>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-mdk]').forEach(function(inp){
+    inp.addEventListener('input', function(){ config.homeModules[+this.dataset.mdi][this.dataset.mdk] = this.value; });
+  });
+  box.querySelectorAll('select[data-mdk="type"]').forEach(function(sel){
+    sel.addEventListener('change', function(){
+      config.homeModules[+this.dataset.mdi].type = this.value;
+      if (this.value !== 'works') config.homeModules[+this.dataset.mdi].cat = '';
+      if (this.value === 'note') config.homeModules[+this.dataset.mdi].sec = '';
+      renderHomeModules();
+    });
+  });
+  box.querySelectorAll('select[data-mdk="cat"]').forEach(function(sel){
+    sel.addEventListener('change', function(){ config.homeModules[+this.dataset.mdi].cat = this.value; });
+  });
+  box.querySelectorAll('select[data-mdk="sec"]').forEach(function(sel){
+    sel.addEventListener('change', function(){ config.homeModules[+this.dataset.mdi].sec = this.value; });
+  });
+  box.querySelectorAll('button[data-mdndel]').forEach(function(btn){
+    btn.addEventListener('click', function(){ config.homeModules.splice(+this.dataset.mdndel, 1); renderHomeModules(); });
+  });
+  box.querySelectorAll('button[data-mdnup]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = +this.dataset.mdnup; if (i <= 0) return;
+      var t = config.homeModules[i-1]; config.homeModules[i-1] = config.homeModules[i]; config.homeModules[i] = t; renderHomeModules();
+    });
+  });
+  box.querySelectorAll('button[data-mdndn]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = +this.dataset.mdndn; if (i >= config.homeModules.length - 1) return;
+      var t = config.homeModules[i+1]; config.homeModules[i+1] = config.homeModules[i]; config.homeModules[i] = t; renderHomeModules();
+    });
+  });
+}
+$('btn-add-module').addEventListener('click', function(){
+  config.homeModules = config.homeModules || [];
+  config.homeModules.push({ type: 'moments', title: '新模块', sub: '', cat: '', sec: '' });
+  renderHomeModules();
+});
+
+/* ================= 面板标题（可视化编辑） ================= */
+var SEC_TITLE_KEYS = [
+  { id: 'works', label: '作品区' },
+  { id: 'video', label: '视频区' },
+  { id: 'music', label: '音乐区' },
+  { id: 'life', label: '动态区' },
+  { id: 'about', label: '关于' },
+  { id: 'contact', label: '联系' }
+];
+function renderSecTitles(){
+  var box = $('sectitle-list');
+  box.innerHTML = '';
+  if (!config.secTitles) config.secTitles = {};
+  SEC_TITLE_KEYS.forEach(function(k){
+    var row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML =
+      '<div class="er-fields">' +
+        '<span class="tag" style="width:76px;text-align:center">' + k.label + '</span>' +
+        '<input type="text" class="grow" value="' + esc(config.secTitles[k.id] || '') + '" data-st="' + k.id + '" placeholder="默认标题">' +
+      '</div>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-st]').forEach(function(inp){
+    inp.addEventListener('input', function(){ config.secTitles[this.dataset.st] = this.value; });
   });
 }
 
