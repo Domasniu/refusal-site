@@ -65,10 +65,10 @@
       <span class="os-logo">💠 REFUSAL<span>·</span> OS</span>
     </div>
     <div class="topbar-right">
+      <span id="clock" class="topbar-clock">--:--:--</span>
       <input type="text" id="topbar-search" class="topbar-search" placeholder="搜索作品/动态/分类..." autocomplete="off">
       <button id="theme-toggle" class="theme-toggle" title="切换主题配色">🎨</button>
       <a class="admin-link" href="console/" title="站长登录 · 傻瓜后台">⚙ 管理</a>
-      <span id="clock" class="topbar-clock">--:--:--</span>
     </div>
   </header>
 
@@ -132,6 +132,10 @@
         </div>
       </div>
       <div id="home-modules" class="home-modules"></div>
+      <div class="home-note-block">
+        <div class="home-note-head"><span class="tick">✦</span> A LITTLE NOTE</div>
+        <p id="home-note-text" class="home-note-text"></p>
+      </div>
       <div class="home-note">
         <span class="tick">✉️</span> <span>联系我</span>
         <span id="home-contact-email" class="hm-contact-mail"></span>
@@ -228,6 +232,7 @@
   <div id="lb-count" class="lb-count hidden"></div>
   <div id="lb-caption" class="lb-caption"></div>
   <div id="lb-desc" class="lb-desc hidden"></div>
+  <button id="lb-play" class="lb-play hidden" title="自动播放幻灯片">▶</button>
 </div>
 
 <!-- ============ 返回顶部 ============ -->

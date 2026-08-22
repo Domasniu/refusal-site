@@ -16,12 +16,13 @@ window.SITE_CONFIG = {
   siteName: 'refusal· 的宝藏仓库',
   contactEmail: 'hello@refusal.site',
   hero: {
-    kicker: "HELLO, I'M refusal·",
+    kicker: "HELLO,I'M\nrefusal·",
     status: '正在收集新灵感',
     tags: '手工制作 · 剪纸 · 绘画 · 创意',
-    slogan: '做喜欢的东西 记录灵感的赛博仓库',
+    slogan: '做喜欢的东西\n记录灵感的赛博仓库',
     desc: '这里收录了我的手作、剪纸、视觉、3D、画画等灵感。',
-    hashTags: '#手工 #视觉设计 #美少女 #游戏天才'
+    hashTags: '#手工 #视觉设计 #美少女 #游戏天才',
+    titleScale: 1
   },
 
   /* -------- 侧栏导航（配置化，cat 可选：跳转作品区并筛选分类） -------- */
@@ -40,11 +41,10 @@ window.SITE_CONFIG = {
 
   /* -------- 首页模块（配置化：moments=最新动态 / works=作品 / note=便签） -------- */
   homeModules: [
-    { type: 'moments', title: '最新动态', sub: '记录日常，分享心情', sec: 'life' },
-    { type: 'works', title: '最新作品', sub: '手作 · 剪纸 · 绘画', sec: 'works' },
-    { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'works' },
-    { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'works' },
-    { type: 'note', title: 'A LITTLE NOTE', sub: '希望记录自己，留下回忆。' }
+    { type: 'moments', title: '最新动态', tag: '生活动态', sub: '记录日常，分享心情', sec: 'life' },
+    { type: 'works', title: '最新作品', tag: '我的作品', sub: '手作 · 剪纸 · 绘画', sec: 'works' },
+    { type: 'works', title: '宠物日常', tag: '宠物', sub: '记录日常，分享心情', cat: 'pet', sec: 'works' },
+    { type: 'works', title: '摄影', tag: '我的摄影', sub: '随便拍拍', cat: 'photo', sec: 'works' }
   ],
   note: '希望记录自己，留下回忆。',
 

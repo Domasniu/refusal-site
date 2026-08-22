@@ -134,6 +134,8 @@ button.small{padding:4px 10px;font-size:12px}
     <input type="text" id="f-note" placeholder="希望记录自己，留下回忆。">
     <label>联系邮箱（首页底部显示）</label>
     <input type="text" id="f-email" placeholder="hello@refusal.site">
+    <label>标题字号缩放（1 = 默认，1.2 放大 20%，支持小数）</label>
+    <input type="text" id="f-titlescale" placeholder="1">
   </div>
 
   <div class="card">
@@ -353,6 +355,7 @@ function fillForm(){
   $('f-hashtags').value = (config.hero && config.hero.hashTags) || '';
   $('f-note').value = config.note || '';
   $('f-email').value = config.contactEmail || '';
+  $('f-titlescale').value = (config.hero && config.hero.titleScale) || 1;
   $('f-about').value = config.about || '';
   $('f-contact').value = config.contact || '';
   $('f-douyin').value = (config.video && config.video.douyin) || '';
@@ -371,7 +374,8 @@ function collect(){
     tags: $('f-tags').value.trim(),
     slogan: $('f-slogan').value.trim(),
     desc: $('f-desc').value.trim(),
-    hashTags: $('f-hashtags').value.trim()
+    hashTags: $('f-hashtags').value.trim(),
+    titleScale: parseFloat($('f-titlescale').value) || 1
   };
   config.note = $('f-note').value.trim();
   config.contactEmail = $('f-email').value.trim();
@@ -815,6 +819,8 @@ $('btn-add-nav').addEventListener('click', function(){
 var MODULE_TYPES = [
   { id: 'moments', label: '最新动态' },
   { id: 'works', label: '作品展示' },
+  { id: 'video', label: '视频' },
+  { id: 'music', label: '音乐' },
   { id: 'note', label: '便签' }
 ];
 function moduleTypeLabel(t){
@@ -857,6 +863,7 @@ function renderHomeModules(){
       '<div class="er-fields">' +
         '<select class="w-cat" data-mdi="' + idx + '" data-mdk="type">' + moduleTypeOptions(m.type) + '</select>' +
         '<input type="text" class="grow" value="' + esc(m.title || '') + '" data-mdi="' + idx + '" data-mdk="title" placeholder="标题">' +
+        '<input type="text" class="grow" value="' + esc(m.tag || '') + '" data-mdi="' + idx + '" data-mdk="tag" placeholder="标签（如 生活动态，可空）">' +
         '<input type="text" class="grow" value="' + esc(m.sub || '') + '" data-mdi="' + idx + '" data-mdk="sub" placeholder="副标题">' +
         '<select class="w-cat" data-mdi="' + idx + '" data-mdk="cat">' + catSelectOptions(m.cat) + '</select>' +
         '<select class="w-cat" data-mdi="' + idx + '" data-mdk="sec">' + secSelectOptions(m.sec) + '</select>' +

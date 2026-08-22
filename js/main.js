@@ -107,9 +107,23 @@
     if ((el = document.getElementById('hero-kicker'))) el.textContent = h.kicker || 'HELLO, I\'M refusal·';
     if ((el = document.getElementById('hero-slogan'))) el.textContent = h.slogan || '';
     if ((el = document.getElementById('hero-desc'))) el.textContent = h.desc || '';
-    if ((el = document.getElementById('hero-hashtags'))) el.textContent = h.hashTags || '';
+    // 话题标签 → 胶囊样式
+    if ((el = document.getElementById('hero-hashtags'))) {
+      el.innerHTML = '';
+      String(h.hashTags || '').split(/\s+/).filter(Boolean).forEach(function (t) {
+        var s = document.createElement('span');
+        s.className = 'hero-tag-pill';
+        s.textContent = t;
+        el.appendChild(s);
+      });
+    }
     if ((el = document.getElementById('side-status'))) el.textContent = h.status || '';
     if ((el = document.getElementById('home-contact-email'))) el.textContent = CFG.contactEmail || 'hello@refusal.site';
+    if ((el = document.getElementById('home-note-text'))) el.textContent = CFG.note || '';
+    // 标题字号（可配置缩放）
+    var ts = parseFloat(h.titleScale);
+    if (!isFinite(ts) || ts <= 0) ts = 1;
+    document.documentElement.style.setProperty('--title-scale', ts);
     // 站点名
     if (CFG.siteName) {
       var logo = document.querySelector('.os-logo');
@@ -434,6 +448,20 @@
       document.getElementById('lb-prev').classList.add('hidden');
       document.getElementById('lb-next').classList.add('hidden');
     }
+    var playBtn = document.getElementById('lb-play');
+    if (playBtn) { if (lbImages.length > 1) playBtn.classList.remove('hidden'); else playBtn.classList.add('hidden'); }
+  }
+  var lbTimer = null;
+  function lbStopAuto() {
+    if (lbTimer) { clearInterval(lbTimer); lbTimer = null; }
+    var pb = document.getElementById('lb-play');
+    if (pb) pb.textContent = '▶';
+  }
+  function lbToggleAuto() {
+    if (lbTimer) { lbStopAuto(); return; }
+    if (lbImages.length <= 1) return;
+    document.getElementById('lb-play').textContent = '⏸';
+    lbTimer = setInterval(function () { showLbImage(lbIndex + 1); }, 3000);
   }
   function openLightbox(w) {
     lbImages = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
@@ -456,6 +484,7 @@
   function closeLightbox() {
     lb.classList.add('hidden');
     document.body.style.overflow = '';
+    lbStopAuto();
   }
 
   /* ---------- 首页统计 + 最新作品 ---------- */
@@ -510,6 +539,7 @@
       head.innerHTML =
         '<div class="home-module-titles">' +
           '<span class="home-cat-name">' + escHtml(mod.title || '') + '</span>' +
+          (mod.tag ? '<span class="home-module-tag">' + escHtml(mod.tag) + '</span>' : '') +
           (mod.sub ? '<span class="home-module-sub">' + escHtml(mod.sub) + '</span>' : '') +
         '</div>' +
         (mod.sec ? '<a href="#' + escHtml(mod.sec) + '" data-sec="' + escHtml(mod.sec) + '" data-cat="' + escHtml(mod.cat || '') + '" class="home-cat-more">查看全部 →</a>' : '');
@@ -558,6 +588,31 @@
         // note 模块：隐藏副标题行（sub 已作为内容显示），保留标题
         var subEl = head.querySelector('.home-module-sub');
         if (subEl) subEl.style.display = 'none';
+      } else if (mod.type === 'video') {
+        var vlist = VIDEO_DEFS.filter(function (d) { return (CFG.video && CFG.video[d.key]) || ''; });
+        if (!vlist.length) {
+          head.style.display = 'none';
+        } else {
+          var g3 = document.createElement('div');
+          g3.className = 'cat-grid';
+          vlist.forEach(function (d) {
+            var card = document.createElement('a');
+            card.className = 'work-card compact';
+            card.href = CFG.video[d.key];
+            card.target = '_blank'; card.rel = 'noopener';
+            card.innerHTML =
+              '<div class="compact-thumb media-thumb ' + d.cls + '"><span class="media-icon">' + d.icon + '</span></div>' +
+              '<div class="compact-info"><span class="work-name">' + d.name + '</span><span class="work-cat">点击前往</span></div>' +
+              '<div class="cat-bar"></div>';
+            g3.appendChild(card);
+          });
+          sec.appendChild(g3);
+        }
+      } else if (mod.type === 'music') {
+        var msec = document.createElement('div');
+        msec.className = 'home-module-note';
+        msec.innerHTML = '<span class="tick">🎵</span> 在左侧播放器点播，或 <a href="#music" data-sec="music" class="hm-note-link">进入音乐面板 →</a>';
+        sec.appendChild(msec);
       }
       box.appendChild(sec);
     });
@@ -899,6 +954,7 @@
     document.getElementById('lb-close').addEventListener('click', closeLightbox);
     document.getElementById('lb-prev').addEventListener('click', function () { showLbImage(lbIndex - 1); });
     document.getElementById('lb-next').addEventListener('click', function () { showLbImage(lbIndex + 1); });
+    document.getElementById('lb-play').addEventListener('click', lbToggleAuto);
     lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') { closeLightbox(); searchPanelClose(); }
