@@ -231,10 +231,11 @@
   /* ---------- 渲染 ---------- */
   function currentSong() { return playlist[index] || null; }
 
-  /* 封面旋转：仅在播放时旋转（多个封面共用） */
+  /* 封面旋转：黑胶唱片播放时始终旋转；小封面有图才旋转 */
   function syncSpin() {
     if (!ui) return;
-    [ui.cover, ui.miniCover, ui.hmCover].forEach(function (el) {
+    if (ui.cover) ui.cover.classList.toggle('spinning', isPlaying);
+    [ui.miniCover, ui.hmCover].forEach(function (el) {
       if (!el) return;
       if (isPlaying && !el.classList.contains('noimg')) el.classList.add('spinning');
       else el.classList.remove('spinning');
@@ -325,8 +326,11 @@
     ui.title.textContent = song.title || '未知歌曲';
     ui.artist.textContent = song.artist || '';
     var cv = coverOf(song);
-    ui.cover.style.backgroundImage = cv ? 'url(' + cv + ')' : '';
-    ui.cover.classList.toggle('noimg', !cv);
+    var label = ui.cover ? ui.cover.querySelector('.vinyl-label') : null;
+    if (label) {
+      label.style.backgroundImage = cv ? 'url(' + cv + ')' : '';
+      label.classList.toggle('noimg', !cv);
+    }
     ui.playBtn.textContent = isPlaying ? '⏸' : '▶';
     ui.modeBtn.textContent = mode === 'loop' ? '🔁' : mode === 'single' ? '🔂' : '🔀';
     ui.modeBtn.title = mode === 'loop' ? '列表循环' : mode === 'single' ? '单曲循环' : '随机播放';
@@ -354,10 +358,14 @@
     playlist.forEach(function (s, i) {
       var li = document.createElement('li');
       li.className = 'p-item' + (i === index ? ' on' : '');
+      var cv = coverOf(s);
+      var dur = durations[i] ? fmt(durations[i]) : '';
       li.innerHTML =
+        '<span class="p-item-cover">' + (cv ? '<img src="' + esc(cv) + '" alt="">' : '🎵') + '</span>' +
         '<span class="p-idx">' + String(i + 1).padStart(2, '0') + '</span>' +
         '<span class="p-info"><span class="p-title">' + esc(s.title || '未知歌曲') + '</span>' +
         '<span class="p-artist">' + esc(s.artist || '') + '</span></span>' +
+        (dur ? '<span class="p-item-dur">' + dur + '</span>' : '') +
         '<span class="p-tag">' + (s.type === 'file' ? '自传' : '云') + '</span>';
       li.addEventListener('click', function () {
         if (i === index) { togglePlay(); } else { playIndex(i); }
