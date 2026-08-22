@@ -790,22 +790,6 @@ function renderCats(){
     }
     box.appendChild(row);
   });
-  // 独立分区（宠物/摄影，通过上方筛选管理，不可删）
-  var fixed = config.categories.filter(function(c){ return c.id === 'pet' || c.id === 'photo'; });
-  if (fixed.length) {
-    var t = document.createElement('p');
-    t.className = 'hint';
-    t.style.cssText = 'margin-top:8px;color:var(--magenta)';
-    t.textContent = '独立分区（通过上方「宠物 / 摄影」筛选管理，不可删除）';
-    box.appendChild(t);
-    fixed.forEach(function(c){
-      var used = config.works.filter(function(w){ return w.cat === c.id; }).length;
-      var row = document.createElement('div');
-      row.className = 'cat-row';
-      row.innerHTML = '<span class="nm">' + esc(c.label) + ' <span style="color:var(--dim);font-size:11px">(' + used + ' 件)</span></span><span style="color:var(--dim);font-size:11px">独立分区</span>';
-      box.appendChild(row);
-    });
-  }
 }
 
 /* ================= 侧栏导航（可视化编辑） ================= */
