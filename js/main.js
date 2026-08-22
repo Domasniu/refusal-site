@@ -463,11 +463,11 @@
     document.getElementById('lb-play').textContent = '⏸';
     lbTimer = setInterval(function () { showLbImage(lbIndex + 1); }, 3000);
   }
-  function openLightbox(w) {
-    lbImages = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
+  function showLightbox(imgs, caption, desc) {
+    lbImages = imgs && imgs.length ? imgs.slice() : [];
     lbIndex = 0;
-    lbCaption = w.id + ' · ' + w.title + ' · ' + catLabel(w.cat);
-    lbDesc = w.desc || '';
+    lbCaption = caption || '';
+    lbDesc = desc || '';
     document.getElementById('lb-caption').textContent = lbCaption;
     var descEl = document.getElementById('lb-desc');
     if (lbDesc) {
@@ -477,9 +477,14 @@
       descEl.textContent = '';
       descEl.classList.add('hidden');
     }
+    if (!lbImages.length) return;
     showLbImage(0);
     lb.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+  }
+  function openLightbox(w) {
+    var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
+    showLightbox(imgs, w.id + ' · ' + w.title + ' · ' + catLabel(w.cat), w.desc || '');
   }
   function closeLightbox() {
     lb.classList.add('hidden');
@@ -527,105 +532,61 @@
     if (!box) return;
     box.innerHTML = '';
     var modules = (CFG.homeModules && CFG.homeModules.length) ? CFG.homeModules : [
-      { type: 'moments', title: '最新动态', sub: '记录日常，分享心情', sec: 'life' },
-      { type: 'works', title: '最新作品', sub: '手作 · 剪纸 · 绘画', sec: 'works' }
+      { type: 'moments', title: '生活动态', sub: '记录日常，分享心情', sec: 'life' },
+      { type: 'works', title: '最新作品', sub: '记录日常，分享心情', sec: 'works' },
+      { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'works' },
+      { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'works' }
     ];
-    modules.forEach(function (mod, mi) {
-      var sec = document.createElement('div');
-      sec.className = 'home-module';
-      // 头部（标题 + 副标题 + 查看全部）
-      var head = document.createElement('div');
-      head.className = 'home-cat-head';
-      head.innerHTML =
-        '<div class="home-module-titles">' +
-          '<span class="home-cat-name">' + escHtml(mod.title || '') + '</span>' +
-          (mod.tag ? '<span class="home-module-tag">' + escHtml(mod.tag) + '</span>' : '') +
-          (mod.sub ? '<span class="home-module-sub">' + escHtml(mod.sub) + '</span>' : '') +
+    // 大标题「最新动态」
+    var stitle = document.createElement('div');
+    stitle.className = 'home-sec-title';
+    stitle.innerHTML = '<span class="tick">▸</span> 最新动态';
+    box.appendChild(stitle);
+    // 四个分类卡片展示区（点击进入幻灯片播放）
+    var grid = document.createElement('div');
+    grid.className = 'home-cat-cards';
+    modules.forEach(function (mod) {
+      var imgs = collectModuleImages(mod);
+      var card = document.createElement('div');
+      card.className = 'home-cat-card' + (imgs.length ? '' : ' empty');
+      card.innerHTML =
+        (imgs.length
+          ? '<div class="hcc-thumb"><img src="' + escHtml(imgs[0]) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>'
+          : '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">🖼️</span></div>') +
+        '<div class="hcc-body">' +
+          '<span class="hcc-title">' + escHtml(mod.title || '') + '</span>' +
+          (mod.sub ? '<span class="hcc-sub">' + escHtml(mod.sub) + '</span>' : '') +
         '</div>' +
-        (mod.sec ? '<a href="#' + escHtml(mod.sec) + '" data-sec="' + escHtml(mod.sec) + '" data-cat="' + escHtml(mod.cat || '') + '" class="home-cat-more">查看全部 →</a>' : '');
-      sec.appendChild(head);
-
-      if (mod.type === 'moments') {
-        var grid = document.createElement('div');
-        grid.className = 'home-moments-grid';
-        var list = MOMENTS.filter(function (m) { return !isEmptyMoment(m); }).slice().reverse().slice(0, 4);
-        list.forEach(function (m) { grid.appendChild(buildHomeMomentCard(m)); });
-        if (!list.length) {
-          head.style.display = 'none';
-        } else {
-          sec.appendChild(grid);
+        (imgs.length ? '<div class="hcc-likes">❤ ' + escHtml(mod.likes || '999') + '</div>' : '');
+      card.addEventListener('click', function () {
+        if (imgs.length) {
+          showLightbox(imgs, mod.title || '', mod.sub || '');
+        } else if (mod.sec) {
+          currentFilter = mod.cat || 'all';
+          showSection(mod.sec);
+          if (mod.sec === 'works') { renderFilters(); renderWorks(currentFilter); }
+          history.replaceState(null, '', '#' + mod.sec);
         }
-      } else if (mod.type === 'works') {
-        var list2 = (CFG.works || []).filter(function (w) {
-          return !mod.cat || w.cat === mod.cat;
-        }).slice(0, 6);
-        if (!list2.length) { head.style.display = 'none'; }
-        else {
-          var g2 = document.createElement('div');
-          g2.className = 'cat-grid';
-          list2.forEach(function (w, wi) {
-            var card = document.createElement('div');
-            card.className = 'work-card compact';
-            var lazyAttr = wi === 0 ? '' : ' loading="lazy"';
-            card.innerHTML =
-              '<span class="work-id">' + escHtml(w.id) + '</span>' +
-              '<div class="compact-thumb"><img src="' + escHtml(w.img) + '" alt="' + escHtml(w.title) + '"' + lazyAttr + ' decoding="async"></div>' +
-              '<div class="compact-info">' +
-                '<span class="work-name">' + escHtml(w.title) + '</span>' +
-                '<span class="work-cat">' + escHtml(catLabel(w.cat)) + '</span>' +
-              '</div>' +
-              '<div class="cat-bar"></div>';
-            card.addEventListener('click', function () { openLightbox(w); });
-            g2.appendChild(card);
-          });
-          sec.appendChild(g2);
-        }
-      } else if (mod.type === 'note') {
-        var note = document.createElement('div');
-        note.className = 'home-module-note';
-        note.innerHTML = '<span class="tick">✦</span> ' + escHtml(mod.sub || mod.title || '');
-        sec.appendChild(note);
-        // note 模块：隐藏副标题行（sub 已作为内容显示），保留标题
-        var subEl = head.querySelector('.home-module-sub');
-        if (subEl) subEl.style.display = 'none';
-      } else if (mod.type === 'video') {
-        var vlist = VIDEO_DEFS.filter(function (d) { return (CFG.video && CFG.video[d.key]) || ''; });
-        if (!vlist.length) {
-          head.style.display = 'none';
-        } else {
-          var g3 = document.createElement('div');
-          g3.className = 'cat-grid';
-          vlist.forEach(function (d) {
-            var card = document.createElement('a');
-            card.className = 'work-card compact';
-            card.href = CFG.video[d.key];
-            card.target = '_blank'; card.rel = 'noopener';
-            card.innerHTML =
-              '<div class="compact-thumb media-thumb ' + d.cls + '"><span class="media-icon">' + d.icon + '</span></div>' +
-              '<div class="compact-info"><span class="work-name">' + d.name + '</span><span class="work-cat">点击前往</span></div>' +
-              '<div class="cat-bar"></div>';
-            g3.appendChild(card);
-          });
-          sec.appendChild(g3);
-        }
-      } else if (mod.type === 'music') {
-        var msec = document.createElement('div');
-        msec.className = 'home-module-note';
-        msec.innerHTML = '<span class="tick">🎵</span> 在左侧播放器点播，或 <a href="#music" data-sec="music" class="hm-note-link">进入音乐面板 →</a>';
-        sec.appendChild(msec);
-      }
-      box.appendChild(sec);
-    });
-    // "查看全部"跳转
-    box.querySelectorAll('.home-cat-more').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        currentFilter = a.dataset.cat || 'all';
-        showSection(a.dataset.sec);
-        if (a.dataset.sec === 'works') { renderFilters(); renderWorks(currentFilter); }
-        history.replaceState(null, '', '#' + a.dataset.sec);
       });
+      grid.appendChild(card);
     });
+    box.appendChild(grid);
+  }
+
+  /* 收集某分类卡片的所有图片（用于幻灯片播放） */
+  function collectModuleImages(mod) {
+    var imgs = [];
+    if (mod.type === 'moments') {
+      MOMENTS.filter(function (m) { return !isEmptyMoment(m); }).forEach(function (m) {
+        (m.images || []).forEach(function (im) { imgs.push(im); });
+      });
+    } else if (mod.type === 'works') {
+      (CFG.works || []).filter(function (w) { return !mod.cat || w.cat === mod.cat; }).forEach(function (w) {
+        var list = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
+        list.forEach(function (im) { imgs.push(im); });
+      });
+    }
+    return imgs;
   }
 
   function buildHomeMomentCard(m) {
@@ -854,7 +815,7 @@
     if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
   }
   function initImgFade() {
-    var selector = '.work-card img, .moment-media img, .hm-moment-media img, .compact-thumb img';
+    var selector = '.work-card img, .moment-media img, .hm-moment-media img, .compact-thumb img, .hcc-thumb img';
     document.addEventListener('load', function (e) {
       var t = e.target;
       if (t && t.tagName === 'IMG' && t.closest && t.closest(selector)) {

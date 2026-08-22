@@ -279,6 +279,34 @@ body::after{
   border:1px solid rgba(255,45,149,.35);padding:.12rem .55rem;border-radius:3px;
   align-self:flex-start;text-shadow:0 0 8px rgba(255,45,149,.4);
 }
+/* 首页「最新动态」大标题 + 四个分类卡片（点击进入幻灯片） */
+.home-sec-title{
+  font-size:1.2rem;letter-spacing:.2em;color:var(--text);margin-bottom:1.1rem;
+  padding-bottom:.6rem;border-bottom:1px solid var(--line);
+}
+.home-sec-title .tick{color:var(--magenta);text-shadow:var(--glow-magenta)}
+.home-cat-cards{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.1rem;
+}
+.home-cat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  cursor:pointer;transition:.25s;position:relative;
+}
+.home-cat-card:hover{transform:translateY(-4px);border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+.hcc-thumb{aspect-ratio:1/1;overflow:hidden;background:rgba(0,0,0,.25)}
+.hcc-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s,opacity .5s;opacity:0}
+.hcc-thumb img.loaded{opacity:1}
+.hcc-thumb-empty{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,240,255,.08),rgba(255,45,149,.08)),rgba(0,0,0,.28)}
+.hcc-empty-ico{font-size:2rem;opacity:.45}
+.home-cat-card:hover .hcc-thumb img{transform:scale(1.05)}
+.hcc-body{padding:.75rem .9rem;display:flex;flex-direction:column;gap:.22rem}
+.hcc-title{font-size:.86rem;color:var(--text);letter-spacing:.04em}
+.hcc-sub{font-size:.66rem;color:var(--dim);letter-spacing:.05em}
+.hcc-likes{
+  position:absolute;top:.6rem;right:.6rem;font-size:.7rem;color:#ff6b9d;
+  background:rgba(0,0,0,.62);padding:.28rem .6rem;border-radius:999px;letter-spacing:.05em;
+  display:flex;align-items:center;gap:.25rem;
+}
 .home-module-note{
   padding:1.1rem 1.4rem;border:1px dashed var(--line);border-radius:10px;
   font-size:.85rem;color:var(--dim);background:rgba(255,45,149,.03);line-height:1.8;
