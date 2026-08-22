@@ -188,7 +188,7 @@ button.small{padding:4px 10px;font-size:12px}
 
   <div class="card" data-tab="home">
     <h2>⑤ 首页模块（可视化编辑）</h2>
-    <p class="hint">首页右侧的模块流，按此顺序自上而下展示，支持增删改排序。类型：最新动态 / 作品展示 / 便签。</p>
+    <p class="hint">首页右侧的模块流，按此顺序自上而下展示，支持增删改排序。类型：最新动态 / 作品展示 / 宠物日常 / 我的摄影 / 视频 / 音乐 / 便签（各分区内容自动最新在前）。</p>
     <div id="module-list"></div>
     <div class="toolbar">
       <button id="btn-add-module" class="small">＋ 添加模块</button>
@@ -1032,10 +1032,13 @@ $('btn-add-nav').addEventListener('click', function(){
 var MODULE_TYPES = [
   { id: 'moments', label: '最新动态' },
   { id: 'works', label: '作品展示' },
+  { id: 'pet', label: '宠物日常' },
+  { id: 'photo', label: '我的摄影' },
   { id: 'video', label: '视频' },
   { id: 'music', label: '音乐' },
   { id: 'note', label: '便签' }
 ];
+var MODULE_DEFAULT_SEC = { moments: 'life', works: 'works', pet: 'pet', photo: 'photo', video: 'video', music: 'music', note: '' };
 function moduleTypeLabel(t){
   for (var i = 0; i < MODULE_TYPES.length; i++) if (MODULE_TYPES[i].id === t) return MODULE_TYPES[i].label;
   return t || '?';
@@ -1078,7 +1081,6 @@ function renderHomeModules(){
         '<input type="text" class="grow" value="' + esc(m.title || '') + '" data-mdi="' + idx + '" data-mdk="title" placeholder="标题">' +
         '<input type="text" class="grow" value="' + esc(m.tag || '') + '" data-mdi="' + idx + '" data-mdk="tag" placeholder="标签（如 生活动态，可空）">' +
         '<input type="text" class="grow" value="' + esc(m.sub || '') + '" data-mdi="' + idx + '" data-mdk="sub" placeholder="副标题">' +
-        '<select class="w-cat" data-mdi="' + idx + '" data-mdk="cat">' + catSelectOptions(m.cat) + '</select>' +
         '<select class="w-cat" data-mdi="' + idx + '" data-mdk="sec">' + secSelectOptions(m.sec) + '</select>' +
       '</div>';
     box.appendChild(row);
@@ -1088,14 +1090,12 @@ function renderHomeModules(){
   });
   box.querySelectorAll('select[data-mdk="type"]').forEach(function(sel){
     sel.addEventListener('change', function(){
-      config.homeModules[+this.dataset.mdi].type = this.value;
-      if (this.value !== 'works') config.homeModules[+this.dataset.mdi].cat = '';
-      if (this.value === 'note') config.homeModules[+this.dataset.mdi].sec = '';
+      var m = config.homeModules[+this.dataset.mdi];
+      m.type = this.value;
+      delete m.cat; // 分类字段已废弃（宠物/摄影为独立类型）
+      m.sec = MODULE_DEFAULT_SEC[this.value] || '';
       renderHomeModules();
     });
-  });
-  box.querySelectorAll('select[data-mdk="cat"]').forEach(function(sel){
-    sel.addEventListener('change', function(){ config.homeModules[+this.dataset.mdi].cat = this.value; });
   });
   box.querySelectorAll('select[data-mdk="sec"]').forEach(function(sel){
     sel.addEventListener('change', function(){ config.homeModules[+this.dataset.mdi].sec = this.value; });
@@ -1118,7 +1118,7 @@ function renderHomeModules(){
 }
 $('btn-add-module').addEventListener('click', function(){
   config.homeModules = config.homeModules || [];
-  config.homeModules.push({ type: 'moments', title: '新模块', sub: '', cat: '', sec: '' });
+  config.homeModules.push({ type: 'moments', title: '新模块', sub: '', sec: 'life' });
   renderHomeModules();
 });
 

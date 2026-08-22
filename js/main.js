@@ -432,12 +432,14 @@
     });
   }
   function renderWorks(cat) {
-    var list = (CFG.works || []).filter(function (w) { return w.cat !== 'pet' && w.cat !== 'photo'; });
+    // 最新在前（作品无日期字段，按添加顺序倒序）
+    var list = (CFG.works || []).slice().reverse().filter(function (w) { return w.cat !== 'pet' && w.cat !== 'photo'; });
     if (cat !== 'all') list = list.filter(function (w) { return w.cat === cat; });
     renderWorkList('work-grid', list);
   }
   function renderCatPanel(cat) {
-    var list = (CFG.works || []).filter(function (w) { return w.cat === cat; });
+    // 最新在前
+    var list = (CFG.works || []).slice().reverse().filter(function (w) { return w.cat === cat; });
     renderWorkList(cat + '-grid', list);
   }
 
@@ -568,8 +570,8 @@
     var modules = (CFG.homeModules && CFG.homeModules.length) ? CFG.homeModules : [
       { type: 'moments', title: '生活动态', sub: '记录日常，分享心情', sec: 'life' },
       { type: 'works', title: '最新作品', sub: '记录日常，分享心情', sec: 'works' },
-      { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'works' },
-      { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'works' }
+      { type: 'pet', title: '宠物日常', sub: '记录日常，分享心情', sec: 'pet' },
+      { type: 'photo', title: '摄影', sub: '随便拍拍', sec: 'photo' }
     ];
     // 大标题「最新动态」
     var stitle = document.createElement('div');
@@ -580,21 +582,27 @@
     var grid = document.createElement('div');
     grid.className = 'home-cat-cards';
     modules.forEach(function (mod) {
-      var imgs = collectModuleImages(mod);
+      var media = collectModuleMedia(mod);
+      var hasMedia = media.length > 0;
+      // 缩略图取最新的一张图片（若最新为视频则取其后第一张图片）
+      var thumb = null;
+      for (var k = 0; k < media.length; k++) {
+        if (media[k].type === 'image') { thumb = media[k].src; break; }
+      }
       var card = document.createElement('div');
-      card.className = 'home-cat-card' + (imgs.length ? '' : ' empty');
+      card.className = 'home-cat-card' + (hasMedia ? '' : ' empty');
       card.innerHTML =
-        (imgs.length
-          ? '<div class="hcc-thumb"><img src="' + escHtml(thumbPath(imgs[0])) + '" data-fb="' + escHtml(imgs[0]) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>'
-          : '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">🖼️</span></div>') +
+        (thumb
+          ? '<div class="hcc-thumb"><img src="' + escHtml(thumbPath(thumb)) + '" data-fb="' + escHtml(thumb) + '" alt="' + escHtml(mod.title || '') + '" loading="lazy" decoding="async"></div>'
+          : '<div class="hcc-thumb hcc-thumb-empty"><span class="hcc-empty-ico">' + (hasMedia ? '🎬' : '🖼️') + '</span></div>') +
         '<div class="hcc-body">' +
           '<span class="hcc-title">' + escHtml(mod.title || '') + '</span>' +
           (mod.sub ? '<span class="hcc-sub">' + escHtml(mod.sub) + '</span>' : '') +
         '</div>' +
-        (imgs.length ? '<div class="hcc-likes">❤ ' + escHtml(mod.likes || '999') + '</div>' : '');
+        (hasMedia ? '<div class="hcc-likes">❤ ' + escHtml(mod.likes || '999') + '</div>' : '');
       card.addEventListener('click', function () {
-        if (imgs.length) {
-          showLightbox(imgs, mod.title || '', mod.sub || '');
+        if (hasMedia) {
+          showLightbox(media, mod.title || '', mod.sub || '');
         } else if (mod.sec) {
           currentFilter = mod.cat || 'all';
           showSection(mod.sec);
@@ -607,20 +615,41 @@
     box.appendChild(grid);
   }
 
-  /* 收集某分类卡片的所有图片（用于幻灯片播放） */
-  function collectModuleImages(mod) {
-    var imgs = [];
+  /* 收集某分类卡片的全部媒体（图片 + 视频），统一按"最新在前"排序，供灯箱切换 */
+  function collectModuleMedia(mod) {
+    var items = [];
     if (mod.type === 'moments') {
-      MOMENTS.filter(function (m) { return !isEmptyMoment(m); }).forEach(function (m) {
-        (m.images || []).forEach(function (im) { imgs.push(im); });
+      var moments = sortMomentsDesc(MOMENTS.filter(function (m) { return !isEmptyMoment(m); }));
+      moments.forEach(function (m) {
+        (m.images || []).forEach(function (im) { items.push({ type: 'image', src: im }); });
+        var vids = (m.videos && m.videos.length) ? m.videos : (m.video ? [m.video] : []);
+        vids.forEach(function (v) { items.push({ type: 'video', src: v }); });
       });
-    } else if (mod.type === 'works') {
-      (CFG.works || []).filter(function (w) { return !mod.cat || w.cat === mod.cat; }).forEach(function (w) {
+    } else if (mod.type === 'works' || mod.type === 'pet' || mod.type === 'photo') {
+      // 作品无日期字段：按添加顺序，最新（数组末尾）在前
+      var works = (CFG.works || []).slice().reverse();
+      if (mod.type === 'pet') works = works.filter(function (w) { return w.cat === 'pet'; });
+      else if (mod.type === 'photo') works = works.filter(function (w) { return w.cat === 'photo'; });
+      else works = works.filter(function (w) { return w.cat !== 'pet' && w.cat !== 'photo'; });
+      works.forEach(function (w) {
         var list = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
-        list.forEach(function (im) { imgs.push(im); });
+        list.forEach(function (im) { items.push({ type: 'image', src: im }); });
       });
     }
-    return imgs;
+    return items;
+  }
+
+  /* 动态按日期倒序（最新在前）；同一天按数组顺序倒序（后添加的更新） */
+  function sortMomentsDesc(list) {
+    return list
+      .map(function (m, i) { return { m: m, i: i }; })
+      .sort(function (a, b) {
+        var da = String(a.m.date || '').replace(/[^0-9]/g, '');
+        var db = String(b.m.date || '').replace(/[^0-9]/g, '');
+        if (da !== db) return da > db ? -1 : 1;
+        return b.i - a.i;
+      })
+      .map(function (x) { return x.m; });
   }
 
   function buildHomeMomentCard(m) {
@@ -680,12 +709,12 @@
     var grid = document.getElementById('moment-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    var list = MOMENTS.filter(function (m) { return !isEmptyMoment(m); });
+    var list = sortMomentsDesc(MOMENTS.filter(function (m) { return !isEmptyMoment(m); }));
     if (!list.length) {
       grid.innerHTML = '<p class="panel-note">[ 暂无动态，敬请期待 ]</p>';
       return;
     }
-    list.slice().reverse().forEach(function (m, idx) {
+    list.forEach(function (m, idx) {
       var videos = (m.videos && m.videos.length) ? m.videos : (m.video ? [m.video] : []);
       var imgs = m.images || [];
       var mediaItems = imgs.map(function (p) { return { type: 'image', src: p }; })
