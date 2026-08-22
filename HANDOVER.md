@@ -1,6 +1,6 @@
 # REFUSAL OS — 个人网站交接文档
 
-> 最后更新：2026-08-22（至 〇-29）· 仓库：https://github.com/Domasniu/refusal-site
+> 最后更新：2026-08-22（至 〇-30）· 仓库：https://github.com/Domasniu/refusal-site
 > 线上地址：https://refusal-site.pages.dev/ · 站长后台：https://refusal-site.pages.dev/console/
 
 ---
@@ -378,7 +378,21 @@
    - `assets/works/video-001.mp4`、`video-002.mp4`（宠物）是 **H.265/HEVC**，桌面 Chrome/Edge/Firefox 不支持 HEVC 解码 → 电脑端一直转圈、手机（Safari）能放。已用 ffmpeg 重转 **H.264**。
    - `assets/moments/video-003.mp4`（动态）是 H.264 但 **moov 在文件末尾**且 16.9MB → 浏览器需下完整文件才出首帧、卡加载。已重转 H.264 + faststart，压缩到 2.8MB。
 3. css/js 版本号升到 `?v=30`。
-4. ⚠️ **维护提醒**：后台上传视频是原样入库（不转码），iPhone 默认拍 HEVC。**上传前请先转成 H.264**（`ffmpeg -i in.mp4 -c:v libx264 -crf 23 -preset medium -pix_fmt yuv420p -movflags +faststart -c:a copy out.mp4`），否则电脑端又会放不了。
+4. ⚠️ **维护提醒**：后台上传视频是原样入库（不转码），iPhone 默认拍 HEVC。**上传前请先转成 H.264**（`ffmpeg -i in.mp4 -c:v libx264 -crf 23 -preset medium -pix_fmt yuv420p -movflags +faststart -c:a copy out.mp4`），否则电脑端又会放不了。（此提醒已在 〇-30 由自动转码取代）
+
+---
+
+## 〇-30、2026-08-22 三十次更新（后台上传视频自动转码 H.264）
+
+上传视频不再需要手动转码：后台（`console/index.html`）用 **ffmpeg.wasm** 在浏览器里自动把任意视频转成 **H.264 + faststart**，从根上杜绝 iPhone 拍 HEVC 导致电脑端放不了的问题。
+
+1. **依赖**：
+   - 自托管 `assets/ffmpeg/ffmpeg.js` + `assets/ffmpeg/814.ffmpeg.js`（约 7.6KB，UMD 入口 + Worker chunk，必须同源，否则 `new Worker(跨域)` 报错）。
+   - `@ffmpeg/core@0.12.10`（112KB js + 32MB wasm）从 jsdelivr CDN 懒加载，用 `ffToBlobURL` 转 blob URL 喂给 worker（绕开 CORS）。
+   - 弃用 `@ffmpeg/util`（其 UMD 里 `require("./errors.js")` 在浏览器报 `require is not defined`），改为内联 `ffFetchFile`/`ffToBlobURL`。
+2. **交互**：选视频后自动排队转码，状态栏显示「🎬 正在转码视频 x/N … pct%」；点「保存并发布」先 `await` 所有转码（`pendingVideoJobs`）再上传。
+3. **注意**：单线程 `@ffmpeg/core`（非 `core-mt`）**不需要 COOP/COEP 头**；首次转码需下载 32MB wasm（浏览器 HTTP 缓存后续命中）；转码参数 `-c:v libx264 -crf 23 -preset medium -pix_fmt yuv420p -movflags +faststart -c:a copy`。
+4. 本轮顺带重转了用户期间经旧后台重传的 `moments/video-003.mp4`（16.9MB 复原）与新加的 `video-004.mp4`（HEVC）。
 
 ---
 
