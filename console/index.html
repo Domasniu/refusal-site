@@ -48,22 +48,29 @@ button.small{padding:4px 10px;font-size:12px}
 .swatch .dot{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,.2)}
 .swatch .nm{font-size:11px}
 /* 作品网格 */
-.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
-.work-card{background:#070b16;border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
-.work-card:hover{border-color:var(--cyan)}
+.work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.work-card{background:#070b16;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.work-card:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,240,255,.14)}
+.wc-main{height:190px;position:relative;background:#0a0f1e;overflow:hidden;border-bottom:1px solid var(--line);cursor:pointer}
+.wc-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.wc-main:hover img{transform:scale(1.05)}
+.wc-main .wc-main-badge{position:absolute;left:10px;top:10px;font-style:normal;font-size:10px;letter-spacing:.08em;color:#001018;background:var(--cyan);padding:3px 10px;border-radius:3px;font-weight:700}
+.wc-main .wc-main-tip{position:absolute;right:10px;bottom:10px;font-size:10px;color:#fff;background:rgba(0,0,0,.6);padding:3px 8px;border-radius:3px;opacity:0;transition:.2s}
+.wc-main:hover .wc-main-tip{opacity:1}
 .wc-thumb{height:120px;background:#0a0f1e;overflow:hidden;border-bottom:1px solid var(--line)}
 .wc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.wc-thumbs{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#0a0f1e;border-bottom:1px solid var(--line)}
-.wc-thumb-item{position:relative;width:64px;height:64px;border:1px solid var(--line);border-radius:5px;overflow:hidden;cursor:pointer;flex-shrink:0}
+.wc-thumbs{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
+.wc-thumb-item{position:relative;width:84px;height:84px;border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer;flex-shrink:0;background:#0a0f1e}
 .wc-thumb-item img{width:100%;height:100%;object-fit:cover;display:block}
 .wc-thumb-item:hover{border-color:#ff5c5c}
 .wc-thumb-item.main{border-color:var(--cyan)}
-.wc-thumb-item em{position:absolute;left:2px;top:2px;font-style:normal;font-size:9px;color:#001018;background:var(--cyan);padding:0 4px;border-radius:2px}
-.wc-body{padding:9px;display:flex;flex-direction:column;gap:7px}
+.wc-thumb-item em{position:absolute;left:3px;top:3px;font-style:normal;font-size:9px;color:#001018;background:var(--cyan);padding:0 5px;border-radius:2px;font-weight:700}
+.wc-body{padding:11px 12px;display:flex;flex-direction:column;gap:8px}
 .wc-fixed-cat{display:inline-block;font-size:12px;color:var(--magenta);border:1px solid rgba(255,45,149,.35);padding:6px 10px;border-radius:5px;background:rgba(255,45,149,.06)}
 .wc-body input,.wc-body select{width:100%;background:#0a0f1e;border:1px solid var(--line);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px;box-sizing:border-box}
 .wc-actions{display:flex;gap:6px}
 .wc-actions button{flex:1}
+.toolbar.top{margin-top:0;margin-bottom:12px}
 .avatar-prev{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid var(--cyan);display:block;margin-bottom:8px}
 .cat-row{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:8px;background:#070b16}
 .cat-row .nm{flex:1}
@@ -193,19 +200,19 @@ button.small{padding:4px 10px;font-size:12px}
   <div class="card" data-tab="home">
     <h2>④ 侧栏导航（可视化编辑）</h2>
     <p class="hint">左侧栏导航项，支持增删改排序。图标填 emoji；「跳转」选目标面板；「分类筛选」仅当跳转=作品时有效（点击后进作品区并自动筛选该分类）。</p>
-    <div id="nav-list"></div>
-    <div class="toolbar">
+    <div class="toolbar top">
       <button id="btn-add-nav" class="small">＋ 添加导航项</button>
     </div>
+    <div id="nav-list"></div>
   </div>
 
   <div class="card" data-tab="home">
     <h2>⑤ 首页模块（可视化编辑）</h2>
     <p class="hint">首页右侧的模块流，按此顺序自上而下展示，支持增删改排序。类型：最新动态 / 作品展示 / 宠物日常 / 我的摄影 / 视频 / 音乐 / 便签（各分区内容自动最新在前）。</p>
-    <div id="module-list"></div>
-    <div class="toolbar">
+    <div class="toolbar top">
       <button id="btn-add-module" class="small">＋ 添加模块</button>
     </div>
+    <div id="module-list"></div>
   </div>
 
   <div class="card" data-tab="home">
@@ -228,13 +235,13 @@ button.small{padding:4px 10px;font-size:12px}
       <b>网易云歌曲</b>：填歌曲 ID（网易云网页版歌曲页 URL 里 /song?id= 后面的数字，如 3023862），标题歌手可自动留空后手动补。<br>
       <b>自传音乐</b>：点「上传音乐文件」直接传 mp3 到网站（推荐，稳定不失效）。<br>
       歌词（可选）：粘贴 LRC 格式歌词文本。</p>
-    <div id="music-list"></div>
-    <div class="toolbar">
+    <div class="toolbar top">
       <input type="text" id="f-new-music-id" placeholder="网易云歌曲 ID，如 3023862" style="flex:1;min-width:180px">
       <button id="btn-add-music" class="small">＋ 添加网易云歌</button>
       <button id="btn-upload-music" class="small">⬆️ 上传音乐文件</button>
       <input type="file" id="inp-music" accept="audio/*" style="display:none">
     </div>
+    <div id="music-list"></div>
   </div>
 
   <div class="card" data-tab="video">
@@ -249,30 +256,30 @@ button.small{padding:4px 10px;font-size:12px}
   <div class="card" data-tab="works">
     <h2>⑩ 作品（可多图）</h2>
     <p class="hint">作品区只显示「作品类」（手工发饰/剪纸/绘画/风景/人物）。宠物、摄影请到对应页签管理。</p>
-    <div id="work-list"></div>
-    <div class="toolbar">
-      <button id="btn-add-work">＋ 添加作品</button>
+    <div class="toolbar top">
+      <button id="btn-add-work" class="primary">＋ 添加作品</button>
       <input type="file" id="inp-work" accept="image/*" style="display:none">
       <input type="file" id="inp-work-extra" accept="image/*" multiple style="display:none">
     </div>
+    <div id="work-list"></div>
   </div>
 
   <div class="card" data-tab="pet">
     <h2>🐾 宠物日常</h2>
     <p class="hint">管理宠物日常的作品（自动归入「宠物」分区）。</p>
-    <div id="pet-list"></div>
-    <div class="toolbar">
-      <button id="btn-add-pet">＋ 添加宠物</button>
+    <div class="toolbar top">
+      <button id="btn-add-pet" class="primary">＋ 添加宠物</button>
     </div>
+    <div id="pet-list"></div>
   </div>
 
   <div class="card" data-tab="photo">
     <h2>📷 我的摄影</h2>
     <p class="hint">管理摄影作品（自动归入「摄影」分区）。</p>
-    <div id="photo-list"></div>
-    <div class="toolbar">
-      <button id="btn-add-photo">＋ 添加摄影</button>
+    <div class="toolbar top">
+      <button id="btn-add-photo" class="primary">＋ 添加摄影</button>
     </div>
+    <div id="photo-list"></div>
   </div>
 
   <div class="card" data-tab="works">
@@ -287,12 +294,12 @@ button.small{padding:4px 10px;font-size:12px}
   <div class="card" data-tab="moments">
     <h2>⑫ 生活动态（说说）</h2>
     <p class="hint">分享文字 / 图片 / 视频。类型自动判断：填了视频地址→视频，传了图片→图片，只有文字→文字。</p>
-    <div id="moment-list"></div>
-    <div class="toolbar">
-      <button id="btn-add-moment">＋ 添加动态</button>
+    <div class="toolbar top">
+      <button id="btn-add-moment" class="primary">＋ 添加动态</button>
       <input type="file" id="inp-moment-img" accept="image/*" multiple style="display:none">
       <input type="file" id="inp-moment-video" accept="video/*" style="display:none">
     </div>
+    <div id="moment-list"></div>
   </div>
 
 </main>
@@ -667,33 +674,42 @@ function renderWorkList(listId, scope){
   var grid = document.createElement('div');
   grid.className = 'work-grid';
   var shown = 0;
-  config.works.forEach(function(w, idx){
-    if (!workInScope(w, scope)) return;
+  // 最新在前：按数组倒序展示（新发布的排最上面，与前台一致）
+  var order = [];
+  config.works.forEach(function(w, idx){ if (workInScope(w, scope)) order.push(idx); });
+  order.reverse();
+  order.forEach(function(idx){
+    var w = config.works[idx];
     shown++;
     var imgs = (w.images && w.images.length) ? w.images.slice() : (w.img ? [w.img] : []);
-    var preview = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
+    var mainSrc = newImages[w.img] ? URL.createObjectURL(newImages[w.img]) : imgSrc(w.img);
     var catOpts = config.categories.filter(function(c){ return c.id !== 'pet' && c.id !== 'photo'; }).map(function(c){
       return '<option value="' + esc(c.id) + '"' + (c.id === w.cat ? ' selected' : '') + '>' + esc(c.label) + '</option>';
     }).join('');
     var catField = (scope === 'pet' || scope === 'photo')
       ? '<input type="text" value="' + esc(w.subcat || '') + '" data-i="' + idx + '" data-k="subcat" placeholder="' + (scope === 'pet' ? '宠物标签，如 lucky' : '摄影标签，如 风景') + '">'
       : '<select data-i="' + idx + '" data-k="cat">' + catOpts + '</select>';
-    var thumbs = imgs.map(function(im, ti){
+    // 附加图片（除主图外）；主图用大图预览展示
+    var thumbs = imgs.slice(1).map(function(im, ti){
       var src = newImages[im] ? URL.createObjectURL(newImages[im]) : imgSrc(im);
-      return '<span class="wc-thumb-item' + (ti === 0 ? ' main' : '') + '" data-wi="' + idx + '" data-ri="' + ti + '">' +
+      return '<span class="wc-thumb-item" data-wi="' + idx + '" data-ri="' + (ti + 1) + '">' +
         '<img src="' + src + '" alt="" title="点击编辑">' +
-        (ti === 0 ? '<em>主</em>' : '') +
-        '<em class="wc-thumb-x" data-wx="' + idx + '" data-wxri="' + ti + '" title="移除">✕</em>' +
+        '<em class="wc-thumb-x" data-wx="' + idx + '" data-wxri="' + (ti + 1) + '" title="移除">✕</em>' +
         '</span>';
     }).join('');
     var card = document.createElement('div');
     card.className = 'work-card';
     card.innerHTML =
-      '<div class="wc-thumbs">' + thumbs + '</div>' +
+      '<div class="wc-main" data-wmain="' + idx + '" title="点击重新编辑主图">' +
+        '<img src="' + mainSrc + '" alt="">' +
+        '<span class="wc-main-badge">主图</span>' +
+        '<span class="wc-main-tip">点击编辑</span>' +
+      '</div>' +
       '<div class="wc-body">' +
         '<input type="text" value="' + esc(w.title) + '" data-i="' + idx + '" data-k="title" placeholder="标题">' +
         catField +
         '<textarea data-i="' + idx + '" data-k="desc" placeholder="作品描述（可选）" style="min-height:44px">' + esc(w.desc || '') + '</textarea>' +
+        (thumbs ? '<div class="wc-thumbs">' + thumbs + '</div>' : '') +
         '<div class="wc-actions">' +
           '<button class="small" data-addimg="' + idx + '">＋ 加图</button>' +
           '<button class="small" data-replace="' + idx + '">换主图</button>' +
@@ -761,6 +777,14 @@ function renderWorkList(listId, scope){
       inp.click();
     });
   });
+  // 点击主图大图 → 重新编辑
+  box.querySelectorAll('.wc-main').forEach(function(el){
+    el.addEventListener('click', function(){
+      var w = config.works[+this.dataset.wmain];
+      var imgs = (w.images && w.images.length) ? w.images : (w.img ? [w.img] : []);
+      if (imgs[0]) reEditImage(imgs[0], newImages, renderAllWorks);
+    });
+  });
   // 点击图片 → 重新编辑；✕ → 移除
   box.querySelectorAll('.wc-thumb-item img').forEach(function(img){
     img.addEventListener('click', function(){
@@ -810,7 +834,12 @@ function renderMomentList(){
     box.innerHTML = '<p class="hint">暂无动态 — 点「添加动态」发布第一条说说。</p>';
     return;
   }
-  momentList.forEach(function(m, idx){
+  // 最新在前：按数组倒序展示（与前台一致）
+  var morder = [];
+  momentList.forEach(function(m, idx){ morder.push(idx); });
+  morder.reverse();
+  morder.forEach(function(idx){
+    var m = momentList[idx];
     var videos = m.videos || [];
     var thumbs = (m.images || []).map(function(im){
       var src = newMomentImgs[im] ? URL.createObjectURL(newMomentImgs[im]) : imgSrc(im);
