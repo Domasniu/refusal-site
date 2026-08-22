@@ -1,6 +1,6 @@
 # REFUSAL OS — 个人网站交接文档
 
-> 最后更新：2026-08-22 · 仓库：https://github.com/Domasniu/refusal-site
+> 最后更新：2026-08-22（至 〇-28）· 仓库：https://github.com/Domasniu/refusal-site
 > 线上地址：https://refusal-site.pages.dev/ · 站长后台：https://refusal-site.pages.dev/console/
 
 ---
