@@ -642,11 +642,11 @@
     document.getElementById('lb-play').textContent = '⏸';
     lbSchedule();
   }
-  function showLightbox(imgs, caption, desc) {
+  function showLightbox(imgs, caption, desc, startIndex) {
     lbItems = (imgs && imgs.length ? imgs : []).map(function (it) {
       return (typeof it === 'string') ? { type: 'image', src: it } : it;
     }).filter(function (it) { return it && it.src; });
-    lbIndex = 0;
+    lbIndex = (typeof startIndex === 'number' && startIndex >= 0 && startIndex < lbItems.length) ? startIndex : 0;
     lbCaption = caption || '';
     lbDesc = desc || '';
     document.getElementById('lb-caption').textContent = lbCaption;
@@ -659,7 +659,7 @@
       descEl.classList.add('hidden');
     }
     if (!lbItems.length) return;
-    showLbItem(0);
+    showLbItem(lbIndex);
     lb.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
@@ -740,7 +740,8 @@
       card.addEventListener('click', function () {
         if (card.dataset.swiping === '1') return; // 刚滑动/点过圆点，忽略这次点击
         if (hasMedia) {
-          showLightbox(media, mod.title || '', mod.sub || '');
+          var startIdx = parseInt(card.dataset.slide, 10) || 0;
+          showLightbox(media, mod.title || '', mod.sub || '', startIdx);
         } else if (mod.sec) {
           currentFilter = mod.cat || 'all';
           showSection(mod.sec);
@@ -770,6 +771,7 @@
     }
     function show(i) {
       idx = (i + slides.length) % slides.length;
+      card.dataset.slide = String(idx);
       slides.forEach(function (s, k) { s.classList.toggle('on', k === idx); });
       if (dots.length) dots.forEach(function (d, k) { d.classList.toggle('on', k === idx); });
     }
