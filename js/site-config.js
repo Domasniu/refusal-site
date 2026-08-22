@@ -30,8 +30,8 @@ window.SITE_CONFIG = {
     { id: 'home', label: '我的主页', icon: '🏠' },
     { id: 'life', label: '我的动态', icon: '💬' },
     { id: 'works', label: '我的作品', icon: '🎨' },
-    { id: 'works', label: '宠物日常', icon: '🐾', cat: 'pet' },
-    { id: 'works', label: '我的摄影', icon: '📷', cat: 'photo' },
+    { id: 'pet', label: '宠物日常', icon: '🐾' },
+    { id: 'photo', label: '我的摄影', icon: '📷' },
     { id: 'video', label: '我的视频', icon: '🎬' },
     { id: 'music', label: '我的音乐', icon: '🎵' },
     { id: 'about', label: '关于我', icon: '👤' },
@@ -43,8 +43,8 @@ window.SITE_CONFIG = {
   homeModules: [
     { type: 'moments', title: '生活动态', sub: '记录日常，分享心情', sec: 'life' },
     { type: 'works', title: '最新作品', sub: '记录日常，分享心情', sec: 'works' },
-    { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'works' },
-    { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'works' }
+    { type: 'works', title: '宠物日常', sub: '记录日常，分享心情', cat: 'pet', sec: 'pet' },
+    { type: 'works', title: '摄影', sub: '随便拍拍', cat: 'photo', sec: 'photo' }
   ],
   note: '希望记录自己，留下回忆。',
 

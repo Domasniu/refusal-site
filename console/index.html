@@ -25,6 +25,11 @@ button.primary{background:var(--magenta);border-color:var(--magenta);color:#fff;
 button.primary:hover{box-shadow:0 0 14px rgba(255,45,149,.6)}
 button.small{padding:4px 10px;font-size:12px}
 .hint{font-size:12px;color:var(--dim);line-height:1.8;margin-top:6px}
+/* 后台分页签 */
+.tabbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;position:sticky;top:54px;z-index:15;background:rgba(5,8,16,.96);padding:10px;border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(6px)}
+.tab-btn{flex:1;min-width:90px;background:transparent;border:1px solid var(--line);color:var(--dim);padding:9px 12px;border-radius:6px;font-size:13px;cursor:pointer;transition:.15s}
+.tab-btn:hover{color:var(--cyan);border-color:var(--cyan)}
+.tab-btn.active{color:#001018;background:var(--cyan);border-color:var(--cyan);font-weight:700}
 /* 登录区 */
 #login-box{text-align:center;padding:60px 20px}
 #login-box h2{font-size:20px;color:var(--cyan);letter-spacing:.1em;margin-bottom:24px}
@@ -102,19 +107,27 @@ button.small{padding:4px 10px;font-size:12px}
 
 <main id="editor" style="display:none">
 
-  <div class="card">
+  <nav class="tabbar">
+    <button class="tab-btn active" data-tab="works">🖼️ 作品</button>
+    <button class="tab-btn" data-tab="moments">💬 动态</button>
+    <button class="tab-btn" data-tab="media">🎵 音乐视频</button>
+    <button class="tab-btn" data-tab="home">🏠 首页配置</button>
+    <button class="tab-btn" data-tab="site">⚙️ 站点设置</button>
+  </nav>
+
+  <div class="card" data-tab="site">
     <h2>① 界面主题（点一下切换）</h2>
     <div class="swatches" id="theme-swatches"></div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="site">
     <h2>② 头像</h2>
     <img id="avatar-prev" class="avatar-prev" src="" alt="">
     <button id="btn-avatar" class="small">🖼️ 更换头像</button>
     <input type="file" id="inp-avatar" accept="image/*" style="display:none">
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="home">
     <h2>③ 主页文字 / 首页配置</h2>
     <label>站点名称（顶栏显示）</label>
     <input type="text" id="f-sitename" placeholder="refusal· 的宝藏仓库">
@@ -138,7 +151,7 @@ button.small{padding:4px 10px;font-size:12px}
     <input type="text" id="f-titlescale" placeholder="1">
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="home">
     <h2>④ 侧栏导航（可视化编辑）</h2>
     <p class="hint">左侧栏导航项，支持增删改排序。图标填 emoji；「跳转」选目标面板；「分类筛选」仅当跳转=作品时有效（点击后进作品区并自动筛选该分类）。</p>
     <div id="nav-list"></div>
@@ -147,7 +160,7 @@ button.small{padding:4px 10px;font-size:12px}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="home">
     <h2>⑤ 首页模块（可视化编辑）</h2>
     <p class="hint">首页右侧的模块流，按此顺序自上而下展示，支持增删改排序。类型：最新动态 / 作品展示 / 便签。</p>
     <div id="module-list"></div>
@@ -156,13 +169,13 @@ button.small{padding:4px 10px;font-size:12px}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="home">
     <h2>⑥ 面板标题（各页签大标题）</h2>
     <p class="hint">各页签顶部的大标题，留空则用内置默认值。</p>
     <div id="sectitle-list"></div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="site">
     <h2>⑦ 自我介绍 / 联系</h2>
     <label>自我介绍（每行一段）</label>
     <textarea id="f-about" style="min-height:90px"></textarea>
@@ -170,7 +183,7 @@ button.small{padding:4px 10px;font-size:12px}
     <textarea id="f-contact"></textarea>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="media">
     <h2>⑧ 音乐（歌单）</h2>
     <p class="hint">两种添加方式：<br>
       <b>网易云歌曲</b>：填歌曲 ID（网易云网页版歌曲页 URL 里 /song?id= 后面的数字，如 3023862），标题歌手可自动留空后手动补。<br>
@@ -185,7 +198,7 @@ button.small{padding:4px 10px;font-size:12px}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="media">
     <h2>⑨ 视频链接（留空显示即将上线）</h2>
     <label>抖音主页</label>
     <input type="text" id="f-douyin" placeholder="https://v.douyin.com/...">
@@ -195,7 +208,7 @@ button.small{padding:4px 10px;font-size:12px}
     <input type="text" id="f-youtube" placeholder="https://www.youtube.com/@...">
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="works">
     <h2>⑩ 作品（可多图）</h2>
     <p class="hint">每件作品可上传多张照片：点「添加图片」给当前作品追加图片，第一张为主图。点图片可删除。</p>
     <div id="work-list"></div>
@@ -206,7 +219,7 @@ button.small{padding:4px 10px;font-size:12px}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="works">
     <h2>⑪ 作品分类</h2>
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <input type="text" id="f-new-cat" placeholder="新分类名，如：陶艺" style="flex:1">
@@ -215,7 +228,7 @@ button.small{padding:4px 10px;font-size:12px}
     <div id="cat-list"></div>
   </div>
 
-  <div class="card">
+  <div class="card" data-tab="moments">
     <h2>⑫ 生活动态（说说）</h2>
     <p class="hint">分享文字 / 图片 / 视频。类型自动判断：填了视频地址→视频，传了图片→图片，只有文字→文字。</p>
     <div id="moment-list"></div>
@@ -278,6 +291,18 @@ $('btn-logout').addEventListener('click', function(){
   location.reload();
 });
 tryAutoLogin();
+
+/* ================= 后台分页签 ================= */
+function activateTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === tab); });
+  document.querySelectorAll('#editor > .card').forEach(function(c){
+    c.style.display = (c.dataset.tab === tab) ? '' : 'none';
+  });
+}
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){ activateTab(btn.dataset.tab); });
+});
+activateTab('works');
 
 function showEditor(){
   $('login-box').style.display = 'none';
@@ -733,6 +758,8 @@ function renderCats(){
 var NAV_TARGETS = [
   { id: 'home', label: '主页' },
   { id: 'works', label: '作品' },
+  { id: 'pet', label: '宠物日常' },
+  { id: 'photo', label: '我的摄影' },
   { id: 'video', label: '视频' },
   { id: 'music', label: '音乐' },
   { id: 'life', label: '动态' },
@@ -912,6 +939,8 @@ $('btn-add-module').addEventListener('click', function(){
 /* ================= 面板标题（可视化编辑） ================= */
 var SEC_TITLE_KEYS = [
   { id: 'works', label: '作品区' },
+  { id: 'pet', label: '宠物区' },
+  { id: 'photo', label: '摄影区' },
   { id: 'video', label: '视频区' },
   { id: 'music', label: '音乐区' },
   { id: 'life', label: '动态区' },

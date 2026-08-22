@@ -377,6 +377,8 @@
       l.classList.toggle('active', l.dataset.sec === id);
     });
     if (id === 'works') { renderFilters(); renderWorks(currentFilter); }
+    else if (id === 'pet') { renderCatPanel('pet'); }
+    else if (id === 'photo') { renderCatPanel('photo'); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -388,7 +390,10 @@
   function renderFilters() {
     var box = document.getElementById('work-filters');
     box.innerHTML = '';
-    var cats = [{ id: 'all', label: '全部' }].concat(CFG.categories || []);
+    // 作品面板：排除宠物/摄影（它们有独立分区）
+    var cats = [{ id: 'all', label: '全部' }].concat((CFG.categories || []).filter(function (c) {
+      return c.id !== 'pet' && c.id !== 'photo';
+    }));
     cats.forEach(function (c) {
       var b = document.createElement('button');
       b.className = 'filter-btn' + (c.id === currentFilter ? ' active' : '');
@@ -402,12 +407,12 @@
       box.appendChild(b);
     });
   }
-  function renderWorks(cat) {
-    var grid = document.getElementById('work-grid');
+  function renderWorkList(gridId, list) {
+    var grid = document.getElementById(gridId);
+    if (!grid) return;
     grid.innerHTML = '';
-    var list = cat === 'all' ? (CFG.works || []) : (CFG.works || []).filter(function (w) { return w.cat === cat; });
     if (!list.length) {
-      grid.innerHTML = '<p class="panel-note" style="grid-column:1/-1">[ 该分类暂无作品，敬请期待 ]</p>';
+      grid.innerHTML = '<p class="panel-note" style="grid-column:1/-1">[ 该分区暂无内容，敬请期待 ]</p>';
       return;
     }
     list.forEach(function (w) {
@@ -423,6 +428,15 @@
       card.addEventListener('click', function () { openLightbox(w); });
       grid.appendChild(card);
     });
+  }
+  function renderWorks(cat) {
+    var list = (CFG.works || []).filter(function (w) { return w.cat !== 'pet' && w.cat !== 'photo'; });
+    if (cat !== 'all') list = list.filter(function (w) { return w.cat === cat; });
+    renderWorkList('work-grid', list);
+  }
+  function renderCatPanel(cat) {
+    var list = (CFG.works || []).filter(function (w) { return w.cat === cat; });
+    renderWorkList(cat + '-grid', list);
   }
 
   /* ---------- 灯箱（支持多图切换） ---------- */
@@ -848,6 +862,8 @@
   /* ---------- 面板标题配置化 ---------- */
   var SEC_TITLES = {
     works: '我的作品 / WORKS',
+    pet: '宠物日常 / PET',
+    photo: '我的摄影 / PHOTO',
     video: '我的视频 / VIDEO',
     music: '我的音乐 / MUSIC',
     life: '我的动态 / LIFE',
