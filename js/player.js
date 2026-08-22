@@ -141,6 +141,7 @@
       ui.lrcBox.classList.toggle('hidden', !lyricLines.length);
       delete ui.lrcBox.dataset.built;
     }
+    buildFullLrc();
     setStatus('');
     syncAll();
     if (onState) onState();
@@ -213,6 +214,7 @@
         }
       }
     }
+    syncFullLrc();
   }
   function onLoadedMetadata() {
     if (!audio) return;
@@ -226,6 +228,58 @@
       return;
     }
     nextSong();
+  }
+
+  /* ---------- 歌词沉浸式大屏 ---------- */
+  var fullLrcOpen = false;
+  function lrcFullEl() { return document.getElementById('lrc-full'); }
+  function lrcFullList() { return document.getElementById('lrc-full-list'); }
+  function buildFullLrc() {
+    var list = lrcFullList();
+    if (!list) return;
+    list.innerHTML = '';
+    lyricLines.forEach(function (l) {
+      var p = document.createElement('p');
+      p.className = 'lrc-full-line';
+      p.textContent = l.text;
+      list.appendChild(p);
+    });
+  }
+  function syncFullLrc() {
+    if (!fullLrcOpen) return;
+    var list = lrcFullList();
+    if (!list) return;
+    var lines = list.children;
+    for (var k = 0; k < lines.length; k++) lines[k].classList.toggle('on', k === lyricIdx);
+    if (lyricIdx >= 0 && lines[lyricIdx]) {
+      lines[lyricIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }
+  function openFullLrc() {
+    if (!lyricLines.length) { setStatus('暂无歌词'); return; }
+    buildFullLrc();
+    fullLrcOpen = true;
+    var el = lrcFullEl();
+    if (el) el.classList.remove('hidden');
+    var song = currentSong();
+    var bg = document.getElementById('lrc-full-bg');
+    if (bg) {
+      var cv = coverOf(song);
+      bg.style.backgroundImage = cv ? 'url(' + cv + ')' : '';
+    }
+    var t = document.getElementById('lrc-full-title');
+    if (t) t.textContent = song ? (song.title || '未知歌曲') : '—';
+    var a = document.getElementById('lrc-full-artist');
+    if (a) a.textContent = song ? (song.artist || '') : '';
+    syncFullLrc();
+  }
+  function closeFullLrc() {
+    fullLrcOpen = false;
+    var el = lrcFullEl();
+    if (el) el.classList.add('hidden');
+  }
+  function toggleFullLrc() {
+    if (fullLrcOpen) closeFullLrc(); else openFullLrc();
   }
 
   /* ---------- 渲染 ---------- */
@@ -400,6 +454,10 @@
     if (ui.hmBar) {
       bindDrag(ui.hmBar, ui.hmFill, seek);
     }
+    // 歌词大屏
+    if (ui.lrcToggle) ui.lrcToggle.addEventListener('click', toggleFullLrc);
+    var lfc = document.getElementById('lrc-full-close');
+    if (lfc) lfc.addEventListener('click', closeFullLrc);
     // 迷你播放器
     if (ui.miniPlay) ui.miniPlay.addEventListener('click', togglePlay);
     if (ui.miniPrev) ui.miniPrev.addEventListener('click', prevSong);
@@ -446,6 +504,8 @@
     prev: prevSong,
     seek: seek,
     getCurrent: currentSong,
-    isPlaying: function () { return isPlaying; }
+    isPlaying: function () { return isPlaying; },
+    toggleLrc: toggleFullLrc,
+    closeLrc: closeFullLrc
   };
 })();

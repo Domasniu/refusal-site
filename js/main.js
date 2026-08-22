@@ -306,7 +306,8 @@
       hmBar: document.getElementById('hm-bar'),
       hmFill: document.getElementById('hm-fill'),
       hmCur: document.getElementById('hm-cur'),
-      hmDur: document.getElementById('hm-dur')
+      hmDur: document.getElementById('hm-dur'),
+      lrcToggle: document.getElementById('p-lrc-toggle')
     };
     // 首页播放器与迷你播放器事件（复用同一套逻辑）
     if (ui.hmPlay) ui.hmPlay.addEventListener('click', function () { window.REFUSAL_PLAYER.togglePlay(); });
@@ -1277,7 +1278,10 @@
     document.getElementById('lb-play').addEventListener('click', lbToggleAuto);
     lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { closeLightbox(); searchPanelClose(); }
+      if (e.key === 'Escape') {
+        closeLightbox(); searchPanelClose();
+        if (window.REFUSAL_PLAYER && window.REFUSAL_PLAYER.closeLrc) window.REFUSAL_PLAYER.closeLrc();
+      }
       if (!lb.classList.contains('hidden')) {
         if (e.key === 'ArrowLeft') showLbItem(lbIndex - 1);
         if (e.key === 'ArrowRight') showLbItem(lbIndex + 1);

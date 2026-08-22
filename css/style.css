@@ -865,6 +865,43 @@ body::after{
 .p-item-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .p-item-dur{font-family:Consolas,monospace;font-size:.62rem;color:var(--dim);flex-shrink:0}
 
+/* 歌词沉浸式大屏 */
+.lrc-full{
+  position:fixed;inset:0;z-index:850;display:flex;flex-direction:column;align-items:center;
+  background:rgba(4,6,12,.9);backdrop-filter:blur(10px);
+}
+.lrc-full-bg{
+  position:absolute;inset:-60px;z-index:-1;
+  background:var(--bg) center/cover;
+  filter:blur(36px) brightness(.5);transform:scale(1.1);
+}
+.lrc-full-close{
+  position:absolute;top:1.2rem;right:1.6rem;z-index:2;width:40px;height:40px;border-radius:50%;
+  background:rgba(5,8,16,.6);border:1px solid var(--magenta);color:var(--magenta);
+  font-size:1.1rem;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;
+}
+.lrc-full-close:hover{background:var(--magenta);color:#001018;box-shadow:var(--glow-magenta)}
+.lrc-full-head{position:absolute;top:1.4rem;left:0;right:0;text-align:center;z-index:1;padding:0 4rem;pointer-events:none}
+.lrc-full-title{font-size:1.1rem;font-weight:800;letter-spacing:.08em;color:var(--text);text-shadow:0 0 12px rgba(0,240,255,.4)}
+.lrc-full-artist{margin-top:.3rem;font-size:.78rem;color:var(--dim);letter-spacing:.12em}
+.lrc-full-list{
+  flex:1;width:100%;max-width:760px;overflow-y:auto;
+  padding:32vh 1.2rem;scrollbar-width:none;
+}
+.lrc-full-list::-webkit-scrollbar{display:none}
+.lrc-full-line{
+  text-align:center;font-size:1.15rem;color:rgba(215,228,255,.45);line-height:2.6;
+  letter-spacing:.04em;transition:all .4s;white-space:pre-wrap;word-break:break-word;
+}
+.lrc-full-line.on{
+  color:var(--cyan);font-size:1.5rem;font-weight:800;
+  text-shadow:0 0 18px rgba(0,240,255,.65);
+}
+@media(max-width:600px){
+  .lrc-full-line{font-size:1rem;line-height:2.3}
+  .lrc-full-line.on{font-size:1.25rem}
+}
+
 /* 首页迷你播放器 */
 .home-music{margin:.4rem 0 2rem}
 .home-music-player{

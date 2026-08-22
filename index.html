@@ -202,6 +202,7 @@
                 <button class="p-btn" id="p-mute" title="静音">🔊</button>
                 <div class="p-vol" id="p-vol"><div class="p-vol-fill" id="p-vol-fill"></div></div>
               </span>
+              <button class="p-btn" id="p-lrc-toggle" title="歌词大屏">词</button>
             </div>
             <div class="p-status" id="p-status"></div>
             <div class="p-lrc hidden" id="p-lrc"></div>
@@ -298,6 +299,17 @@
     <button class="p-btn p-play" id="mp-play" title="播放/暂停">▶</button>
     <button class="p-btn" id="mp-next" title="下一首">⏭</button>
   </div>
+</div>
+
+<!-- ============ 歌词沉浸式大屏 ============ -->
+<div id="lrc-full" class="lrc-full hidden">
+  <div class="lrc-full-bg" id="lrc-full-bg"></div>
+  <button id="lrc-full-close" class="lrc-full-close" title="退出歌词 (Esc)">✕</button>
+  <div class="lrc-full-head">
+    <div class="lrc-full-title" id="lrc-full-title">—</div>
+    <div class="lrc-full-artist" id="lrc-full-artist"></div>
+  </div>
+  <div class="lrc-full-list" id="lrc-full-list"></div>
 </div>
 
 <script src="js/palettes.js"></script>
