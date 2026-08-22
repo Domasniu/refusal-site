@@ -1044,8 +1044,11 @@ body::after{
   .admin-link{font-size:.6rem;padding:.25rem .5rem}
   .theme-toggle{padding:.25rem .45rem;font-size:.9rem}
   .wm-kicker{font-size:.6rem;letter-spacing:.14em}
-  /* 作品/宠物/摄影网格：手机端两列 */
+  /* 作品/宠物/摄影网格：手机端两列 + 方形缩略图（统一高度，消除大间距） */
   .work-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .work-grid .work-card img{height:auto;aspect-ratio:1/1;object-fit:cover;max-height:none}
+  .work-card .work-thumb-video{aspect-ratio:1/1}
+  .work-card .work-thumb-empty{height:auto;aspect-ratio:1/1;font-size:2rem}
   .work-card .work-meta{padding:.5rem .6rem;flex-direction:column;align-items:flex-start;gap:.2rem}
   .work-card .work-name{font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .work-card .work-cat{font-size:.56rem}
