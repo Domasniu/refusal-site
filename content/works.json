@@ -128,16 +128,20 @@
       "id": "W-013",
       "cat": "photo",
       "title": "新作品",
-      "img": "",
-      "images": [],
+      "img": "assets/works/work-007.jpg",
+      "images": [
+        "assets/works/work-007.jpg"
+      ],
       "videos": []
     },
     {
       "id": "W-014",
       "cat": "photo",
       "title": "新作品",
-      "img": "",
-      "images": [],
+      "img": "assets/works/work-006.jpg",
+      "images": [
+        "assets/works/work-006.jpg"
+      ],
       "videos": []
     }
   ]
